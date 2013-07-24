@@ -43,22 +43,6 @@ int main(int argc, char **argv)
         // Get an image
         image = ardrone.getImage();
 
-        // Take off / Landing 
-        if (key == ' ') {
-            if (ardrone.onGround()) ardrone.takeoff();
-            else                    ardrone.landing();
-        }
-
-        // Move
-        double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
-        if (key == 0x260000) vx =  0.5;
-        if (key == 0x280000) vx = -0.5;
-        if (key == 0x250000) vr =  0.5;
-        if (key == 0x270000) vr = -0.5;
-        if (key == 'q')      vz =  0.5;
-        if (key == 'a')      vz = -0.5;
-        ardrone.move3D(vx, vy, vz, vr);
-
         // Convert the camera image to grayscale
         cvCvtColor(image, gray, CV_BGR2GRAY);
 

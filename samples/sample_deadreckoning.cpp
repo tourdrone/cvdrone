@@ -16,6 +16,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    // Battery
+    printf("Battery = %d%%\n", ardrone.getBatteryPercentage());
+
     // Map
     IplImage *map = cvCreateImage(cvSize(500, 500), IPL_DEPTH_8U, 3);
     cvZero(map);

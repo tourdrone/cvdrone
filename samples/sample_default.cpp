@@ -16,6 +16,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    // Battery
+    printf("Battery = %d%%\n", ardrone.getBatteryPercentage());
+
     // Instructions
     printf("***************************************\n");
     printf("*       CV Drone sample program       *\n");
