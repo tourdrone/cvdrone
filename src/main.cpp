@@ -156,7 +156,6 @@ int main(int argc, char *argv[])
 
 		// Sample the object color
 		if(learnMode) {
-			cv::Vec3b bgrSample = image.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
 
 			// Crosshairs
 			cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
@@ -164,17 +163,13 @@ int main(int argc, char *argv[])
 			cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
 			cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
 
-			sprintf(textBuffer, "bgrSample = %3d, %3d, %3d", bgrSample[0], bgrSample[1], bgrSample[2]);
-			putText(image, textBuffer, cvPoint(30,90), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+			//cv::Vec3b bgrSample = image.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
+			//sprintf(textBuffer, "bgrSample = %3d, %3d, %3d", bgrSample[0], bgrSample[1], bgrSample[2]);
+			//putText(image, textBuffer, cvPoint(30,90), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-			
-			
-			cv::Vec3b hsvSample = cv::Vec3b(bgrSample);
-			cv::cvtColor(bgrSample, hsvSample, cv::COLOR_BGR2HSV);
+     		cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
 			sprintf(textBuffer, "hsvSample = %3d, %3d, %3d", hsvSample[0], hsvSample[1], hsvSample[2]);
 			putText(image, textBuffer, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-			
-
 		}
 
         // Show predicted position
