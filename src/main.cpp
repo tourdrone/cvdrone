@@ -80,6 +80,8 @@ int main(int argc, char *argv[])
           0.0, 1e-1;
     kalman.measurementNoiseCov = R;
 
+	float speed = 0.0;
+
     // Main loop
     while (1) {
         // Key input
@@ -149,7 +151,7 @@ int main(int argc, char *argv[])
 
 		// Calculate object heading fraction
 		float heading = ((image.cols/2)-prediction(0, 0))/(image.cols/2);
-		printf("prediction->data.fl[0]  = %3.2f\n", heading);
+		//printf("heading = %3.2f\n", heading);
 		
 		// Control drone
 		double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
@@ -159,9 +161,14 @@ int main(int argc, char *argv[])
         if (key == 0x270000) vr = -1.0;
         if (key == 'q')      vz =  1.0;
         if (key == 'a')      vz = -1.0;
-		if(key == -1)
+		if ((key >= '0') && (key <= '9')) 
 		{
-			//vx=0.7;
+			speed = (key-'0')*0.1;
+			printf("speed = %3.2f\n", speed);
+		}
+		if (key == -1)
+		{//No key hit - chase the object
+			vx=speed;
 			vr = heading*2;
 		}
         ardrone.move3D(vx, vy, vz, vr);
