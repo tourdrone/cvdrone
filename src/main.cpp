@@ -147,8 +147,44 @@ int main(int argc, char *argv[])
         // Show predicted position
         cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, cv::Scalar(0, 255, 0), 2);
 
+		// Calculate object heading fraction
+		float heading = ((image.cols/2)-prediction(0, 0))/(image.cols/2);
+		printf("prediction->data.fl[0]  = %3.2f\n", heading);
+		
+		// Control drone
+		double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
+        if (key == 0x260000) vx =  1.0;
+        if (key == 0x280000) vx = -1.0;
+        if (key == 0x250000) vr =  1.0;
+        if (key == 0x270000) vr = -1.0;
+        if (key == 'q')      vz =  1.0;
+        if (key == 'a')      vz = -1.0;
+		if(key == -1)
+		{
+			//vx=0.7;
+			vr = heading*2;
+		}
+        ardrone.move3D(vx, vy, vz, vr);
+
+		// Take off / Landing 
+        if (key == ' ') {
+            if (ardrone.onGround()) 
+			{
+				ardrone.takeoff();
+			}
+            else
+			{
+				ardrone.landing();
+			}
+        }
+
+		
         // Display the image
         cv::imshow("camera", image);
+
+		
+
+
     }
 
     // Save thresholds
