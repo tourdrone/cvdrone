@@ -149,14 +149,38 @@ int main(int argc, char *argv[])
         cv::Mat1f prediction = kalman.predict();
         int radius = 1e+3 * kalman.errorCovPre.at<float>(0, 0);
 
-        // Show predicted position
-        cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
-
 		// Calculate object heading fraction
 		float heading = -((image.cols/2)-prediction(0, 0))/(image.cols/2);
 		sprintf(textBuffer, "heading = %+3.2f", heading);
 		putText(image, textBuffer, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-		
+
+		// Sample the object color
+		if(learnMode) {
+			cv::Vec3b bgrSample = image.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
+
+			// Crosshairs
+			cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
+			cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
+			cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
+			cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
+
+			sprintf(textBuffer, "bgrSample = %3d, %3d, %3d", bgrSample[0], bgrSample[1], bgrSample[2]);
+			putText(image, textBuffer, cvPoint(30,90), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
+			
+			
+			cv::Vec3b hsvSample = cv::Vec3b(bgrSample);
+			cv::cvtColor(bgrSample, hsvSample, cv::COLOR_BGR2HSV);
+			sprintf(textBuffer, "hsvSample = %3d, %3d, %3d", hsvSample[0], hsvSample[1], hsvSample[2]);
+			putText(image, textBuffer, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+			
+
+		}
+
+        // Show predicted position
+        cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
+
+
 		// Control drone
 		double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
         if (key == 0x260000) vx =  1.0;
@@ -194,18 +218,6 @@ int main(int argc, char *argv[])
         }
 		
 
-		if(learnMode) {
-			cv::Vec3b bgr = image.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
-
-			// Crosshairs
-			cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
-			cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
-			cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
-			cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
-
-			sprintf(textBuffer, "sample = %3d, %3d, %3d", bgr[0], bgr[1], bgr[2]);
-			putText(image, textBuffer, cvPoint(30,90), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-		}
 
         // Display the image
         cv::imshow("camera", image);
