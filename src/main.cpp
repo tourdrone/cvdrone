@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
           0.0, 1e-1;
     kalman.measurementNoiseCov = R;
 
+	char textBuffer[80];
 	float speed = 0.0;
 
     // Main loop
@@ -150,8 +151,9 @@ int main(int argc, char *argv[])
         cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, cv::Scalar(0, 255, 0), 2);
 
 		// Calculate object heading fraction
-		float heading = ((image.cols/2)-prediction(0, 0))/(image.cols/2);
-		//printf("heading = %3.2f\n", heading);
+		float heading = -((image.cols/2)-prediction(0, 0))/(image.cols/2);
+		sprintf(textBuffer, "heading = %+3.2f", heading);
+		putText(image, textBuffer, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(0, 255, 0), 1, CV_AA);
 		
 		// Control drone
 		double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
@@ -169,7 +171,7 @@ int main(int argc, char *argv[])
 		if (key == -1)
 		{//No key hit - chase the object
 			vx=speed;
-			vr = heading*2;
+			vr = -heading*2;
 		}
         ardrone.move3D(vx, vy, vz, vr);
 
@@ -184,14 +186,9 @@ int main(int argc, char *argv[])
 				ardrone.landing();
 			}
         }
-
 		
         // Display the image
         cv::imshow("camera", image);
-
-		
-
-
     }
 
     // Save thresholds
