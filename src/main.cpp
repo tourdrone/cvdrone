@@ -166,8 +166,11 @@ int main(int argc, char *argv[])
 		if ((key >= '0') && (key <= '9')) 
 		{
 			speed = (key-'0')*0.1;
-			printf("speed = %3.2f\n", speed);
+			//printf("speed = %3.2f\n", speed);
 		}
+		sprintf(textBuffer, "speed = %3.2f", speed);
+		putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(0, 255, 0), 1, CV_AA);
+
 		if (key == -1)
 		{//No key hit - chase the object
 			vx=speed;
