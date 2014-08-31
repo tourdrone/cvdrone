@@ -170,6 +170,15 @@ int main(int argc, char *argv[])
      		cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
 			sprintf(textBuffer, "hsvSample = %3d, %3d, %3d", hsvSample[0], hsvSample[1], hsvSample[2]);
 			putText(image, textBuffer, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
+			cv::setTrackbarPos("H max", "binalized", hsvSample[0]+20);
+			cv::setTrackbarPos("H min", "binalized", hsvSample[0]-20);
+
+			cv::setTrackbarPos("S max", "binalized", hsvSample[1]+20);
+			cv::setTrackbarPos("S min", "binalized", hsvSample[1]-20);
+
+			cv::setTrackbarPos("V max", "binalized", hsvSample[2]+20);
+			cv::setTrackbarPos("V min", "binalized", hsvSample[2]-20);
 		}
 
         // Show predicted position
