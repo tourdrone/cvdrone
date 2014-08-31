@@ -195,11 +195,12 @@ int main(int argc, char *argv[])
 		
 
 		if(learnMode) {
+			cv::Vec3b sample = image.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
 			cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows), green); //vertical crosshair
 			cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols, image.rows/2), green); //horizontal crosshair
+			sprintf(textBuffer, "sample = %3d, %3d, %3d", sample[0], sample[1], sample[2]);
+			putText(image, textBuffer, cvPoint(30,90), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 		}
-
-
 
         // Display the image
         cv::imshow("camera", image);
