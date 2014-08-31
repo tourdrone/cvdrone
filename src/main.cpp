@@ -81,7 +81,9 @@ int main(int argc, char *argv[])
     kalman.measurementNoiseCov = R;
 
 	char textBuffer[80];
+	cv::Scalar green = CV_RGB(0,255,0);
 	float speed = 0.0;
+	bool learnMode = false;
 
     // Main loop
     while (1) {
@@ -148,12 +150,12 @@ int main(int argc, char *argv[])
         int radius = 1e+3 * kalman.errorCovPre.at<float>(0, 0);
 
         // Show predicted position
-        cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, cv::Scalar(0, 255, 0), 2);
+        cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
 
 		// Calculate object heading fraction
 		float heading = -((image.cols/2)-prediction(0, 0))/(image.cols/2);
 		sprintf(textBuffer, "heading = %+3.2f", heading);
-		putText(image, textBuffer, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(0, 255, 0), 1, CV_AA);
+		putText(image, textBuffer, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 		
 		// Control drone
 		double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
@@ -163,13 +165,14 @@ int main(int argc, char *argv[])
         if (key == 0x270000) vr = -1.0;
         if (key == 'q')      vz =  1.0;
         if (key == 'a')      vz = -1.0;
+		if (key == 'l')      learnMode = !learnMode;
 		if ((key >= '0') && (key <= '9')) 
 		{
 			speed = (key-'0')*0.1;
 			//printf("speed = %3.2f\n", speed);
 		}
 		sprintf(textBuffer, "speed = %3.2f", speed);
-		putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(0, 255, 0), 1, CV_AA);
+		putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
 		if (key == -1)
 		{//No key hit - chase the object
@@ -190,6 +193,14 @@ int main(int argc, char *argv[])
 			}
         }
 		
+
+		if(learnMode) {
+			cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows), green); //vertical crosshair
+			cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols, image.rows/2), green); //horizontal crosshair
+		}
+
+
+
         // Display the image
         cv::imshow("camera", image);
     }
