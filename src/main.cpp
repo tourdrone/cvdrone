@@ -163,10 +163,6 @@ int main(int argc, char *argv[])
 			cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
 			cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
 
-			//cv::Vec3b bgrSample = image.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
-			//sprintf(textBuffer, "bgrSample = %3d, %3d, %3d", bgrSample[0], bgrSample[1], bgrSample[2]);
-			//putText(image, textBuffer, cvPoint(30,90), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-
      		cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
 			sprintf(textBuffer, "hsvSample = %3d, %3d, %3d", hsvSample[0], hsvSample[1], hsvSample[2]);
 			putText(image, textBuffer, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
@@ -184,16 +180,7 @@ int main(int argc, char *argv[])
         // Show predicted position
         cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
 
-
-		// Control drone
-		double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
-        if (key == 0x260000) vx =  1.0;
-        if (key == 0x280000) vx = -1.0;
-        if (key == 0x250000) vr =  1.0;
-        if (key == 0x270000) vr = -1.0;
-        if (key == 'q')      vz =  1.0;
-        if (key == 'a')      vz = -1.0;
-		if (key == 'l')      learnMode = !learnMode;
+		//Speed
 		if ((key >= '0') && (key <= '9')) 
 		{
 			speed = (key-'0')*0.1;
@@ -201,13 +188,23 @@ int main(int argc, char *argv[])
 		}
 		sprintf(textBuffer, "speed = %3.2f", speed);
 		putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+		// Drone control
+		double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
 
-		if (key == -1)
-		{//No key hit - chase the object
-			vx=speed;
-			vr = -heading*2;
-		}
-        ardrone.move3D(vx, vy, vz, vr);
+		// Auto-follow
+		vx = speed;
+		vr = -heading*2;
+		
+		// Manual control override
+        if (key == 0x260000) vx =  1.0;
+        if (key == 0x280000) vx = -1.0;
+        if (key == 0x250000) vr =  1.0;
+        if (key == 0x270000) vr = -1.0;
+        if (key == 'q')      vz =  1.0;
+        if (key == 'a')      vz = -1.0;
+		if (key == 'l')      learnMode = !learnMode;
+
+		ardrone.move3D(vx, vy, vz, vr);
 
 		// Take off / Landing 
         if (key == ' ') {
@@ -221,9 +218,7 @@ int main(int argc, char *argv[])
 			}
         }
 		
-
-
-        // Display the image
+		// Display the image
         cv::imshow("camera", image);
     }
 
