@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 
 		// Auto-follow
 		vx = speed;
-		vr = -heading*2;
+		vr = -heading;
 		
 		// Manual control override
         if (key == 0x260000) vx =  1.0;
