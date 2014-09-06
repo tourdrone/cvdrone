@@ -1,5 +1,7 @@
 [![AR.Drone follows a ball](demo.gif)](http://youtu.be/gla5a1qSEDc)
 
+[http://tekkies.co.uk/ar-drone-follows-a-ball/](http://tekkies.co.uk/ar-drone-follows-a-ball/ "Story")
+
 	-----------------------------------------------------------------
 	 CV Drone (= OpenCV + AR.Drone)
 
@@ -11,8 +13,6 @@
 	 https://github.com/puku0x/cvdrone
 	-----------------------------------------------------------------
 
-	Story: http://tekkies.co.uk/ar-drone-follows-a-ball/
-	
 	INTRODUCTION
 	  CV Drone is free software; you can redistribute it and/or
 	  modify it under the terms of EITHER:
