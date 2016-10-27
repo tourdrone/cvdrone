@@ -32,7 +32,10 @@ int main(int argc, char *argv[])
   // Sampling time [s]
   const double dt = 1.0;
 
-  printf("Starting main.cpp\n");
+  printf("Connecting to the drone\n");
+  printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
+  printf("To disconnect, press the ESC key\n");
+  fflush(stdout);
 
   // Initialize
   if (!ardrone.open()) {
@@ -55,46 +58,46 @@ int main(int argc, char *argv[])
     fs.release();
   }
 
-    // Create a window
-    cv::namedWindow("binalized");
-    cv::createTrackbar("H max", "binalized", &maxH, 255);
-    cv::createTrackbar("H min", "binalized", &minH, 255);
-    cv::createTrackbar("S max", "binalized", &maxS, 255);
-    cv::createTrackbar("S min", "binalized", &minS, 255);
-    cv::createTrackbar("V max", "binalized", &maxV, 255);
-    cv::createTrackbar("V min", "binalized", &minV, 255);
-    cv::resizeWindow("binalized", 0, 0);
+  // Create a window
+  cv::namedWindow("binalized");
+  cv::createTrackbar("H max", "binalized", &maxH, 255);
+  cv::createTrackbar("H min", "binalized", &minH, 255);
+  cv::createTrackbar("S max", "binalized", &maxS, 255);
+  cv::createTrackbar("S min", "binalized", &minS, 255);
+  cv::createTrackbar("V max", "binalized", &maxV, 255);
+  cv::createTrackbar("V min", "binalized", &minV, 255);
+  cv::resizeWindow("binalized", 0, 0);
 
-    // Kalman filter
-    cv::KalmanFilter kalman(4, 2, 0);
+  // Kalman filter
+  cv::KalmanFilter kalman(4, 2, 0);
 
-    // Transition matrix (x, y, vx, vy)
-    cv::Mat1f A(4, 4);
-    A << 1.0, 0.0,  dt, 0.0,
-         0.0, 1.0, 0.0,  dt,
-         0.0, 0.0, 1.0, 0.0,
-         0.0, 0.0, 0.0, 1.0;
-    kalman.transitionMatrix = A;
+  // Transition matrix (x, y, vx, vy)
+  cv::Mat1f A(4, 4);
+  A << 1.0, 0.0,  dt, 0.0,
+       0.0, 1.0, 0.0,  dt,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0;
+  kalman.transitionMatrix = A;
 
-    // Measurement matrix (x, y)
-    cv::Mat1f H(2, 4);
-    H << 1, 0, 0, 0,
-         0, 1, 0, 0;
-    kalman.measurementMatrix = H;
+  // Measurement matrix (x, y)
+  cv::Mat1f H(2, 4);
+  H << 1, 0, 0, 0,
+       0, 1, 0, 0;
+  kalman.measurementMatrix = H;
 
-    // Process noise covairance (x, y, vx, vy)
-    cv::Mat1f Q(4, 4);
-    Q << 1e-5,  0.0,  0.0,  0.0,
-          0.0, 1e-5,  0.0,  0.0,
-          0.0,  0.0, 1e-5,  0.0,
-          0.0,  0.0,  0.0, 1e-5;
-    kalman.processNoiseCov = Q;
+  // Process noise covairance (x, y, vx, vy)
+  cv::Mat1f Q(4, 4);
+  Q << 1e-5,  0.0,  0.0,  0.0,
+        0.0, 1e-5,  0.0,  0.0,
+        0.0,  0.0, 1e-5,  0.0,
+        0.0,  0.0,  0.0, 1e-5;
+  kalman.processNoiseCov = Q;
 
-    // Measurement noise covariance (x, y)
-    cv::Mat1f R(2, 2);
-    R << 1e-1,  0.0,
-          0.0, 1e-1;
-    kalman.measurementNoiseCov = R;
+  // Measurement noise covariance (x, y)
+  cv::Mat1f R(2, 2);
+  R << 1e-1,  0.0,
+        0.0, 1e-1;
+  kalman.measurementNoiseCov = R;
 
 
   // Main loop
@@ -102,16 +105,20 @@ int main(int argc, char *argv[])
     // Key input
     int key = cv::waitKey(33);
     printf("%c\n", (char)key);
-    if (key == 0x1b) break;
 
-      // Get an image
-      cv::Mat image = ardrone.getImage();
+    //press the escape key to exit
+    if (key == 0x1b) {
+      break;
+    }
 
-      // HSV image
-      cv::Mat hsv;
-      cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
+    // Get an image
+    cv::Mat image = ardrone.getImage();
 
-      // Binalize
+    // HSV image
+    cv::Mat hsv;
+    cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
+
+    // Binalize
       cv::Mat binalized;
       cv::Scalar lower(minH, minS, minV);
       cv::Scalar upper(maxH, maxS, maxV);
@@ -162,69 +169,79 @@ int main(int argc, char *argv[])
         int radius = 1e+3 * kalman.errorCovPre.at<float>(0, 0);
 
 	// Calculate object heading fraction
-	float heading = -((image.cols/2)-prediction(0, 0))/(image.cols/2);
+	float heading = -((image.cols/2) - prediction(0, 0))/(image.cols/2);
 	sprintf(textBuffer, "heading = %+3.2f", heading);
-	putText(image, textBuffer, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+	putText(image, textBuffer, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-	// Sample the object color
-	if(learnMode) {
-		// Crosshairs
-	   	cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
-		cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
-		cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
-		cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
-		cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
+    // Sample the object color
+    if(learnMode) {
+      // Crosshairs 
+      cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
+      cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
+      cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
+      cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
 
-		sprintf(textBuffer, "hsvSample = %3d, %3d, %3d", hsvSample[0], hsvSample[1], hsvSample[2]);
-		putText(image, textBuffer, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+      cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
 
-		cv::setTrackbarPos("H max", "binalized", hsvSample[0]+20);
-		cv::setTrackbarPos("H min", "binalized", hsvSample[0]-20);
+      sprintf(textBuffer, "hsvSample = %3d, %3d, %3d", hsvSample[0], hsvSample[1], hsvSample[2]);
+      putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-		cv::setTrackbarPos("S max", "binalized", hsvSample[1]+20);
-		cv::setTrackbarPos("S min", "binalized", hsvSample[1]-20);
+      //Hue
+      cv::setTrackbarPos("H max", "binalized", hsvSample[0]+20);
+      cv::setTrackbarPos("H min", "binalized", hsvSample[0]-20);
 
-		cv::setTrackbarPos("V max", "binalized", hsvSample[2]+20);
-		cv::setTrackbarPos("V min", "binalized", hsvSample[2]-20);
-	}
+      //Saturation
+      cv::setTrackbarPos("S max", "binalized", hsvSample[1]+20);
+      cv::setTrackbarPos("S min", "binalized", hsvSample[1]-20);
+      
+      //Value
+      cv::setTrackbarPos("V max", "binalized", hsvSample[2]+20);
+      cv::setTrackbarPos("V min", "binalized", hsvSample[2]-20);
+    }
 
-        // Show predicted position
-        cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
+    // Show predicted position
+    cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
+    
+    //Speed
+    if ((key >= '0') && (key <= '9')) 
+    {
+      speed = (key-'0')*0.1;
+    }
+    sprintf(textBuffer, "speed = %3.2f", speed);
+    putText(image, textBuffer, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-	//Speed
-	if ((key >= '0') && (key <= '9')) 
-	{
-		speed = (key-'0')*0.1;
-	}
-	sprintf(textBuffer, "speed = %3.2f", speed);
-	putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    // Auto-follow
+    vx = speed;
+    vr = -heading;
 
-	if (learnMode) {
-		// Auto-follow
-		vx = speed;
-		vr = -heading;
-	}
-	else {
-		// Manual control override
-        	if (key == 0x260000) {
-			vx =  1.0;
- 		}
-        	if (key == 0x280000) {
-			vx = -1.0;
-		}
-        	if (key == 0x250000) {
-	          vr =  1.0;
-		}
-        	if (key == 0x270000) { 
-			vr = -1.0;
-		}
-        	if (key == 'q') {
-			vz =  1.0;
-		}
-        	if (key == 'a') {
-			vz = -1.0;
-		}
-	}
+    // Manual control override
+    if (key == 0x260000) {
+      vx =  1.0;
+    }
+    if (key == 0x280000) {
+      vx = -1.0;
+    }
+    if (key == 0x250000) {
+      vr =  1.0;
+    }
+    if (key == 0x270000) { 
+      vr = -1.0;
+    }
+    if (key == 'q') {
+      vz =  1.0;
+    }
+    if (key == 'a') {
+      vz = -1.0;
+    }
+
+    sprintf(textBuffer, "vx = %3.2f", vx);
+    putText(image, textBuffer, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    sprintf(textBuffer, "vy = %3.2f", vy);
+    putText(image, textBuffer, cvPoint(30,100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    sprintf(textBuffer, "vz = %3.2f", vz);
+    putText(image, textBuffer, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    sprintf(textBuffer, "vr = %3.2f", vr);
+    putText(image, textBuffer, cvPoint(30,140), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
     //switch between learning and non-learning mode
     if (key == 'l') {
