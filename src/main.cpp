@@ -1,5 +1,8 @@
 #include "ardrone/ardrone.h"
+#include <iostream>
+#include <vector>
 
+using namespace std;
 // --------------------------------------------------------------------------
 // main(Number of arguments, Argument values)
 // Description  : This is the entry point of the program.
@@ -7,36 +10,50 @@
 // --------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+  // AR.Drone class
+  ARDrone ardrone;
 
-    printf("Starting main.cpp\n");
-    // AR.Drone class
-    ARDrone ardrone;
+  char textBuffer[80];
+  cv::Scalar green = CV_RGB(0,255,0);
+  bool learnMode = false;
 
-    // Initialize
-    if (!ardrone.open()) {
-        std::cout << "Failed to initialize." << std::endl;
-        return -1;
-    }
+  // Drone control
+  float speed = 0.0;
+  double vx = 0.0;
+  double vy = 0.0; 
+  double vz = 0.0; 
+  double vr = 0.0;
 
-    // Thresholds
-    int minH = 0, maxH = 255;
-    int minS = 0, maxS = 255;
-    int minV = 0, maxV = 255;
+  // Thresholds
+  int minH = 0, maxH = 255;
+  int minS = 0, maxS = 255;
+  int minV = 0, maxV = 255;
 
-    // XML save data
-    std::string filename("thresholds.xml");
-    cv::FileStorage fs(filename, cv::FileStorage::READ);
+  // Sampling time [s]
+  const double dt = 1.0;
 
-    // If there is a save file then read it
-    if (fs.isOpened()) {
-        maxH = fs["H_MAX"];
-        minH = fs["H_MIN"];
-        maxS = fs["S_MAX"];
-        minS = fs["S_MIN"];
-        maxV = fs["V_MAX"];
-        minV = fs["V_MIN"];
-        fs.release();
-    }
+  printf("Starting main.cpp\n");
+
+  // Initialize
+  if (!ardrone.open()) {
+    printf("Failed to initialize.\n");
+    return -1;
+  }
+
+  // XML save data
+  std::string filename("thresholds.xml");
+  cv::FileStorage fs(filename, cv::FileStorage::READ);
+
+  // If there is a save file then read it
+  if (fs.isOpened()) {
+    maxH = fs["H_MAX"];
+    minH = fs["H_MIN"];
+    maxS = fs["S_MAX"];
+    minS = fs["S_MIN"];
+    maxV = fs["V_MAX"];
+    minV = fs["V_MIN"];
+    fs.release();
+  }
 
     // Create a window
     cv::namedWindow("binalized");
@@ -50,9 +67,6 @@ int main(int argc, char *argv[])
 
     // Kalman filter
     cv::KalmanFilter kalman(4, 2, 0);
-
-    // Sampling time [s]
-    const double dt = 1.0;
 
     // Transition matrix (x, y, vx, vy)
     cv::Mat1f A(4, 4);
@@ -82,48 +96,37 @@ int main(int argc, char *argv[])
           0.0, 1e-1;
     kalman.measurementNoiseCov = R;
 
-	char textBuffer[80];
-	cv::Scalar green = CV_RGB(0,255,0);
-	float speed = 0.0;
-	bool learnMode = false;
 
-	// Drone control
-	double vx = 0.0;
-	double vy = 0.0; 
-	double vz = 0.0; 
-	double vr = 0.0;
+  // Main loop
+  while (1) {
+    // Key input
+    int key = cv::waitKey(33);
+    printf("%c\n", (char)key);
+    if (key == 0x1b) break;
 
-    // Main loop
-    while (1) {
-        // Key input
-        int key = cv::waitKey(33);
-	printf("%c\n", (char)key);
-        if (key == 0x1b) break;
+      // Get an image
+      cv::Mat image = ardrone.getImage();
 
-        // Get an image
-        cv::Mat image = ardrone.getImage();
+      // HSV image
+      cv::Mat hsv;
+      cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
 
-        // HSV image
-        cv::Mat hsv;
-        cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
+      // Binalize
+      cv::Mat binalized;
+      cv::Scalar lower(minH, minS, minV);
+      cv::Scalar upper(maxH, maxS, maxV);
+      cv::inRange(hsv, lower, upper, binalized);
 
-        // Binalize
-        cv::Mat binalized;
-        cv::Scalar lower(minH, minS, minV);
-        cv::Scalar upper(maxH, maxS, maxV);
-        cv::inRange(hsv, lower, upper, binalized);
+      // Show result
+      cv::imshow("binalized", binalized);
 
-        // Show result
-        cv::imshow("binalized", binalized);
+      // De-noising
+      cv::Mat kernel = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+      cv::morphologyEx(binalized, binalized, cv::MORPH_CLOSE, kernel);
 
-        // De-noising
-        cv::Mat kernel = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-        cv::morphologyEx(binalized, binalized, cv::MORPH_CLOSE, kernel);
-        //cv::imshow("morphologyEx", binalized);
-
-        // Detect contours
-        std::vector<std::vector<cv::Point> > contours;
-        cv::findContours(binalized.clone(), contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+      // Detect contours
+      vector<vector<cv::Point> > contours;
+      cv::findContours(binalized.clone(), contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
 
         // Find largest contour
         int contour_index = -1;
@@ -196,7 +199,6 @@ int main(int argc, char *argv[])
 	sprintf(textBuffer, "speed = %3.2f", speed);
 	putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-
 	if (learnMode) {
 		// Auto-follow
 		vx = speed;
@@ -211,7 +213,7 @@ int main(int argc, char *argv[])
 			vx = -1.0;
 		}
         	if (key == 0x250000) {
-			 vr =  1.0;
+	          vr =  1.0;
 		}
         	if (key == 0x270000) { 
 			vr = -1.0;
@@ -224,25 +226,26 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (key == 'l') {
-		learnMode = !learnMode;
-	}
-
-	ardrone.move3D(vx, vy, vz, vr);
-
-	// Take off / Landing 
-        if (key == ' ') {
-        	if (ardrone.onGround()) {
-			ardrone.takeoff();
-		}
-            	else {
-			ardrone.landing();
-		}
-        }
-		
-	// Display the image
-        cv::imshow("camera", image);
+    //switch between learning and non-learning mode
+    if (key == 'l') {
+      learnMode = !learnMode;
     }
+ 
+    ardrone.move3D(vx, vy, vz, vr);
+
+    // Take off / Landing 
+    if (key == ' ') {
+      if (ardrone.onGround()) {
+        ardrone.takeoff();
+      }
+      else {
+        ardrone.landing();
+      }
+    }
+		
+    // Display the image
+    cv::imshow("camera", image);
+  }
 
     // Save thresholds
     fs.open(filename, cv::FileStorage::WRITE);
