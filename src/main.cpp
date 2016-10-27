@@ -7,6 +7,8 @@
 // --------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+
+    printf("Starting main.cpp\n");
     // AR.Drone class
     ARDrone ardrone;
 
@@ -85,10 +87,17 @@ int main(int argc, char *argv[])
 	float speed = 0.0;
 	bool learnMode = false;
 
+	// Drone control
+	double vx = 0.0;
+	double vy = 0.0; 
+	double vz = 0.0; 
+	double vr = 0.0;
+
     // Main loop
     while (1) {
         // Key input
         int key = cv::waitKey(33);
+	printf("%c\n", (char)key);
         if (key == 0x1b) break;
 
         // Get an image
@@ -113,7 +122,7 @@ int main(int argc, char *argv[])
         //cv::imshow("morphologyEx", binalized);
 
         // Detect contours
-        std::vector<std::vector<cv::Point>> contours;
+        std::vector<std::vector<cv::Point> > contours;
         cv::findContours(binalized.clone(), contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
 
         // Find largest contour
@@ -149,76 +158,89 @@ int main(int argc, char *argv[])
         cv::Mat1f prediction = kalman.predict();
         int radius = 1e+3 * kalman.errorCovPre.at<float>(0, 0);
 
-		// Calculate object heading fraction
-		float heading = -((image.cols/2)-prediction(0, 0))/(image.cols/2);
-		sprintf(textBuffer, "heading = %+3.2f", heading);
-		putText(image, textBuffer, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+	// Calculate object heading fraction
+	float heading = -((image.cols/2)-prediction(0, 0))/(image.cols/2);
+	sprintf(textBuffer, "heading = %+3.2f", heading);
+	putText(image, textBuffer, cvPoint(30,30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-		// Sample the object color
-		if(learnMode) {
+	// Sample the object color
+	if(learnMode) {
+		// Crosshairs
+	   	cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
+		cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
+		cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
+		cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
+		cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
 
-			// Crosshairs
-			cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
-			cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
-			cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
-			cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
+		sprintf(textBuffer, "hsvSample = %3d, %3d, %3d", hsvSample[0], hsvSample[1], hsvSample[2]);
+		putText(image, textBuffer, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-     		cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
-			sprintf(textBuffer, "hsvSample = %3d, %3d, %3d", hsvSample[0], hsvSample[1], hsvSample[2]);
-			putText(image, textBuffer, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+		cv::setTrackbarPos("H max", "binalized", hsvSample[0]+20);
+		cv::setTrackbarPos("H min", "binalized", hsvSample[0]-20);
 
-			cv::setTrackbarPos("H max", "binalized", hsvSample[0]+20);
-			cv::setTrackbarPos("H min", "binalized", hsvSample[0]-20);
+		cv::setTrackbarPos("S max", "binalized", hsvSample[1]+20);
+		cv::setTrackbarPos("S min", "binalized", hsvSample[1]-20);
 
-			cv::setTrackbarPos("S max", "binalized", hsvSample[1]+20);
-			cv::setTrackbarPos("S min", "binalized", hsvSample[1]-20);
-
-			cv::setTrackbarPos("V max", "binalized", hsvSample[2]+20);
-			cv::setTrackbarPos("V min", "binalized", hsvSample[2]-20);
-		}
+		cv::setTrackbarPos("V max", "binalized", hsvSample[2]+20);
+		cv::setTrackbarPos("V min", "binalized", hsvSample[2]-20);
+	}
 
         // Show predicted position
         cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
 
-		//Speed
-		if ((key >= '0') && (key <= '9')) 
-		{
-			speed = (key-'0')*0.1;
-			//printf("speed = %3.2f\n", speed);
-		}
-		sprintf(textBuffer, "speed = %3.2f", speed);
-		putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-		// Drone control
-		double vx = 0.0, vy = 0.0, vz = 0.0, vr = 0.0;
+	//Speed
+	if ((key >= '0') && (key <= '9')) 
+	{
+		speed = (key-'0')*0.1;
+	}
+	sprintf(textBuffer, "speed = %3.2f", speed);
+	putText(image, textBuffer, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
+
+	if (learnMode) {
 		// Auto-follow
 		vx = speed;
 		vr = -heading;
-		
+	}
+	else {
 		// Manual control override
-        if (key == 0x260000) vx =  1.0;
-        if (key == 0x280000) vx = -1.0;
-        if (key == 0x250000) vr =  1.0;
-        if (key == 0x270000) vr = -1.0;
-        if (key == 'q')      vz =  1.0;
-        if (key == 'a')      vz = -1.0;
-		if (key == 'l')      learnMode = !learnMode;
+        	if (key == 0x260000) {
+			vx =  1.0;
+ 		}
+        	if (key == 0x280000) {
+			vx = -1.0;
+		}
+        	if (key == 0x250000) {
+			 vr =  1.0;
+		}
+        	if (key == 0x270000) { 
+			vr = -1.0;
+		}
+        	if (key == 'q') {
+			vz =  1.0;
+		}
+        	if (key == 'a') {
+			vz = -1.0;
+		}
+	}
 
-		ardrone.move3D(vx, vy, vz, vr);
+	if (key == 'l') {
+		learnMode = !learnMode;
+	}
 
-		// Take off / Landing 
+	ardrone.move3D(vx, vy, vz, vr);
+
+	// Take off / Landing 
         if (key == ' ') {
-            if (ardrone.onGround()) 
-			{
-				ardrone.takeoff();
-			}
-            else
-			{
-				ardrone.landing();
-			}
+        	if (ardrone.onGround()) {
+			ardrone.takeoff();
+		}
+            	else {
+			ardrone.landing();
+		}
         }
 		
-		// Display the image
+	// Display the image
         cv::imshow("camera", image);
     }
 
