@@ -1,13 +1,19 @@
+/*
+  Original code from tekkies/CVdrone (get actual address from github)
+
+  Modified by Elliot Greenlee, Caleb Mennen, Jacob Pollack
+  COSC 402 Senior Design
+
+  Min Kao Drone Tour
+  See readme at (get actual address from github)
+*/
+
 #include "ardrone/ardrone.h"
 #include <iostream>
 #include <vector>
 
 using namespace std;
-// --------------------------------------------------------------------------
-// main(Number of arguments, Argument values)
-// Description  : This is the entry point of the program.
-// Return value : SUCCESS:0  ERROR:-1
-// --------------------------------------------------------------------------
+
 int main(int argc, char *argv[])
 {
   //AR.Drone class
@@ -31,10 +37,11 @@ int main(int argc, char *argv[])
 
   float speed = 0.0;
   double vx = 0.0;
-  double vy = 0.0; double vz = 0.0; 
+  double vy = 0.0; 
+  double vz = 0.0; 
   double vr = 0.0;
 
-  //Image recognition values
+  //Object Following Image recognition values
   int learnedHue;
   int learnedSaturation;
   int learnedValue;
@@ -45,6 +52,15 @@ int main(int argc, char *argv[])
   //Sampling time [s]
   const double dt = 1.0;
 
+  enum FlyingMode {
+    Manual,
+    ObjectFollowing,
+    LineFollowing
+  };
+
+  FlyingMode flyingMode = Manual;
+
+  //Initializing Message
   printf("Connecting to the drone\n");
   printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
   printf("To disconnect, press the ESC key\n");
@@ -56,7 +72,7 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  // XML save data
+  // XML save data for object following color thresholds
   std::string filename("thresholds.xml");
   cv::FileStorage fs(filename, cv::FileStorage::READ);
 
@@ -73,12 +89,12 @@ int main(int argc, char *argv[])
 
   // Create a window
   cv::namedWindow("binalized");
-  cv::createTrackbar("H max", "binalized", &maxH, 255);
-  cv::createTrackbar("H min", "binalized", &minH, 255);
-  cv::createTrackbar("S max", "binalized", &maxS, 255);
-  cv::createTrackbar("S min", "binalized", &minS, 255);
-  cv::createTrackbar("V max", "binalized", &maxV, 255);
-  cv::createTrackbar("V min", "binalized", &minV, 255);
+  cv::createTrackbar("Hue max", "binalized", &maxH, 255);
+  cv::createTrackbar("Hue min", "binalized", &minH, 255);
+  cv::createTrackbar("Saturation max", "binalized", &maxS, 255);
+  cv::createTrackbar("Saturation min", "binalized", &minS, 255);
+  cv::createTrackbar("Value max", "binalized", &maxV, 255);
+  cv::createTrackbar("Value min", "binalized", &minV, 255);
   cv::resizeWindow("binalized", 0, 0);
 
   // Kalman filter
@@ -139,17 +155,21 @@ int main(int argc, char *argv[])
       }
     }
 
-    //switch between autonomous and manual flying mode
-    if (key == 'm') {
-      autonomous = !autonomous;
-      if (autonomous) {
-        printf("Autonomous flying mode is enabled\n");
-	printf("Press m again to switch to manual flying mode\n");
-      }
-      else {
-        printf("Manual flying mode is enabled\n");
-        printf("Press m again to switch to automatic flying mode\n");
-      }
+    //switch between flying modes
+    if (key == 'b') {
+      flyingMode = Manual;
+      printf("Manual flying mode is enabled\n");
+      printf("Press n for object following and m for line following\n");
+    }
+    else if (key == 'n') {
+      flyingMode = ObjectFollowing;
+      printf("Object Following flying mode is enabled\n");
+      printf("Press b for manual and m for line following\n");
+    }
+    else if (key == 'm') {
+      flyingMode = LineFollowing;
+      printf("Line Following flying mode is enabled\n");
+      printf("Press b for manual and n for object following\n");
     }
 
     // Get an image
@@ -240,7 +260,15 @@ int main(int argc, char *argv[])
     // Show predicted position
     cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
     
-    //TODO:Switch control between manual and automatic mode
+    //TODO:Switch control between control modes
+    switch (flyingMode) {
+      case Manual:
+        printf("Manual Mode\n");
+      case ObjectFollowing:
+        printf("Object Following Mode\n");
+      case LineFollowing:
+        printf("Line Following Mode\n");
+    }
 
     //Speed
     if ((key >= '0') && (key <= '9')) 
