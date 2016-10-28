@@ -1,3 +1,18 @@
+What is this code?
+
+Runs on Ubuntu 16.4.01 LTS (XENIA XEVIOR OR SOMETHING)
+
+Linux install instructions:
+  clone stuff
+  get those sudo apts in the make file
+  make from the linux file
+  
+Here is our website:
+
+Here are our demo videos:
+
+//==============================================================================================================
+
 [![AR.Drone follows a ball](demo.gif)](http://youtu.be/gla5a1qSEDc)
 
 [http://tekkies.co.uk/ar-drone-follows-a-ball/](http://tekkies.co.uk/ar-drone-follows-a-ball/ "Story")
@@ -77,5 +92,7 @@
 		https://github.com/MasteringOpenCV/code/tree/master/Chapter2_iPhoneAR/Example_MarkerBasedAR/Example_MarkerBasedAR
 
 	  License files for each library can be found in the 'licenses' folder.
+	 
 
 	Thank you.
+//==============================================================================================================
