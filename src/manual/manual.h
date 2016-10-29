@@ -1,5 +1,11 @@
+/*
+*/
 
 #include "../ardrone/ardrone.h"
+
+/*
+*/
+ControlMovements manualMovement(int key);
 
 /*
 */
