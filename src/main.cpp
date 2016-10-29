@@ -49,10 +49,7 @@ int main(int argc, char *argv[])
 
   FlyingMode flyingMode = Manual;
 
-<<<<<<< HEAD
-=======
   //Object Following variables
->>>>>>> 59c87e279adc9e413704a5abceb2389db97072c3
   int minH = 0, maxH = 255;
   int minS = 0, maxS = 255;
   int minV = 0, maxV = 255;
@@ -141,69 +138,6 @@ int main(int argc, char *argv[])
     // Get an image
     cv::Mat image = ardrone.getImage();
     
-
-   /* //TODO: Move object following image stuff to a new file
-    // HSV image
-    cv::Mat hsv;
-    cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
-
-    // Binalize
-    cv::Mat binalized;
-    cv::Scalar lower(minH, minS, minV);
-    cv::Scalar upper(maxH, maxS, maxV);
-    cv::inRange(hsv, lower, upper, binalized);
-
-    // Show result
-    cv::imshow("binalized", binalized);
-
-    // De-noising
-    cv::Mat kernel = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-    cv::morphologyEx(binalized, binalized, cv::MORPH_CLOSE, kernel);
-
-    // Detect contours
-    vector<vector<cv::Point> > contours;
-    cv::findContours(binalized.clone(), contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
-
-    // Find largest contour
-    int contour_index = -1;
-    double max_area = 0.0;
-    for (size_t i = 0; i < contours.size(); i++) {
-      double area = fabs(cv::contourArea(contours[i]));
-      if (area > max_area) {
-        contour_index = i;
-        max_area = area;
-      }
-    }
-
-    cv::Rect rect;
-
-    // Object detected
-    if (contour_index >= 0) {
-      // Moments
-      cv::Moments moments = cv::moments(contours[contour_index], true);
-      double marker_y = (int)(moments.m01 / moments.m00);
-      double marker_x = (int)(moments.m10 / moments.m00);
-
-      // Measurements
-      cv::Mat measurement = (cv::Mat1f(2, 1) << marker_x, marker_y);
-
-      // Correction
-      cv::Mat estimated = kalman.correct(measurement);
-
-      // Show result
-      rect = cv::boundingRect(contours[contour_index]);
-      cv::rectangle(image, rect, cv::Scalar(0, 255, 0));
-    }
-
-    // Prediction
-    cv::Mat1f prediction = kalman.predict();
-    int radius = 1e+3 * kalman.errorCovPre.at<float>(0, 0);
-    
-    // Calculate object heading fraction
-    float heading = -((image.cols/2) - prediction(0, 0))/(image.cols/2);
-  */
-
-
     //Speed
     if ((key >= '0') && (key <= '9')) //number keys
     {
@@ -260,20 +194,6 @@ int main(int argc, char *argv[])
 
       case ObjectFollowing:
         heading = detectObject(image, kalman, minH, maxH, minS, maxS, minV, maxV, learnMode, moveStatus, &rect);
-       /* // Sample the object color
-        if(learnMode) {
-          // Show targeting crosshairs
-          cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
-          cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
-          cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
-          cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
-
-          hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
-
-          setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
-        }
-      */
-
 
         rect_area = rect.width * rect.height;
 
