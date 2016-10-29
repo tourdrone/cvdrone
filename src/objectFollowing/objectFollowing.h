@@ -21,6 +21,7 @@ class ObjectFollowing {
     /*
     */
     float detectObject(cv::Mat image, cv::KalmanFilter kalman, bool learnMode, bool moveStatus, cv::Rect *rect);
+  protected:
 };
 
 
