@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 {
   //AR.Drone class
   ARDrone ardrone;
+  ardrone.setCamera(1);
 
   //Display variables
   char vxDisplay[80]; //print buffer for x (forward/reverse) velocity
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
   char vzDisplay[80]; //print buffer for z (up/down) velocity
   char vrDisplay[80]; //print buffer for r rotational velocity
 
+  char modeDisplay[80]; //print buffer for flying mode
   char speedDisplay[80]; //print buffer for speed
   char headingDisplay[80]; //print buffer for heading
   char hsvSampleDisplay[80]; //print buffer for learning HSV values
@@ -32,7 +34,6 @@ int main(int argc, char *argv[])
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
   //Drone control
-  bool autonomous = false;
   bool learnMode = false;
 
   float speed = 0.0;
@@ -40,6 +41,14 @@ int main(int argc, char *argv[])
   double vy = 0.0; 
   double vz = 0.0; 
   double vr = 0.0;
+
+  enum FlyingMode {
+    Manual,
+    ObjectFollowing,
+    LineFollowing
+  };
+
+  FlyingMode flyingMode = Manual;
 
   //Object Following Image recognition values
   int learnedHue;
@@ -52,18 +61,10 @@ int main(int argc, char *argv[])
   //Sampling time [s]
   const double dt = 1.0;
 
-  enum FlyingMode {
-    Manual,
-    ObjectFollowing,
-    LineFollowing
-  };
-
-  FlyingMode flyingMode = Manual;
-
   //Initializing Message
   printf("Connecting to the drone\n");
   printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
-  printf("To disconnect, press the ESC key\n");
+  printf("To disconnect, press the ESC key\n\n");
   fflush(stdout);
 
   // Initialize
@@ -128,12 +129,14 @@ int main(int argc, char *argv[])
         0.0, 1e-1;
   kalman.measurementNoiseCov = R;
 
+  //Print default command information
+  printf("Currently the drone is in manual mode.\n");
+  printf("Use the b key for manual mode, the n key for object following, and the m key for line following. The number keys can be used to set a speed. Use spacebar to take off and land, which is required before any control can be executed.\n\n");
 
   // Main loop
   while (1) {
     // Key input
     int key = cv::waitKey(33);
-    printf("%c\n", (char)key);
 
     //press the escape key to exit
     if (key == 0x1b) {
@@ -146,12 +149,12 @@ int main(int argc, char *argv[])
       if (learnMode) {
         printf("Learning mode is enabled\n");
         printf("The color at the crosshairs is being learned\n");
-        printf("Press l again to turn off learning mode\n");
+        printf("Press l again to turn off learning mode\n\n");
       }
       else {
         printf("Learning mode is disabled\n");
         printf("The color last at the crosshairs will be targeted\n");
-        printf("Press l again to learn a different color\n");
+        printf("Press l again to learn a different color\n\n");
       }
     }
 
@@ -160,16 +163,19 @@ int main(int argc, char *argv[])
       flyingMode = Manual;
       printf("Manual flying mode is enabled\n");
       printf("Press n for object following and m for line following\n");
+      printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
     }
     else if (key == 'n') {
       flyingMode = ObjectFollowing;
       printf("Object Following flying mode is enabled\n");
       printf("Press b for manual and m for line following\n");
+      printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
     }
     else if (key == 'm') {
       flyingMode = LineFollowing;
       printf("Line Following flying mode is enabled\n");
       printf("Press b for manual and n for object following\n");
+      printf("No control for line following yet exists\n\n");
     }
 
     // Get an image
@@ -247,55 +253,31 @@ int main(int argc, char *argv[])
       learnedValue = hsvSample[2];
 
       //Auto set Hue, Saturation, and Value tracking bars
-      cv::setTrackbarPos("H max", "binalized", learnedHue+20);
-      cv::setTrackbarPos("H min", "binalized", learnedHue-20);
+      cv::setTrackbarPos("Hue max", "binalized", learnedHue+20);
+      cv::setTrackbarPos("Hue min", "binalized", learnedHue-20);
 
-      cv::setTrackbarPos("S max", "binalized", learnedSaturation+20);
-      cv::setTrackbarPos("S min", "binalized", learnedSaturation-20);
+      cv::setTrackbarPos("Saturation max", "binalized", learnedSaturation+20);
+      cv::setTrackbarPos("Saturation min", "binalized", learnedSaturation-20);
       
-      cv::setTrackbarPos("V max", "binalized", learnedValue+30);
-      cv::setTrackbarPos("V min", "binalized", learnedValue-30);
+      cv::setTrackbarPos("Value max", "binalized", learnedValue+30);
+      cv::setTrackbarPos("Value min", "binalized", learnedValue-30);
     }
 
     // Show predicted position
     cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
-    
-    //TODO:Switch control between control modes
-    switch (flyingMode) {
-      case Manual:
-        printf("Manual Mode\n");
-      case ObjectFollowing:
-        printf("Object Following Mode\n");
-      case LineFollowing:
-        printf("Line Following Mode\n");
-    }
 
     //Speed
-    if ((key >= '0') && (key <= '9')) 
+    if ((key >= '0') && (key <= '9')) //number keys
     {
       speed = (key-'0')*0.1;
     }
 
-    // Auto-follow
-    if (autonomous) {
-      //TODO: set speed to 0.0 when close enough to object
-      vx = speed;
-      vr = -heading;
-    }
-    //Manual flying mode
-    else {
-      if (key == 0x260000) { vx =  1.0 * speed; } //up arrow key
-      if (key == 0x280000) { vx = -1.0; } //down arrow key
-      if (key == 0x250000) { vr =  1.0; } //left arrow key
-      if (key == 0x270000) { vr = -1.0; } //right arrow key
-      if (key == 'q') { vz =  1.0; } //q key
-      if (key == 'a') { vz = -1.0; } //a key
-    }
+    //Write speed to image
+    sprintf(speedDisplay, "Speed = %3.2f", speed);
+    putText(image, speedDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-    ardrone.move3D(vx, vy, vz, vr);
-
-    // Take off / Landing to specific height
-    if (key == ' ') {
+    //Take off / Landing
+    if (key == ' ') { //spacebar
       if (ardrone.onGround()) {
         ardrone.takeoff();
       }
@@ -303,34 +285,57 @@ int main(int argc, char *argv[])
         ardrone.landing();
       }
     }
+
+    //TODO: print if onground or not
+    
+    switch (flyingMode) {
+      case Manual:
+        vx = 0;
+        vy = 0;
+        vz = 0;
+        vr = 0;
+        if (key == 't') { vx =  1.0; } //up arrow key
+        if (key == 'g') { vx = -1.0; } //down arrow key
+        if (key == 'f') { vy =  1.0; } //left arrow key
+        if (key == 'h') { vy = -1.0; } //right arrow key
+        if (key == 'q') { vz =  1.0; } //q key
+        if (key == 'a') { vz = -1.0; } //a key
+
+        sprintf(modeDisplay, "Manual Mode");
+        sprintf(vxDisplay, "vx = %3.2f", vx);
+        sprintf(vyDisplay, "vy = %3.2f", vy);
+        sprintf(vzDisplay, "vz = %3.2f", vz);
+        sprintf(vrDisplay, "vr = %3.2f", vr);
+
+        putText(image, vxDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+        putText(image, vyDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+        putText(image, vzDisplay, cvPoint(30,100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+        putText(image, vrDisplay, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+        break;
+      case ObjectFollowing:
+        //TODO: set speed to 0.0 when close enough to object
+        vx = speed;
+        vr = -heading;
+
+        sprintf(modeDisplay, "Object Following Mode");
+        sprintf(headingDisplay, "heading = %+3.2f", heading); 
+        sprintf(hsvSampleDisplay, "hsvSample = %3d, %3d, %3d", learnedHue, learnedSaturation, learnedValue);
+
+        putText(image, headingDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+        putText(image, hsvSampleDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+        break;
+      case LineFollowing:
+        sprintf(modeDisplay, "Line Following Mode");
+        break;
+    }
+
+    putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
+    //Execute drone movement
+    ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
 		
     //Display the camera feed
     cv::imshow("camera", image);
-
-    //Write control information over the image
-    sprintf(speedDisplay, "speed = %3.2f", speed);
-    putText(image, speedDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-    
-    //If running autonomously
-    if (autonomous) {
-      sprintf(headingDisplay, "heading = %+3.2f", heading); 
-      sprintf(hsvSampleDisplay, "hsvSample = %3d, %3d, %3d", learnedHue, learnedSaturation, learnedValue);
-
-      putText(image, headingDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-      putText(image, hsvSampleDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-    }
-    //If running in manual mode
-    else {
-      sprintf(vxDisplay, "vx = %3.2f", vx);
-      sprintf(vyDisplay, "vy = %3.2f", vy);
-      sprintf(vzDisplay, "vz = %3.2f", vz);
-      sprintf(vrDisplay, "vr = %3.2f", vr);
-
-      putText(image, vxDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-      putText(image, vyDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-      putText(image, vzDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-      putText(image, vrDisplay, cvPoint(30,100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-    }
   }
 
   //Save thresholds
