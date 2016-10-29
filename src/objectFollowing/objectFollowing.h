@@ -10,9 +10,14 @@ class ObjectFollowing {
     int minV = 0;
     int maxV = 255;
 
+    //int targetH;
+    //int targetS
+    //int targetV
+    cv::KalmanFilter kalman;
+
     /*
     */
-    void initializeObjectFollowing(cv::KalmanFilter *kalman);
+    void initializeObjectFollowing();
 
     /*
     */
@@ -20,8 +25,7 @@ class ObjectFollowing {
 
     /*
     */
-    float detectObject(cv::Mat image, cv::KalmanFilter kalman, bool learnMode, bool moveStatus, cv::Rect *rect);
-  protected:
+    float detectObject(cv::Mat image, bool learnMode, bool moveStatus, cv::Rect *rect);
 };
 
 
