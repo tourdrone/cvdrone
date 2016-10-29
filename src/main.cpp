@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
   int minV = 0, maxV = 255;
   int rect_area = 0;
   bool moveStatus = 0;
+  const char *moveStatuses[2] = {"STOP", "GO"};
 
 
   //Initializing Message
@@ -271,16 +272,14 @@ int main(int argc, char *argv[])
 
         //printf("rect.width: %d, rect.height: %d, rect.area: %d mode: %d\n", rect.width, rect.height, rect_area, flyingMode);
 
-        if (rect_area > 50000) {
-          speed = 0;
+        if (rect_area > 60000) {
+          speed = -0.4;
           vx = 0;
           
           moveStatus = 0;
-	  fprintf(flight_log, "STOP ardrone.move3D(vx=0.0, vy=%f, vz=%f, vr=%f)\n", vy, vz, vr);
         }
         else {
           moveStatus = 1;
-	  fprintf(flight_log, "GO ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n", vx, vy, vz,vr);
         }
 
         vx = speed;
@@ -296,9 +295,11 @@ int main(int argc, char *argv[])
 
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-    ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
+    fprintf(flight_log, "%s ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n",
+        moveStatuses[moveStatus], (speed), (vy * speed), (vz * speed), vr);
 
-		
+    ardrone.move3D(speed, vy * speed, vz * speed, vr);
+
     //Display the camera feed
     cv::imshow("camera", image);
   }
