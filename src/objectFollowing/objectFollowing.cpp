@@ -12,29 +12,29 @@ const double dt = 1.0; //Sampling time [s]
 
 /*
 */
-void initializeObjectFollowing(cv::KalmanFilter *kalman, int *maxHue, int *minHue, int *maxSaturation, int *minSaturation, int *maxValue, int *minValue) {
+void ObjectFollowing::initializeObjectFollowing(cv::KalmanFilter *kalman) {
   // XML save data for object following color thresholds
   cv::FileStorage fs(THRESHOLDS_FILE_NAME, cv::FileStorage::READ);
 
   // If there is a save file then read it
   if (fs.isOpened()) {
-    *maxHue = fs["H_MAX"];
-    *minHue = fs["H_MIN"];
-    *maxSaturation = fs["S_MAX"];
-    *minSaturation = fs["S_MIN"];
-    *maxValue = fs["V_MAX"];
-    *minValue = fs["V_MIN"];
+    maxH = fs["H_MAX"];
+    minH = fs["H_MIN"];
+    maxS = fs["S_MAX"];
+    minS = fs["S_MIN"];
+    maxV = fs["V_MAX"];
+    minV = fs["V_MIN"];
     fs.release();
   }
 
   // Create a window
   cv::namedWindow("binalized");
-  cv::createTrackbar("Hue max", "binalized", maxHue, 255);
-  cv::createTrackbar("Hue min", "binalized", minHue, 255);
-  cv::createTrackbar("Saturation max", "binalized", maxSaturation, 255);
-  cv::createTrackbar("Saturation min", "binalized", minSaturation, 255);
-  cv::createTrackbar("Value max", "binalized", maxValue, 255);
-  cv::createTrackbar("Value min", "binalized", minValue, 255);
+  cv::createTrackbar("Hue max", "binalized", &maxH, 255);
+  cv::createTrackbar("Hue min", "binalized", &minH, 255);
+  cv::createTrackbar("Saturation max", "binalized", &maxS, 255);
+  cv::createTrackbar("Saturation min", "binalized", &minS, 255);
+  cv::createTrackbar("Value max", "binalized", &maxV, 255);
+  cv::createTrackbar("Value min", "binalized", &minV, 255);
   cv::resizeWindow("binalized", 0, 0);
 
   // Transition matrix (x, y, vx, vy)
@@ -68,17 +68,17 @@ void initializeObjectFollowing(cv::KalmanFilter *kalman, int *maxHue, int *minHu
 
 /*
 */
-void closeObjectFollowing(int maxHue, int minHue, int maxSaturation, int minSaturation, int maxValue, int minValue) {
+void ObjectFollowing::closeObjectFollowing() {
   //Save thresholds
   cv::FileStorage fs(THRESHOLDS_FILE_NAME, cv::FileStorage::READ);
   fs.open(THRESHOLDS_FILE_NAME, cv::FileStorage::WRITE);
   if (fs.isOpened()) {
-    cv::write(fs, "H_MAX", maxHue);
-    cv::write(fs, "H_MIN", minHue);
-    cv::write(fs, "S_MAX", maxSaturation);
-    cv::write(fs, "S_MIN", minSaturation);
-    cv::write(fs, "V_MAX", maxValue);
-    cv::write(fs, "V_MIN", minValue);
+    cv::write(fs, "H_MAX", maxH);
+    cv::write(fs, "H_MIN", minH);
+    cv::write(fs, "S_MAX", maxS);
+    cv::write(fs, "S_MIN", minS);
+    cv::write(fs, "V_MAX", maxV);
+    cv::write(fs, "V_MIN", minV);
     fs.release();
   }
 }
@@ -86,7 +86,7 @@ void closeObjectFollowing(int maxHue, int minHue, int maxSaturation, int minSatu
 /*
   returns heading for control
 */
-float detectObject(cv::Mat image, cv::KalmanFilter kalman, int minH, int maxH, int minS, int maxS, int minV, int maxV, bool learnMode, bool moveStatus, cv::Rect *rect) {
+float ObjectFollowing::detectObject(cv::Mat image, cv::KalmanFilter kalman, bool learnMode, bool moveStatus, cv::Rect *rect) {
 
   int tolerance = 30;
   cv::Vec3b hsvSample;

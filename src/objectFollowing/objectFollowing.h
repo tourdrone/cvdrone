@@ -1,17 +1,28 @@
 
 #include "../ardrone/ardrone.h"
 
-/*
-*/
-void initializeObjectFollowing(cv::KalmanFilter *kalman, int *maxHue, int *minHue, int *maxSaturation, int *minSaturation, int *maxValue, int *minValue);
+class ObjectFollowing {
+  public:
+    int minH = 0;
+    int maxH = 255;
+    int minS = 0;
+    int maxS = 255;
+    int minV = 0;
+    int maxV = 255;
 
-/*
-*/
-void closeObjectFollowing(int maxHue, int minHue, int maxSaturation, int minSaturation, int maxValue, int minValue);
+    /*
+    */
+    void initializeObjectFollowing(cv::KalmanFilter *kalman);
 
-/*
-*/
-float detectObject(cv::Mat image, cv::KalmanFilter kalman, int minH, int maxH, int minS, int maxS, int minV, int maxV, bool learnMode, bool moveStatus, cv::Rect *rect);
+    /*
+    */
+    void closeObjectFollowing();
+
+    /*
+    */
+    float detectObject(cv::Mat image, cv::KalmanFilter kalman, bool learnMode, bool moveStatus, cv::Rect *rect);
+};
+
 
 /*
 */

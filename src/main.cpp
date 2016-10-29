@@ -9,6 +9,7 @@
 */
 
 #include "ardrone/ardrone.h"
+#include "structures.h"
 #include "objectFollowing/objectFollowing.h"
 #include "manual/manual.h"
 #include "lineFollowing/lineFollowing.h"
@@ -19,13 +20,13 @@
 
 using namespace std;
 
+
 int main(int argc, char *argv[])
 {
   //AR.Drone class
   ARDrone ardrone;
 
   //Display variables
-
   char modeDisplay[80]; //print buffer for flying mode
   char flyingDisplay[80]; //print buffer for if flying
   char speedDisplay[80]; //print buffer for speed
@@ -40,19 +41,11 @@ int main(int argc, char *argv[])
   double vy = 0.0; 
   double vz = 0.0; 
   double vr = 0.0;
-
-  enum FlyingMode {
-    Manual,
-    ObjectFollowing,
-    LineFollowing
-  };
+  ControlMovements controlMovements;
 
   FlyingMode flyingMode = Manual;
+  ObjectFollowing ddobjectFollowing;
 
-  //Object Following variables
-  int minH = 0, maxH = 255;
-  int minS = 0, maxS = 255;
-  int minV = 0, maxV = 255;
   int rect_area = 0;
   bool moveStatus = false;
   const char *moveStatuses[2] = {"STOP", "GO"};
@@ -75,7 +68,7 @@ int main(int argc, char *argv[])
 
   //Open and read Thresholds file for object following hsv values
   //Create a window for object following hsv and binalization
-  initializeObjectFollowing(&kalman, &maxH, &minH, &maxS, &minS, &maxV, &minV);
+  ddobjectFollowing.initializeObjectFollowing(&kalman);
 
   //Print default command information
   printf("Currently the drone is in manual mode.\n");
@@ -172,6 +165,8 @@ int main(int argc, char *argv[])
     
     switch (flyingMode) {
       case Manual:
+
+        controlMovements = manualMovement(key);
         //TODO: Scale these values for normal human control when in manual mode
         vx = 0;
         vy = 0;
@@ -183,7 +178,6 @@ int main(int argc, char *argv[])
         if (key == 'h') { vy = -1.0; } //h key
         if (key == 'q') { vz =  1.0; } //q key
         if (key == 'a') { vz = -1.0; } //a key
-        //TODO: Verify if these vr values should be negative
         if (key == 'r') { vr =  1.0; } //r key
         if (key == 'y') { vr = -1.0; } //y key
 
@@ -193,14 +187,11 @@ int main(int argc, char *argv[])
         break;
 
       case ObjectFollowing:
-        heading = detectObject(image, kalman, minH, maxH, minS, maxS, minV, maxV, learnMode, moveStatus, &rect);
+        heading = ddobjectFollowing.detectObject(image, kalman, learnMode, moveStatus, &rect);
 
         rect_area = rect.width * rect.height;
 
         //Execute drone movement
-
-        //printf("rect.width: %d, rect.height: %d, rect.area: %d mode: %d\n", rect.width, rect.height, rect_area, flyingMode);
-
         if (rect_area > 10000) {
           speed = -0.2;
           vx = 0;
@@ -224,8 +215,7 @@ int main(int argc, char *argv[])
 
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-    fprintf(flight_log, "%s ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f) || rect_area = %d\n",
-        moveStatuses[moveStatus], (speed), (vy * speed), (vz * speed), vr, rect_area);
+    fprintf(flight_log, "%s ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f) || rect_area = %d\n", moveStatuses[moveStatus], (speed), (vy * speed), (vz * speed), vr, rect_area);
 
     ardrone.move3D(speed, vy * speed, vz * speed, vr);
 
@@ -234,13 +224,12 @@ int main(int argc, char *argv[])
   }
 
   //Write hsv values to a file
-  closeObjectFollowing(maxH, minH, maxS, minS, maxV, minV);
-  //TODO: create close manual and close line following functions
+  ddobjectFollowing.closeObjectFollowing();
+  //TODO: closeManual();
+  //TODO: closeLineFollowing();
 
   //Close connection to drone
   ardrone.close();
 
   return 0;
 }
-
-
