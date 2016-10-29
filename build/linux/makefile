@@ -2,7 +2,7 @@
 #sudo apt-get install libopencv-dev
 
 CXX           = g++
-CXXFLAGS      = -O2 -Wall -D__STDC_CONSTANT_MACROS 
+CXXFLAGS      = -O2 -Wall -D__STDC_CONSTANT_MACROS -std=c++11
 LIBS          = -lm                     \
                 -lpthread               \
                 -lavutil                \

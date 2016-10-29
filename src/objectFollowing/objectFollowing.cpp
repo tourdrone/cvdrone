@@ -85,7 +85,7 @@ void closeObjectFollowing(int maxHue, int minHue, int maxSaturation, int minSatu
 
 //Auto set Hue, Saturation, and Value tracking bars
 void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) {
-  tolerance = 30;
+  //tolerance = 30;
 
   cv::setTrackbarPos("Hue max", "binalized", hue + tolerance);
   cv::setTrackbarPos("Hue min", "binalized", hue - tolerance);
