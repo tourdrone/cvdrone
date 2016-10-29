@@ -14,6 +14,8 @@
 #include "lineFollowing/lineFollowing.h"
 #include <iostream>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
   FlyingMode flyingMode = Manual;
 
   //Object Following Image recognition values
-  int tolerance = 30;
+  int tolerance = 50;
   cv::Vec3b hsvSample;
   int minH = 0, maxH = 255;
   int minS = 0, maxS = 255;
@@ -85,6 +87,7 @@ int main(int argc, char *argv[])
 
   // Main loop
   while (1) {
+    speed = 0.0;
     // Key input
     int key = cv::waitKey(33);
 
@@ -212,6 +215,7 @@ int main(int argc, char *argv[])
       if (ardrone.onGround()) {
         ardrone.takeoff();
 	fprintf(flight_log, "TAKEOFF\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
       }
       else {
         ardrone.landing();
@@ -272,8 +276,8 @@ int main(int argc, char *argv[])
 
         //printf("rect.width: %d, rect.height: %d, rect.area: %d mode: %d\n", rect.width, rect.height, rect_area, flyingMode);
 
-        if (rect_area > 60000) {
-          speed = -0.4;
+        if (rect_area > 10000) {
+          speed = -0.2;
           vx = 0;
           
           moveStatus = 0;
@@ -295,8 +299,8 @@ int main(int argc, char *argv[])
 
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-    fprintf(flight_log, "%s ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n",
-        moveStatuses[moveStatus], (speed), (vy * speed), (vz * speed), vr);
+    fprintf(flight_log, "%s ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f) || rect_area = %d\n",
+        moveStatuses[moveStatus], (speed), (vy * speed), (vz * speed), vr, rect_area);
 
     ardrone.move3D(speed, vy * speed, vz * speed, vr);
 
