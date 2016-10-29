@@ -32,6 +32,9 @@ OBJS          = ../../src/ardrone/ardrone.o \
                 ../../src/ardrone/navdata.o \
                 ../../src/ardrone/version.o \
                 ../../src/ardrone/video.o   \
+                ../../src/objectFollowing/objectFollowing.o \
+                ../../src/manual/manual.o \
+                ../../src/lineFollowing/lineFollowing.o \
                 ../../src/main.o
 PROGRAM       = test.a
 
