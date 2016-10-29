@@ -24,7 +24,11 @@ int main(int argc, char *argv[])
 {
   //AR.Drone class
   ARDrone ardrone;
+
+  //Control classes
   ObjectFollowing objectFollowing;
+  //TODO: ManualDriving manualDriving;
+  //TODO: LineFollowing lineFollwing;
 
   //Display variables
   char modeDisplay[80]; //print buffer for flying mode
@@ -63,11 +67,9 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  cv::KalmanFilter kalman(4, 2, 0);
-
   //Open and read Thresholds file for object following hsv values
   //Create a window for object following hsv and binalization
-  objectFollowing.initializeObjectFollowing(&kalman);
+  objectFollowing.initializeObjectFollowing();
 
   //Print default command information
   printf("Currently the drone is in manual mode.\n");
@@ -164,29 +166,20 @@ int main(int argc, char *argv[])
     
     switch (flyingMode) {
       case Manual:
-
-        controlMovements = manualMovement(key);
         //TODO: Scale these values for normal human control when in manual mode
-        vx = 0;
-        vy = 0;
-        vz = 0;
-        vr = 0;
-        if (key == 't') { vx =  1.0; } //t key
-        if (key == 'g') { vx = -1.0; } //g key
-        if (key == 'f') { vy =  1.0; } //f key
-        if (key == 'h') { vy = -1.0; } //h key
-        if (key == 'q') { vz =  1.0; } //q key
-        if (key == 'a') { vz = -1.0; } //a key
-        if (key == 'r') { vr =  1.0; } //r key
-        if (key == 'y') { vr = -1.0; } //y key
-
+        controlMovements = manualMovement(key);
 
         sprintf(modeDisplay, "Manual Mode");
-        displayManualInfo(&image, vx, vy, vz, vr);
+        displayManualInfo(&image, controlMovements);
+
+        vx = controlMovements.vx;
+        vy = controlMovements.vy;
+        vz = controlMovements.vz;
+        vr = controlMovements.vr;
         break;
 
       case ObjectFollow:
-        heading = objectFollowing.detectObject(image, kalman, learnMode, moveStatus, &rect);
+        heading = objectFollowing.detectObject(image, learnMode, moveStatus, &rect);
 
         rect_area = rect.width * rect.height;
 
@@ -202,6 +195,8 @@ int main(int argc, char *argv[])
         }
 
         vx = speed;
+        vy = 0;
+        vz = 0;
         vr = -heading;
 
         sprintf(modeDisplay, "Object Following Mode");
@@ -216,7 +211,7 @@ int main(int argc, char *argv[])
 
     fprintf(flight_log, "%s ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f) || rect_area = %d\n", moveStatuses[moveStatus], (speed), (vy * speed), (vz * speed), vr, rect_area);
 
-    ardrone.move3D(speed, vy * speed, vz * speed, vr);
+    ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
 
     //Display the camera feed
     cv::imshow("camera", image);

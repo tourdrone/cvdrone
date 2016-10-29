@@ -12,7 +12,9 @@ const double dt = 1.0; //Sampling time [s]
 
 /*
 */
-void ObjectFollowing::initializeObjectFollowing(cv::KalmanFilter *kalman) {
+void ObjectFollowing::initializeObjectFollowing() {
+  kalman = cv::KalmanFilter(4, 2, 0);
+
   // XML save data for object following color thresholds
   cv::FileStorage fs(THRESHOLDS_FILE_NAME, cv::FileStorage::READ);
 
@@ -43,13 +45,13 @@ void ObjectFollowing::initializeObjectFollowing(cv::KalmanFilter *kalman) {
        0.0, 1.0, 0.0,  dt,
        0.0, 0.0, 1.0, 0.0,
        0.0, 0.0, 0.0, 1.0;
-  kalman->transitionMatrix = A;
+  kalman.transitionMatrix = A;
 
   // Measurement matrix (x, y)
   cv::Mat1f H(2, 4);
   H << 1, 0, 0, 0,
        0, 1, 0, 0;
-  kalman->measurementMatrix = H;
+  kalman.measurementMatrix = H;
 
   // Process noise covairance (x, y, vx, vy)
   cv::Mat1f Q(4, 4);
@@ -57,13 +59,13 @@ void ObjectFollowing::initializeObjectFollowing(cv::KalmanFilter *kalman) {
         0.0, 1e-5,  0.0,  0.0,
         0.0,  0.0, 1e-5,  0.0,
         0.0,  0.0,  0.0, 1e-5;
-  kalman->processNoiseCov = Q;
+  kalman.processNoiseCov = Q;
 
   // Measurement noise covariance (x, y)
   cv::Mat1f R(2, 2);
   R << 1e-1,  0.0,
         0.0, 1e-1;
-  kalman->measurementNoiseCov = R;
+  kalman.measurementNoiseCov = R;
 }
 
 /*
@@ -86,7 +88,7 @@ void ObjectFollowing::closeObjectFollowing() {
 /*
   returns heading for control
 */
-float ObjectFollowing::detectObject(cv::Mat image, cv::KalmanFilter kalman, bool learnMode, bool moveStatus, cv::Rect *rect) {
+float ObjectFollowing::detectObject(cv::Mat image, bool learnMode, bool moveStatus, cv::Rect *rect) {
 
   int tolerance = 30;
   cv::Vec3b hsvSample;
