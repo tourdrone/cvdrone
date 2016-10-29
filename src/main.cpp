@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
   int minH = 0, maxH = 255;
   int minS = 0, maxS = 255;
   int minV = 0, maxV = 255;
+  int rect_area = 0;
+  bool moveStatus = 0;
 
 
   //Initializing Message
@@ -227,6 +229,7 @@ int main(int argc, char *argv[])
     
     switch (flyingMode) {
       case Manual:
+        //TODO: Scale these values for normal human control when in manual mode
         vx = 0;
         vy = 0;
         vz = 0;
@@ -246,10 +249,6 @@ int main(int argc, char *argv[])
         displayManualInfo(&image, vx, vy, vz, vr);
         break;
       case ObjectFollowing:
-        //TODO: set speed to 0.0 when close enough to object
-        vx = speed;
-        vr = -heading;
-
         // Sample the object color
         if(learnMode) {
           // Show targeting crosshairs
@@ -266,8 +265,29 @@ int main(int argc, char *argv[])
         // Show predicted position
         cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
 
+        rect_area = rect.width * rect.height;
+
+        //Execute drone movement
+
+        //printf("rect.width: %d, rect.height: %d, rect.area: %d mode: %d\n", rect.width, rect.height, rect_area, flyingMode);
+
+        if (rect_area > 50000) {
+          speed = 0;
+          vx = 0;
+          
+          moveStatus = 0;
+	  fprintf(flight_log, "STOP ardrone.move3D(vx=0.0, vy=%f, vz=%f, vr=%f)\n", vy, vz, vr);
+        }
+        else {
+          moveStatus = 1;
+	  fprintf(flight_log, "GO ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n", vx, vy, vz,vr);
+        }
+
+        vx = speed;
+        vr = -heading;
+
         sprintf(modeDisplay, "Object Following Mode");
-        displayObjectFollowingInfo(&image, heading, hsvSample[0], hsvSample[1], hsvSample[2]);
+        displayObjectFollowingInfo(&image, heading, hsvSample[0], hsvSample[1], hsvSample[2], moveStatus);
         break;
       case LineFollowing:
         sprintf(modeDisplay, "Line Following Mode");
@@ -276,23 +296,8 @@ int main(int argc, char *argv[])
 
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-    int rect_area = rect.width * rect.height;
+    ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
 
-    //Execute drone movement
-    //TODO: Scale these values for normal human control when in manual mode
-
-    printf("rect.width: %d, rect.height: %d, rect.area: %d mode: %d\n", rect.width, rect.height, rect_area, flyingMode);
-
-    if (rect_area > 50000){
-        ardrone.move3D(0.0, vy * speed, vz * speed, vr);
-	printf("STOP\n");
-	fprintf(flight_log, "STOP ardrone.move3D(vx=0.0, vy=%f, vz=%f, vr=%f)\n", vy, vz, vr);
-    }
-    else{
-        ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
-	printf("GO\n");
-	fprintf(flight_log, "GO ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n", vx, vy, vz,vr);
-    }
 		
     //Display the camera feed
     cv::imshow("camera", image);

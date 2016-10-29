@@ -100,16 +100,24 @@ void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) 
 
 /*
 */
-void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value) {
+void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value, bool moveStatus) {
   char headingDisplay[80]; //print buffer for heading
   char hsvSampleDisplay[80]; //print buffer for learning HSV values
+  char moveStatusDisplay[80]; //print buffer for stop/go status
 
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
   sprintf(headingDisplay, "heading = %+3.2f", heading); 
   sprintf(hsvSampleDisplay, "hsvSample = %3d, %3d, %3d", hue, saturation, value);
+  if (moveStatus) {
+    sprintf(moveStatusDisplay, "move status = GO");
+  }
+  else {
+    sprintf(moveStatusDisplay, "move status = STOP");
+  }
 
   putText(*image, headingDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
   putText(*image, hsvSampleDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(*image, moveStatusDisplay, cvPoint(30,100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
 }
