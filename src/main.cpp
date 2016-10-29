@@ -9,6 +9,9 @@
 */
 
 #include "ardrone/ardrone.h"
+#include "objectFollowing/objectFollowing.h"
+#include "manual/manual.h"
+#include "lineFollowing/lineFollowing.h"
 #include <iostream>
 #include <vector>
 
@@ -20,16 +23,10 @@ int main(int argc, char *argv[])
   ARDrone ardrone;
 
   //Display variables
-  char vxDisplay[80]; //print buffer for x (forward/reverse) velocity
-  char vyDisplay[80]; //print buffer for y (sideways) velocity
-  char vzDisplay[80]; //print buffer for z (up/down) velocity
-  char vrDisplay[80]; //print buffer for r rotational velocity
 
   char modeDisplay[80]; //print buffer for flying mode
   char flyingDisplay[80]; //print buffer for if flying
   char speedDisplay[80]; //print buffer for speed
-  char headingDisplay[80]; //print buffer for heading
-  char hsvSampleDisplay[80]; //print buffer for learning HSV values
 
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
@@ -51,9 +48,8 @@ int main(int argc, char *argv[])
   FlyingMode flyingMode = Manual;
 
   //Object Following Image recognition values
-  int learnedHue;
-  int learnedSaturation;
-  int learnedValue;
+  int tolerance = 30;
+  cv::Vec3b hsvSample;
   int minH = 0, maxH = 255;
   int minS = 0, maxS = 255;
   int minV = 0, maxV = 255;
@@ -170,14 +166,14 @@ int main(int argc, char *argv[])
     }
     else if (key == 'n') {
       flyingMode = ObjectFollowing;
-      ardrone.setCamera(1);
+      ardrone.setCamera(0);
       printf("Object Following flying mode is enabled\n");
       printf("Press b for manual and m for line following\n");
       printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
     }
     else if (key == 'm') {
       flyingMode = LineFollowing;
-      ardrone.setCamera(0);
+      ardrone.setCamera(1);
       printf("Line Following flying mode is enabled\n");
       printf("Press b for manual and n for object following\n");
       printf("No control for line following yet exists\n\n");
@@ -272,7 +268,7 @@ int main(int argc, char *argv[])
     else {
       sprintf(flyingDisplay, "Flying");
     }
-    putText(image, flyingDisplay, cvPoint(120,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(image, flyingDisplay, cvPoint(200,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
     
     switch (flyingMode) {
       case Manual:
@@ -290,16 +286,9 @@ int main(int argc, char *argv[])
         if (key == 'r') { vr =  1.0; } //r key
         if (key == 'y') { vr = -1.0; } //y key
 
-        sprintf(modeDisplay, "Manual Mode");
-        sprintf(vxDisplay, "vx = %3.2f", vx);
-        sprintf(vyDisplay, "vy = %3.2f", vy);
-        sprintf(vzDisplay, "vz = %3.2f", vz);
-        sprintf(vrDisplay, "vr = %3.2f", vr);
 
-        putText(image, vxDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-        putText(image, vyDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-        putText(image, vzDisplay, cvPoint(30,100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-        putText(image, vrDisplay, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+        sprintf(modeDisplay, "Manual Mode");
+        displayManualInfo(&image, vx, vy, vz, vr);
         break;
       case ObjectFollowing:
         //TODO: set speed to 0.0 when close enough to object
@@ -314,32 +303,16 @@ int main(int argc, char *argv[])
           cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
           cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
 
-          cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
+          hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
 
-          learnedHue = hsvSample[0];
-          learnedSaturation = hsvSample[1];
-          learnedValue = hsvSample[2];
-
-          //Auto set Hue, Saturation, and Value tracking bars
-          cv::setTrackbarPos("Hue max", "binalized", learnedHue+20);
-          cv::setTrackbarPos("Hue min", "binalized", learnedHue-20);
-
-          cv::setTrackbarPos("Saturation max", "binalized", learnedSaturation+20);
-          cv::setTrackbarPos("Saturation min", "binalized", learnedSaturation-20);
-      
-          cv::setTrackbarPos("Value max", "binalized", learnedValue+30);
-          cv::setTrackbarPos("Value min", "binalized", learnedValue-30);
+          setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
         }
 
         // Show predicted position
         cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
 
         sprintf(modeDisplay, "Object Following Mode");
-        sprintf(headingDisplay, "heading = %+3.2f", heading); 
-        sprintf(hsvSampleDisplay, "hsvSample = %3d, %3d, %3d", learnedHue, learnedSaturation, learnedValue);
-
-        putText(image, headingDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-        putText(image, hsvSampleDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+        displayObjectFollowingInfo(&image, heading, hsvSample[0], hsvSample[1], hsvSample[2]);
         break;
       case LineFollowing:
         sprintf(modeDisplay, "Line Following Mode");
@@ -373,3 +346,5 @@ int main(int argc, char *argv[])
 
   return 0;
 }
+
+
