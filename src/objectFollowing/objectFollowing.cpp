@@ -4,7 +4,45 @@
 */
 
 #include "objectFollowing.h"
+#include <string>
 using namespace std;
+
+const string THRESHOLDS_FILE_NAME = "thresholds.xml";
+
+/*
+*/
+void initializeObjectFollowing(int *maxHue, int *minHue, int *maxSaturation, int *minSaturation, int *maxValue, int *minValue) {
+  // XML save data for object following color thresholds
+  cv::FileStorage fs(THRESHOLDS_FILE_NAME, cv::FileStorage::READ);
+
+  // If there is a save file then read it
+  if (fs.isOpened()) {
+    *maxHue = fs["H_MAX"];
+    *minHue = fs["H_MIN"];
+    *maxSaturation = fs["S_MAX"];
+    *minSaturation = fs["S_MIN"];
+    *maxValue = fs["V_MAX"];
+    *minValue = fs["V_MIN"];
+    fs.release();
+  }
+}
+
+/*
+*/
+void closeObjectFollowing(int maxHue, int minHue, int maxSaturation, int minSaturation, int maxValue, int minValue) {
+  //Save thresholds
+  cv::FileStorage fs(THRESHOLDS_FILE_NAME, cv::FileStorage::READ);
+  fs.open(THRESHOLDS_FILE_NAME, cv::FileStorage::WRITE);
+  if (fs.isOpened()) {
+    cv::write(fs, "H_MAX", maxHue);
+    cv::write(fs, "H_MIN", minHue);
+    cv::write(fs, "S_MAX", maxSaturation);
+    cv::write(fs, "S_MIN", minSaturation);
+    cv::write(fs, "V_MAX", maxValue);
+    cv::write(fs, "V_MIN", minValue);
+    fs.release();
+  }
+}
 
 //Auto set Hue, Saturation, and Value tracking bars
 void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) {
