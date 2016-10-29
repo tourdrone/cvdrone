@@ -83,6 +83,95 @@ void closeObjectFollowing(int maxHue, int minHue, int maxSaturation, int minSatu
   }
 }
 
+/*
+  returns heading for control
+*/
+float detectObject(cv::Mat image, cv::KalmanFilter kalman, int minH, int maxH, int minS, int maxS, int minV, int maxV, bool learnMode, bool moveStatus, cv::Rect *rect) {
+
+  int tolerance = 30;
+  cv::Vec3b hsvSample;
+
+  cv::Scalar green = CV_RGB(0,255,0); //putText color value
+  
+  // HSV image
+  cv::Mat hsv;
+  cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
+
+  // Binalize
+  cv::Mat binalized;
+  cv::Scalar lower(minH, minS, minV);
+  cv::Scalar upper(maxH, maxS, maxV);
+  cv::inRange(hsv, lower, upper, binalized);
+
+  // Show result
+  cv::imshow("binalized", binalized);
+
+  // De-noising
+  cv::Mat kernel = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+  cv::morphologyEx(binalized, binalized, cv::MORPH_CLOSE, kernel);
+
+  // Detect contours
+  vector<vector<cv::Point> > contours;
+  cv::findContours(binalized.clone(), contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+
+  // Find largest contour
+  int contour_index = -1;
+  double max_area = 0.0;
+  for (size_t i = 0; i < contours.size(); i++) {
+    double area = fabs(cv::contourArea(contours[i]));
+    if (area > max_area) {
+      contour_index = i;
+      max_area = area;
+    }
+  }
+
+
+  // Object detected
+  if (contour_index >= 0) {
+    // Moments
+    cv::Moments moments = cv::moments(contours[contour_index], true);
+    double marker_y = (int)(moments.m01 / moments.m00);
+    double marker_x = (int)(moments.m10 / moments.m00);
+
+    // Measurements
+    cv::Mat measurement = (cv::Mat1f(2, 1) << marker_x, marker_y);
+
+    // Correction
+    cv::Mat estimated = kalman.correct(measurement);
+
+    // Show result
+    *rect = cv::boundingRect(contours[contour_index]);
+    cv::rectangle(image, *rect, cv::Scalar(0, 255, 0));
+  }
+
+  // Prediction
+  cv::Mat1f prediction = kalman.predict();
+  int radius = 1e+3 * kalman.errorCovPre.at<float>(0, 0);
+
+  // Show predicted position
+  cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
+    
+  // Calculate object heading fraction
+  float heading = -((image.cols/2) - prediction(0, 0))/(image.cols/2);
+
+  // Sample the object color
+  if(learnMode) {
+    // Show targeting crosshairs
+    cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
+    cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
+    cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
+    cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
+
+    hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
+
+    setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
+  }
+
+  displayObjectFollowingInfo(&image, heading, hsvSample[0], hsvSample[1], hsvSample[2], moveStatus);
+
+  return heading;
+}
+
 //Auto set Hue, Saturation, and Value tracking bars
 void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) {
   tolerance = 30;
