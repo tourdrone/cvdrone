@@ -129,6 +129,9 @@ int main(int argc, char *argv[])
   printf("Currently the drone is in manual mode.\n");
   printf("Use the b key for manual mode, the n key for object following, and the m key for line following. The number keys can be used to set a speed. Use spacebar to take off and land, which is required before any control can be executed.\n\n");
 
+  FILE *flight_log;
+  flight_log = fopen("flight_log.txt", "w");
+
   // Main loop
   while (1) {
     // Key input
@@ -215,6 +218,8 @@ int main(int argc, char *argv[])
       }
     }
 
+    cv::Rect rect;
+
     // Object detected
     if (contour_index >= 0) {
       // Moments
@@ -229,7 +234,7 @@ int main(int argc, char *argv[])
       cv::Mat estimated = kalman.correct(measurement);
 
       // Show result
-      cv::Rect rect = cv::boundingRect(contours[contour_index]);
+      rect = cv::boundingRect(contours[contour_index]);
       cv::rectangle(image, rect, cv::Scalar(0, 255, 0));
     }
 
@@ -255,9 +260,11 @@ int main(int argc, char *argv[])
     if (key == ' ') { //spacebar
       if (ardrone.onGround()) {
         ardrone.takeoff();
+	fprintf(flight_log, "TAKEOFF\n");
       }
       else {
         ardrone.landing();
+	fprintf(flight_log, "LAND\n");
       }
     }
 
@@ -321,9 +328,23 @@ int main(int argc, char *argv[])
 
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
+    int rect_area = rect.width * rect.height;
+
     //Execute drone movement
     //TODO: Scale these values for normal human control when in manual mode
-    ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
+
+    printf("rect.width: %d, rect.height: %d, rect.area: %d mode: %d\n", rect.width, rect.height, rect_area, flyingMode);
+
+    if (rect_area > 50000){
+        ardrone.move3D(0.0, vy * speed, vz * speed, vr);
+	printf("STOP\n");
+	fprintf(flight_log, "STOP ardrone.move3D(vx=0.0, vy=%f, vz=%f, vr=%f)\n", vy, vz, vr);
+    }
+    else{
+        ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
+	printf("GO\n");
+	fprintf(flight_log, "GO ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n", vx, vy, vz,vr);
+    }
 		
     //Display the camera feed
     cv::imshow("camera", image);
