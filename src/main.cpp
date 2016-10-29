@@ -54,8 +54,6 @@ int main(int argc, char *argv[])
   int minS = 0, maxS = 255;
   int minV = 0, maxV = 255;
 
-  //Sampling time [s]
-  const double dt = 1.0;
 
   //Initializing Message
   printf("Connecting to the drone\n");
@@ -69,49 +67,11 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  //Open and read Thresholds file for object following hsv values
-  initializeObjectFollowing(&maxH, &minH, &maxS, &minS, &maxV, &minV);
-
-  // Create a window
-  cv::namedWindow("binalized");
-  cv::createTrackbar("Hue max", "binalized", &maxH, 255);
-  cv::createTrackbar("Hue min", "binalized", &minH, 255);
-  cv::createTrackbar("Saturation max", "binalized", &maxS, 255);
-  cv::createTrackbar("Saturation min", "binalized", &minS, 255);
-  cv::createTrackbar("Value max", "binalized", &maxV, 255);
-  cv::createTrackbar("Value min", "binalized", &minV, 255);
-  cv::resizeWindow("binalized", 0, 0);
-
-  // Kalman filter
   cv::KalmanFilter kalman(4, 2, 0);
 
-  // Transition matrix (x, y, vx, vy)
-  cv::Mat1f A(4, 4);
-  A << 1.0, 0.0,  dt, 0.0,
-       0.0, 1.0, 0.0,  dt,
-       0.0, 0.0, 1.0, 0.0,
-       0.0, 0.0, 0.0, 1.0;
-  kalman.transitionMatrix = A;
-
-  // Measurement matrix (x, y)
-  cv::Mat1f H(2, 4);
-  H << 1, 0, 0, 0,
-       0, 1, 0, 0;
-  kalman.measurementMatrix = H;
-
-  // Process noise covairance (x, y, vx, vy)
-  cv::Mat1f Q(4, 4);
-  Q << 1e-5,  0.0,  0.0,  0.0,
-        0.0, 1e-5,  0.0,  0.0,
-        0.0,  0.0, 1e-5,  0.0,
-        0.0,  0.0,  0.0, 1e-5;
-  kalman.processNoiseCov = Q;
-
-  // Measurement noise covariance (x, y)
-  cv::Mat1f R(2, 2);
-  R << 1e-1,  0.0,
-        0.0, 1e-1;
-  kalman.measurementNoiseCov = R;
+  //Open and read Thresholds file for object following hsv values
+  //Create a window for object following hsv and binalization
+  initializeObjectFollowing(&kalman, &maxH, &minH, &maxS, &minS, &maxV, &minV);
 
   //Print default command information
   printf("Currently the drone is in manual mode.\n");

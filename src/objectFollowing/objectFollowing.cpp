@@ -8,10 +8,11 @@
 using namespace std;
 
 const string THRESHOLDS_FILE_NAME = "thresholds.xml";
+const double dt = 1.0; //Sampling time [s]
 
 /*
 */
-void initializeObjectFollowing(int *maxHue, int *minHue, int *maxSaturation, int *minSaturation, int *maxValue, int *minValue) {
+void initializeObjectFollowing(cv::KalmanFilter *kalman, int *maxHue, int *minHue, int *maxSaturation, int *minSaturation, int *maxValue, int *minValue) {
   // XML save data for object following color thresholds
   cv::FileStorage fs(THRESHOLDS_FILE_NAME, cv::FileStorage::READ);
 
@@ -25,6 +26,44 @@ void initializeObjectFollowing(int *maxHue, int *minHue, int *maxSaturation, int
     *minValue = fs["V_MIN"];
     fs.release();
   }
+
+  // Create a window
+  cv::namedWindow("binalized");
+  cv::createTrackbar("Hue max", "binalized", maxHue, 255);
+  cv::createTrackbar("Hue min", "binalized", minHue, 255);
+  cv::createTrackbar("Saturation max", "binalized", maxSaturation, 255);
+  cv::createTrackbar("Saturation min", "binalized", minSaturation, 255);
+  cv::createTrackbar("Value max", "binalized", maxValue, 255);
+  cv::createTrackbar("Value min", "binalized", minValue, 255);
+  cv::resizeWindow("binalized", 0, 0);
+
+  // Transition matrix (x, y, vx, vy)
+  cv::Mat1f A(4, 4);
+  A << 1.0, 0.0,  dt, 0.0,
+       0.0, 1.0, 0.0,  dt,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0;
+  kalman->transitionMatrix = A;
+
+  // Measurement matrix (x, y)
+  cv::Mat1f H(2, 4);
+  H << 1, 0, 0, 0,
+       0, 1, 0, 0;
+  kalman->measurementMatrix = H;
+
+  // Process noise covairance (x, y, vx, vy)
+  cv::Mat1f Q(4, 4);
+  Q << 1e-5,  0.0,  0.0,  0.0,
+        0.0, 1e-5,  0.0,  0.0,
+        0.0,  0.0, 1e-5,  0.0,
+        0.0,  0.0,  0.0, 1e-5;
+  kalman->processNoiseCov = Q;
+
+  // Measurement noise covariance (x, y)
+  cv::Mat1f R(2, 2);
+  R << 1e-1,  0.0,
+        0.0, 1e-1;
+  kalman->measurementNoiseCov = R;
 }
 
 /*

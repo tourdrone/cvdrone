@@ -3,7 +3,7 @@
 
 /*
 */
-void initializeObjectFollowing(int *maxHue, int *minHue, int *maxSaturation, int *minSaturation, int *maxValue, int *minValue);
+void initializeObjectFollowing(cv::KalmanFilter *kalman, int *maxHue, int *minHue, int *maxSaturation, int *minSaturation, int *maxValue, int *minValue);
 
 /*
 */
