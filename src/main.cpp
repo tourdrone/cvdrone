@@ -20,11 +20,11 @@
 
 using namespace std;
 
-
 int main(int argc, char *argv[])
 {
   //AR.Drone class
   ARDrone ardrone;
+  ObjectFollowing objectFollowing;
 
   //Display variables
   char modeDisplay[80]; //print buffer for flying mode
@@ -44,7 +44,6 @@ int main(int argc, char *argv[])
   ControlMovements controlMovements;
 
   FlyingMode flyingMode = Manual;
-  ObjectFollowing ddobjectFollowing;
 
   int rect_area = 0;
   bool moveStatus = false;
@@ -68,7 +67,7 @@ int main(int argc, char *argv[])
 
   //Open and read Thresholds file for object following hsv values
   //Create a window for object following hsv and binalization
-  ddobjectFollowing.initializeObjectFollowing(&kalman);
+  objectFollowing.initializeObjectFollowing(&kalman);
 
   //Print default command information
   printf("Currently the drone is in manual mode.\n");
@@ -114,14 +113,14 @@ int main(int argc, char *argv[])
       printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
     }
     else if (key == 'n') {
-      flyingMode = ObjectFollowing;
+      flyingMode = ObjectFollow;
       ardrone.setCamera(0);
       printf("Object Following flying mode is enabled\n");
       printf("Press b for manual and m for line following\n");
       printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
     }
     else if (key == 'm') {
-      flyingMode = LineFollowing;
+      flyingMode = LineFollow;
       ardrone.setCamera(1);
       printf("Line Following flying mode is enabled\n");
       printf("Press b for manual and n for object following\n");
@@ -186,8 +185,8 @@ int main(int argc, char *argv[])
         displayManualInfo(&image, vx, vy, vz, vr);
         break;
 
-      case ObjectFollowing:
-        heading = ddobjectFollowing.detectObject(image, kalman, learnMode, moveStatus, &rect);
+      case ObjectFollow:
+        heading = objectFollowing.detectObject(image, kalman, learnMode, moveStatus, &rect);
 
         rect_area = rect.width * rect.height;
 
@@ -208,7 +207,7 @@ int main(int argc, char *argv[])
         sprintf(modeDisplay, "Object Following Mode");
         break;
 
-      case LineFollowing:
+      case LineFollow:
         sprintf(modeDisplay, "Line Following Mode");
         break;
     }
@@ -224,7 +223,7 @@ int main(int argc, char *argv[])
   }
 
   //Write hsv values to a file
-  ddobjectFollowing.closeObjectFollowing();
+  objectFollowing.closeObjectFollowing();
   //TODO: closeManual();
   //TODO: closeLineFollowing();
 
