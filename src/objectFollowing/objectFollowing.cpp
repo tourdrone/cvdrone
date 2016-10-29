@@ -88,12 +88,28 @@ void ObjectFollowing::closeObjectFollowing() {
 /*
   returns heading for control
 */
-float ObjectFollowing::detectObject(cv::Mat image, bool learnMode, bool moveStatus, cv::Rect *rect) {
+ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key) {
 
   int tolerance = 30;
   cv::Vec3b hsvSample;
+  ControlMovements controlMovements;
 
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
+
+    //switch between learning and non-learning mode
+    if (key == 'l') {
+      learnMode = !learnMode;
+      if (learnMode) {
+        printf("Learning mode is enabled\n");
+        printf("The color at the crosshairs is being learned\n");
+        printf("Press l again to turn off learning mode\n\n");
+      }
+      else {
+        printf("Learning mode is disabled\n");
+        printf("The color last at the crosshairs will be targeted\n");
+        printf("Press l again to learn a different color\n\n");
+      }
+    }
   
   // HSV image
   cv::Mat hsv;
@@ -142,8 +158,8 @@ float ObjectFollowing::detectObject(cv::Mat image, bool learnMode, bool moveStat
     cv::Mat estimated = kalman.correct(measurement);
 
     // Show result
-    *rect = cv::boundingRect(contours[contour_index]);
-    cv::rectangle(image, *rect, cv::Scalar(0, 255, 0));
+    rect = cv::boundingRect(contours[contour_index]);
+    cv::rectangle(image, rect, cv::Scalar(0, 255, 0));
   }
 
   // Prediction
@@ -169,15 +185,29 @@ float ObjectFollowing::detectObject(cv::Mat image, bool learnMode, bool moveStat
     setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
   }
 
-  displayObjectFollowingInfo(&image, heading, hsvSample[0], hsvSample[1], hsvSample[2], moveStatus);
+  displayObjectFollowingInfo(&image, heading, hsvSample[0], hsvSample[1], hsvSample[2]);
 
-  return heading;
+  rect_area = rect.width * rect.height;
+
+  //Execute drone movement
+  if (rect_area > 10000) {
+    controlMovements.vx = 0;
+    moveStatus = false;
+  }
+  else {
+    controlMovements.vx = 1.0;
+    moveStatus = true;
+  }
+
+  controlMovements.vy = 0;
+  controlMovements.vz = 0;
+  controlMovements.vr = -heading;
+
+  return controlMovements;
 }
 
 //Auto set Hue, Saturation, and Value tracking bars
 void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) {
-  //tolerance = 30;
-
   cv::setTrackbarPos("Hue max", "binalized", hue + tolerance);
   cv::setTrackbarPos("Hue min", "binalized", hue - tolerance);
 
@@ -191,7 +221,7 @@ void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) 
 
 /*
 */
-void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value, bool moveStatus) {
+void ObjectFollowing::displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value) {
   char headingDisplay[80]; //print buffer for heading
   char hsvSampleDisplay[80]; //print buffer for learning HSV values
   char moveStatusDisplay[80]; //print buffer for stop/go status
