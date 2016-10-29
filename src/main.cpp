@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
 {
   //AR.Drone class
   ARDrone ardrone;
-  ardrone.setCamera(1);
 
   //Display variables
   char vxDisplay[80]; //print buffer for x (forward/reverse) velocity
@@ -27,6 +26,7 @@ int main(int argc, char *argv[])
   char vrDisplay[80]; //print buffer for r rotational velocity
 
   char modeDisplay[80]; //print buffer for flying mode
+  char flyingDisplay[80]; //print buffer for if flying
   char speedDisplay[80]; //print buffer for speed
   char headingDisplay[80]; //print buffer for heading
   char hsvSampleDisplay[80]; //print buffer for learning HSV values
@@ -161,18 +161,23 @@ int main(int argc, char *argv[])
     //switch between flying modes
     if (key == 'b') {
       flyingMode = Manual;
+      //TODO: Allow user to set camera mode in Manual
+      //TODO: Change 0/1 to CONSTANTS of 0 = front, 1 = bottom
+      ardrone.setCamera(0);
       printf("Manual flying mode is enabled\n");
       printf("Press n for object following and m for line following\n");
       printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
     }
     else if (key == 'n') {
       flyingMode = ObjectFollowing;
+      ardrone.setCamera(1);
       printf("Object Following flying mode is enabled\n");
       printf("Press b for manual and m for line following\n");
       printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
     }
     else if (key == 'm') {
       flyingMode = LineFollowing;
+      ardrone.setCamera(0);
       printf("Line Following flying mode is enabled\n");
       printf("Press b for manual and n for object following\n");
       printf("No control for line following yet exists\n\n");
@@ -181,6 +186,7 @@ int main(int argc, char *argv[])
     // Get an image
     cv::Mat image = ardrone.getImage();
 
+    //TODO: Move object following image stuff to a new file
     // HSV image
     cv::Mat hsv;
     cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
@@ -238,33 +244,6 @@ int main(int argc, char *argv[])
     // Calculate object heading fraction
     float heading = -((image.cols/2) - prediction(0, 0))/(image.cols/2);
 
-    // Sample the object color
-    if(learnMode) {
-      // Show targeting crosshairs
-      cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
-      cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
-      cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
-      cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
-
-      cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
-
-      learnedHue = hsvSample[0];
-      learnedSaturation = hsvSample[1];
-      learnedValue = hsvSample[2];
-
-      //Auto set Hue, Saturation, and Value tracking bars
-      cv::setTrackbarPos("Hue max", "binalized", learnedHue+20);
-      cv::setTrackbarPos("Hue min", "binalized", learnedHue-20);
-
-      cv::setTrackbarPos("Saturation max", "binalized", learnedSaturation+20);
-      cv::setTrackbarPos("Saturation min", "binalized", learnedSaturation-20);
-      
-      cv::setTrackbarPos("Value max", "binalized", learnedValue+30);
-      cv::setTrackbarPos("Value min", "binalized", learnedValue-30);
-    }
-
-    // Show predicted position
-    cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
 
     //Speed
     if ((key >= '0') && (key <= '9')) //number keys
@@ -286,7 +265,14 @@ int main(int argc, char *argv[])
       }
     }
 
-    //TODO: print if onground or not
+    //Write if grounded or flying to image
+    if (ardrone.onGround()) {
+      sprintf(flyingDisplay, "Landed");
+    }
+    else {
+      sprintf(flyingDisplay, "Flying");
+    }
+    putText(image, flyingDisplay, cvPoint(120,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
     
     switch (flyingMode) {
       case Manual:
@@ -294,12 +280,15 @@ int main(int argc, char *argv[])
         vy = 0;
         vz = 0;
         vr = 0;
-        if (key == 't') { vx =  1.0; } //up arrow key
-        if (key == 'g') { vx = -1.0; } //down arrow key
-        if (key == 'f') { vy =  1.0; } //left arrow key
-        if (key == 'h') { vy = -1.0; } //right arrow key
+        if (key == 't') { vx =  1.0; } //t key
+        if (key == 'g') { vx = -1.0; } //g key
+        if (key == 'f') { vy =  1.0; } //f key
+        if (key == 'h') { vy = -1.0; } //h key
         if (key == 'q') { vz =  1.0; } //q key
         if (key == 'a') { vz = -1.0; } //a key
+        //TODO: Verify if these vr values should be negative
+        if (key == 'r') { vr =  1.0; } //r key
+        if (key == 'y') { vr = -1.0; } //y key
 
         sprintf(modeDisplay, "Manual Mode");
         sprintf(vxDisplay, "vx = %3.2f", vx);
@@ -317,6 +306,34 @@ int main(int argc, char *argv[])
         vx = speed;
         vr = -heading;
 
+        // Sample the object color
+        if(learnMode) {
+          // Show targeting crosshairs
+          cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
+          cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
+          cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
+          cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
+
+          cv::Vec3b hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
+
+          learnedHue = hsvSample[0];
+          learnedSaturation = hsvSample[1];
+          learnedValue = hsvSample[2];
+
+          //Auto set Hue, Saturation, and Value tracking bars
+          cv::setTrackbarPos("Hue max", "binalized", learnedHue+20);
+          cv::setTrackbarPos("Hue min", "binalized", learnedHue-20);
+
+          cv::setTrackbarPos("Saturation max", "binalized", learnedSaturation+20);
+          cv::setTrackbarPos("Saturation min", "binalized", learnedSaturation-20);
+      
+          cv::setTrackbarPos("Value max", "binalized", learnedValue+30);
+          cv::setTrackbarPos("Value min", "binalized", learnedValue-30);
+        }
+
+        // Show predicted position
+        cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
+
         sprintf(modeDisplay, "Object Following Mode");
         sprintf(headingDisplay, "heading = %+3.2f", heading); 
         sprintf(hsvSampleDisplay, "hsvSample = %3d, %3d, %3d", learnedHue, learnedSaturation, learnedValue);
@@ -332,6 +349,7 @@ int main(int argc, char *argv[])
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
     //Execute drone movement
+    //TODO: Scale these values for normal human control when in manual mode
     ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
 		
     //Display the camera feed
