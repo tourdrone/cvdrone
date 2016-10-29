@@ -14,6 +14,10 @@ class ObjectFollowing {
     //int targetS
     //int targetV
     cv::KalmanFilter kalman;
+    bool learnMode = false;
+    bool moveStatus = false;
+    cv::Rect rect;
+    int rect_area = 0;
 
     /*
     */
@@ -25,7 +29,11 @@ class ObjectFollowing {
 
     /*
     */
-    float detectObject(cv::Mat image, bool learnMode, bool moveStatus, cv::Rect *rect);
+    ControlMovements detectObject(cv::Mat image, int key);
+
+    /*
+    */
+    void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value);
 };
 
 
@@ -33,6 +41,3 @@ class ObjectFollowing {
 */
 void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance);
 
-/*
-*/
-void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value, bool moveStatus);

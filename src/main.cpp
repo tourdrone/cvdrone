@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
   //TODO: LineFollowing lineFollwing;
 
   //Display variables
+  FILE *flight_log;
+
   char modeDisplay[80]; //print buffer for flying mode
   char flyingDisplay[80]; //print buffer for if flying
   char speedDisplay[80]; //print buffer for speed
@@ -38,7 +40,6 @@ int main(int argc, char *argv[])
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
   //Drone control
-  bool learnMode = false;
 
   float speed = 0.0;
   double vx = 0.0;
@@ -48,12 +49,6 @@ int main(int argc, char *argv[])
   ControlMovements controlMovements;
 
   FlyingMode flyingMode = Manual;
-
-  int rect_area = 0;
-  bool moveStatus = false;
-  const char *moveStatuses[2] = {"STOP", "GO"};
-  float heading = 0;
-  cv::Rect rect;
 
   //Initializing Message
   printf("Connecting to the drone\n");
@@ -67,48 +62,28 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  //Open and read Thresholds file for object following hsv values
-  //Create a window for object following hsv and binalization
+  //initialize object following code
   objectFollowing.initializeObjectFollowing();
 
   //Print default command information
   printf("Currently the drone is in manual mode.\n");
   printf("Use the b key for manual mode, the n key for object following, and the m key for line following. The number keys can be used to set a speed. Use spacebar to take off and land, which is required before any control can be executed.\n\n");
 
-  FILE *flight_log;
   flight_log = fopen("flight_log.txt", "w");
 
   // Main loop
   while (1) {
-    speed = 0.0;
-    // Key input
-    int key = cv::waitKey(33);
+    int key = cv::waitKey(33); // Key input
 
-    //press the escape key to exit
-    if (key == 0x1b) {
-      break;
-    }
+    if (key == 0x1b) { break; } //press the escape key to exit
 
-    //switch between learning and non-learning mode
-    if (key == 'l') {
-      learnMode = !learnMode;
-      if (learnMode) {
-        printf("Learning mode is enabled\n");
-        printf("The color at the crosshairs is being learned\n");
-        printf("Press l again to turn off learning mode\n\n");
-      }
-      else {
-        printf("Learning mode is disabled\n");
-        printf("The color last at the crosshairs will be targeted\n");
-        printf("Press l again to learn a different color\n\n");
-      }
-    }
+
+    //TODO:FlyingMode detectFlyingMode(ardrone, key) {
+    //}
 
     //switch between flying modes
     if (key == 'b') {
       flyingMode = Manual;
-      //TODO: Allow user to set camera mode in Manual
-      //TODO: Change 0/1 to CONSTANTS of 0 = front, 1 = bottom
       ardrone.setCamera(0);
       printf("Manual flying mode is enabled\n");
       printf("Press n for object following and m for line following\n");
@@ -166,10 +141,15 @@ int main(int argc, char *argv[])
     
     switch (flyingMode) {
       case Manual:
+        //TODO: Allow user to set camera mode in Manual
+        //TODO: Change 0/1 to CONSTANTS of 0 = front, 1 = bottom
+
         //TODO: Scale these values for normal human control when in manual mode
         controlMovements = manualMovement(key);
 
         sprintf(modeDisplay, "Manual Mode");
+
+        //TODO: Move this into manualMovement(key) function
         displayManualInfo(&image, controlMovements);
 
         vx = controlMovements.vx;
@@ -179,25 +159,13 @@ int main(int argc, char *argv[])
         break;
 
       case ObjectFollow:
-        heading = objectFollowing.detectObject(image, learnMode, moveStatus, &rect);
 
-        rect_area = rect.width * rect.height;
+        controlMovements = objectFollowing.detectObject(image, key);
 
-        //Execute drone movement
-        if (rect_area > 10000) {
-          speed = -0.2;
-          vx = 0;
-          
-          moveStatus = false;
-        }
-        else {
-          moveStatus = true;
-        }
-
-        vx = speed;
-        vy = 0;
-        vz = 0;
-        vr = -heading;
+        vx = controlMovements.vx;
+        vy = controlMovements.vy;
+        vz = controlMovements.vz;
+        vr = controlMovements.vr;
 
         sprintf(modeDisplay, "Object Following Mode");
         break;
@@ -209,7 +177,7 @@ int main(int argc, char *argv[])
 
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-    fprintf(flight_log, "%s ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f) || rect_area = %d\n", moveStatuses[moveStatus], (speed), (vy * speed), (vz * speed), vr, rect_area);
+    fprintf(flight_log, "ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n", (speed), (vy * speed), (vz * speed), vr);
 
     ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
 
