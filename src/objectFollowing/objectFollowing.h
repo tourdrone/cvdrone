@@ -11,6 +11,10 @@ void closeObjectFollowing(int maxHue, int minHue, int maxSaturation, int minSatu
 
 /*
 */
+float detectObject(cv::Mat image, cv::KalmanFilter kalman, int minH, int maxH, int minS, int maxS, int minV, int maxV, bool learnMode, bool moveStatus, cv::Rect *rect);
+
+/*
+*/
 void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance);
 
 /*

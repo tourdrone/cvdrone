@@ -49,16 +49,18 @@ int main(int argc, char *argv[])
 
   FlyingMode flyingMode = Manual;
 
-  //Object Following Image recognition values
-  int tolerance = 50;
-  cv::Vec3b hsvSample;
+<<<<<<< HEAD
+=======
+  //Object Following variables
+>>>>>>> 59c87e279adc9e413704a5abceb2389db97072c3
   int minH = 0, maxH = 255;
   int minS = 0, maxS = 255;
   int minV = 0, maxV = 255;
   int rect_area = 0;
-  bool moveStatus = 0;
+  bool moveStatus = false;
   const char *moveStatuses[2] = {"STOP", "GO"};
-
+  float heading = 0;
+  cv::Rect rect;
 
   //Initializing Message
   printf("Connecting to the drone\n");
@@ -138,8 +140,9 @@ int main(int argc, char *argv[])
 
     // Get an image
     cv::Mat image = ardrone.getImage();
+    
 
-    //TODO: Move object following image stuff to a new file
+   /* //TODO: Move object following image stuff to a new file
     // HSV image
     cv::Mat hsv;
     cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
@@ -198,6 +201,7 @@ int main(int argc, char *argv[])
     
     // Calculate object heading fraction
     float heading = -((image.cols/2) - prediction(0, 0))/(image.cols/2);
+  */
 
 
     //Speed
@@ -253,8 +257,10 @@ int main(int argc, char *argv[])
         sprintf(modeDisplay, "Manual Mode");
         displayManualInfo(&image, vx, vy, vz, vr);
         break;
+
       case ObjectFollowing:
-        // Sample the object color
+        heading = detectObject(image, kalman, minH, maxH, minS, maxS, minV, maxV, learnMode, moveStatus, &rect);
+       /* // Sample the object color
         if(learnMode) {
           // Show targeting crosshairs
           cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
@@ -266,9 +272,8 @@ int main(int argc, char *argv[])
 
           setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
         }
+      */
 
-        // Show predicted position
-        cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
 
         rect_area = rect.width * rect.height;
 
@@ -280,18 +285,18 @@ int main(int argc, char *argv[])
           speed = -0.2;
           vx = 0;
           
-          moveStatus = 0;
+          moveStatus = false;
         }
         else {
-          moveStatus = 1;
+          moveStatus = true;
         }
 
         vx = speed;
         vr = -heading;
 
         sprintf(modeDisplay, "Object Following Mode");
-        displayObjectFollowingInfo(&image, heading, hsvSample[0], hsvSample[1], hsvSample[2], moveStatus);
         break;
+
       case LineFollowing:
         sprintf(modeDisplay, "Line Following Mode");
         break;
