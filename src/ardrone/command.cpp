@@ -230,9 +230,9 @@ void ARDrone::move(double vx, double vy, double vr)
 void ARDrone::move3D(double vx, double vy, double vz, double vr)
 {
     // AR.Drone is flying
-    if (!onGround()) {
+    //if (!onGround()) {
         // Command velocities
-        float v[4] = {-vy*0.2, -vx*0.2, vz*1.0, -vr*0.5};
+        float v[4] = {-vy*0.6, -vx*0.6, vz*1.0, -vr*0.5};
         int mode = (fabs(v[0]) > 0.0 || fabs(v[1]) > 0.0 || fabs(v[2]) > 0.0 || fabs(v[3]) > 0.0);
 
         // Nomarization (-1.0 to +1.0)
@@ -244,7 +244,7 @@ void ARDrone::move3D(double vx, double vy, double vz, double vr)
         if (mutexCommand) pthread_mutex_lock(mutexCommand);
         sockCommand.sendf("AT*PCMD=%d,%d,%d,%d,%d,%d\r", ++seq, mode, *(int*)(&v[0]), *(int*)(&v[1]), *(int*)(&v[2]), *(int*)(&v[3]));
         if (mutexCommand) pthread_mutex_unlock(mutexCommand);
-    }
+    //}
 }
 
 // --------------------------------------------------------------------------
