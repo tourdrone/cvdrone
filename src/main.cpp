@@ -69,20 +69,8 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  // XML save data for object following color thresholds
-  std::string filename("thresholds.xml");
-  cv::FileStorage fs(filename, cv::FileStorage::READ);
-
-  // If there is a save file then read it
-  if (fs.isOpened()) {
-    maxH = fs["H_MAX"];
-    minH = fs["H_MIN"];
-    maxS = fs["S_MAX"];
-    minS = fs["S_MIN"];
-    maxV = fs["V_MAX"];
-    minV = fs["V_MIN"];
-    fs.release();
-  }
+  //Open and read Thresholds file for object following hsv values
+  initializeObjectFollowing(&maxH, &minH, &maxS, &minS, &maxV, &minV);
 
   // Create a window
   cv::namedWindow("binalized");
@@ -329,17 +317,9 @@ int main(int argc, char *argv[])
     cv::imshow("camera", image);
   }
 
-  //Save thresholds
-  fs.open(filename, cv::FileStorage::WRITE);
-  if (fs.isOpened()) {
-    cv::write(fs, "H_MAX", maxH);
-    cv::write(fs, "H_MIN", minH);
-    cv::write(fs, "S_MAX", maxS);
-    cv::write(fs, "S_MIN", minS);
-    cv::write(fs, "V_MAX", maxV);
-    cv::write(fs, "V_MIN", minV);
-    fs.release();
-  }
+  //Write hsv values to a file
+  closeObjectFollowing(maxH, minH, maxS, minS, maxV, minV);
+  //TODO: create close manual and close line following functions
 
   //Close connection to drone
   ardrone.close();
