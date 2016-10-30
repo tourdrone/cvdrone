@@ -28,6 +28,7 @@ void line_main() {
     Mat frame, hsv;
     cap >> frame; // get a new frame from camera
 
+    resize(frame, frame, Size(), .2, .2);
     cvtColor(frame, hsv, CV_BGR2HSV);
 
     double minH = 30;
@@ -37,13 +38,13 @@ void line_main() {
     double maxS = 70;
     double maxV = 255;
 
+
     cv::Scalar lower(minH, minS, minV);
     cv::Scalar upper(maxH, maxS, maxV);
     cv::inRange(hsv, lower, upper, mask);
 
 //    bitwise_and(frame, frame, frame, mask);
 
-    resize(mask, mask, Size(), .2, .2);
 
     vector <Vec4i> lines;
     HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 100, 10);
