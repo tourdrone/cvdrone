@@ -20,6 +20,32 @@
 
 using namespace std;
 
+void detectFlyingMode(ARDrone *ardrone, int key, FlyingMode *flyingMode) {
+
+  //switch between flying modes
+  if (key == 'b') {
+    *flyingMode = Manual;
+    ardrone->setCamera(0);
+    printf("Manual flying mode is enabled\n");
+    printf("Press n for object following and m for line following\n");
+    printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
+  }
+  else if (key == 'n') {
+    *flyingMode = ObjectFollow;
+    ardrone->setCamera(0);
+    printf("Object Following flying mode is enabled\n");
+    printf("Press b for manual and m for line following\n");
+    printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
+  }
+  else if (key == 'm') {
+    *flyingMode = LineFollow;
+    ardrone->setCamera(1);
+    printf("Line Following flying mode is enabled\n");
+    printf("Press b for manual and n for object following\n");
+    printf("No control for line following yet exists\n\n");
+  }
+}
+
 int main(int argc, char *argv[])
 {
   //AR.Drone class
@@ -40,7 +66,6 @@ int main(int argc, char *argv[])
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
   //Drone control
-
   float speed = 0.0;
   double vx = 0.0;
   double vy = 0.0; 
@@ -62,6 +87,9 @@ int main(int argc, char *argv[])
     return -1;
   }
 
+  //Set drone on flat surface and initialize
+  ardrone.setFlatTrim();
+
   //initialize object following code
   objectFollowing.initializeObjectFollowing();
 
@@ -77,32 +105,10 @@ int main(int argc, char *argv[])
 
     if (key == 0x1b) { break; } //press the escape key to exit
 
+    //TODO:Write battery percentage to screen
+    printf("%d\n", ardrone.getBatteryPercentage());
 
-    //TODO:FlyingMode detectFlyingMode(ardrone, key) {
-    //}
-
-    //switch between flying modes
-    if (key == 'b') {
-      flyingMode = Manual;
-      ardrone.setCamera(0);
-      printf("Manual flying mode is enabled\n");
-      printf("Press n for object following and m for line following\n");
-      printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
-    }
-    else if (key == 'n') {
-      flyingMode = ObjectFollow;
-      ardrone.setCamera(0);
-      printf("Object Following flying mode is enabled\n");
-      printf("Press b for manual and m for line following\n");
-      printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
-    }
-    else if (key == 'm') {
-      flyingMode = LineFollow;
-      ardrone.setCamera(1);
-      printf("Line Following flying mode is enabled\n");
-      printf("Press b for manual and n for object following\n");
-      printf("No control for line following yet exists\n\n");
-    }
+    detectFlyingMode(&ardrone, key, &flyingMode);
 
     // Get an image
     cv::Mat image = ardrone.getImage();
