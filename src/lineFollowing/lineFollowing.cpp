@@ -24,7 +24,7 @@ void line_main() {
   namedWindow("edges", CV_WINDOW_NORMAL);
 //  Mat edges;
   for (; ;) {
-    Mat mask, hsv_mask;
+    Mat mask;
     Mat frame, hsv;
     cap >> frame; // get a new frame from camera
 
@@ -43,8 +43,9 @@ void line_main() {
 
 //    bitwise_and(frame, frame, frame, mask);
 
-    medianBlur(mask, mask, 5);
+//    medianBlur(mask, mask, 5);
 
+    erode(mask, mask, Mat(), Point(-1,-1), 10);
     vector <Vec4i> lines;
     HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 100, 10);
 
@@ -56,7 +57,7 @@ void line_main() {
     }
     if (lines.size() < 1) continue;
 
-    imshow("edges", frame);
+    imshow("edges", mask);
     if (waitKey(30) >= 0) break;
 
   }
