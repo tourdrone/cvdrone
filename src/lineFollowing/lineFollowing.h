@@ -23,7 +23,7 @@ ControlMovements lineFollowingControl();
 
 void line_main();
 
-void detect_lines(cv::Mat &frame, double scale_factor);
+void detect_lines(cv::Mat &original_frame, double scale_factor);
 
 
 #endif

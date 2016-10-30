@@ -8,7 +8,7 @@
 using namespace std;
 using namespace cv;
 
-void detect_lines(Mat &frame, double scale_factor);
+void detect_lines(Mat &original_frame, double scale_factor);
 
 
 ControlMovements lineFollowingControl() {
@@ -26,7 +26,6 @@ void line_main() {
   if (!cap.isOpened())  // check if we succeeded
     return;
 
-  namedWindow("edges", CV_WINDOW_NORMAL);
 //  Mat edges;
   for (; ;) {
     Mat frame;
@@ -39,15 +38,18 @@ void line_main() {
 
   }
   // the camera will be deinitialized automatically in VideoCapture destructor
+
   return;
 }
 
-void detect_lines(Mat &frame, double scale_factor) {
+void detect_lines(Mat &original_frame, double scale_factor) {
   Mat hsv;
   Mat mask;
+  Mat image;
 
-  resize(frame, frame, Size(), scale_factor, scale_factor);
-  cvtColor(frame, hsv, CV_BGR2HSV);
+  resize(original_frame, image, Size(), scale_factor, scale_factor); //Potentially scale down the frame
+
+  cvtColor(image, image, CV_BGR2HSV); // Image is now HSV
 
   double minH = 30;
   double minS = 0;
@@ -59,26 +61,25 @@ void detect_lines(Mat &frame, double scale_factor) {
 
   Scalar lower(minH, minS, minV);
   Scalar upper(maxH, maxS, maxV);
-  inRange(hsv, lower, upper, mask);
-
-//    bitwise_and(frame, frame, frame, mask);
+  inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
 
 
   vector<Vec4i> lines;
-  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10);
+  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10); // Find all lines in the image
 
   printf("Adding in %d lines\n", (int) lines.size());
   for (size_t i = 0; i < lines.size(); i++) {
     Vec4i l = lines[i];
-    line(frame, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 1, CV_AA);
+    line(image, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 1, CV_AA);
     // break;
   }
 //    if (lines.size() < 1) continue;
 
-  imshow("edges", frame);
+  imshow("line_window", original_frame);
 }
 
 void LineFollowing::initialize() {
+  namedWindow("line_window", CV_WINDOW_NORMAL);
   return;
 }
 
