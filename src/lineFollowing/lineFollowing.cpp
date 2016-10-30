@@ -30,9 +30,10 @@ void line_main() {
     cvtColor(frame, gray, CV_BGR2HSV);
 
     Scalar low, high;
-    low = Scalar(30, 0, 240);
-    high = Scalar(80, 70, 255);
-
+//    low = Scalar(30, 0, 240);
+//    high = Scalar(80, 70, 255);
+    low = Scalar(0, 0, 0);
+    high = Scalar(255, 255, 255);
 
     inRange(gray, low, high, mask);
 //    cvtColor(mask, hsv_mask, CV_HS);
