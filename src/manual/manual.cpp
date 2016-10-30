@@ -1,7 +1,20 @@
 /*
 */
 
+
 #include "manual.h"
+
+/*
+*/
+void ManualFlying::initializeManualFlying() {
+  return;
+}
+
+/*
+*/
+void ManualFlying::closeManualFlying() {  
+  return;
+}
 
 /*
 */
