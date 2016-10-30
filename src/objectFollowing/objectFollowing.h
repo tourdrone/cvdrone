@@ -22,23 +22,12 @@ class ObjectFollowing {
     cv::Rect rect;
     int rect_area = 0;
 
-    /*
-    */
-    void initializeObjectFollowing();
-
-    /*
-    */
-    void closeObjectFollowing();
-
-    /*
-    */
+    void initialize();
+    void close();
+    ControlMovements fly(cv::Mat *image, int key);
     ControlMovements detectObject(cv::Mat image, int key);
-
-    /*
-    */
     void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value);
 };
-
 
 /*
 */

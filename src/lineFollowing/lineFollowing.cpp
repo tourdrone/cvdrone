@@ -3,7 +3,6 @@
 */
 
 #include "lineFollowing.h"
-
 using namespace std;
 using namespace cv;
 
@@ -63,4 +62,23 @@ void line_main() {
   }
   // the camera will be deinitialized automatically in VideoCapture destructor
   return;
+}
+
+void LineFollowing::initialize() {
+  return;
+}
+
+void LineFollowing::close() {
+  return;
+}
+
+ControlMovements LineFollowing::fly(cv::Mat *image) {
+  ControlMovements velocities;
+
+  velocities.vx = 0;
+  velocities.vy = 0;
+  velocities.vz = 0;
+  velocities.vr = 0;
+
+  return velocities;
 }
