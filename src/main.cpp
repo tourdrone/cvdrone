@@ -35,6 +35,7 @@ class Control {
     double speed = 0.0;
     int batteryPercentage;
     bool flying;
+    cv::Scalar green; //overlay putText color value
 
     ControlMovements velocities;
 
@@ -44,9 +45,13 @@ class Control {
     void detectFlyingMode();
     bool detectEscape();
     void changeSpeed();
+    void detectTakeoff();
     void getImage();
+    void move();
 
     void overlayControl();
+
+    void close();
 };
 
 /*
@@ -57,18 +62,21 @@ void Control::initializeDroneControl(ObjectFollowing *objectFollowing) {
   printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
   fflush(stdout);
 
-  // Initialize
+
+  flight_log = fopen(flightLog.c_str(), "w");
+  green = CV_RGB(0,255,0); 
+
+  //Connect to drone
   if (!ardrone.open()) {
     printf("Failed to initialize.\n");
     //TODO: fix this return -1;
   }
 
-  //Set drone on flat surface and initialize
+  //Set drone trim on flat surface
   ardrone.setFlatTrim();
 
   //initialize object following code
   objectFollowing->initializeObjectFollowing();
-  flight_log = fopen(flightLog.c_str(), "w");
 
   //Print default command information
   printf("To disconnect, press the ESC key\n\n");
@@ -129,12 +137,31 @@ void Control::detectFlyingMode() {
   }
 }
 
+/*
+  Take off / Landing
+*/
+void Control::detectTakeoff() {
+  if (key == ' ') { //spacebar
+    if (ardrone.onGround()) {
+      ardrone.takeoff();
+      fprintf(flight_log, "TAKEOFF\n");
+      std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    }
+    else {
+      ardrone.landing();
+      fprintf(flight_log, "LAND\n");
+    }
+  }
+}
+
+/*
+*/
 void Control::overlayControl() {
-  //TODO: move this so it isnt called every time
-  cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
   char modeDisplay[80]; //print buffer for flying mode
   char speedDisplay[80]; //print buffer for speed
+  char flyingDisplay[80]; //print buffer for if flying
+  char batteryDisplay[80]; //print buffer for battery
 
   if (flyingMode == Manual) {
     sprintf(modeDisplay, "Manual Mode");
@@ -146,15 +173,43 @@ void Control::overlayControl() {
     sprintf(modeDisplay, "Line Following Mode");
   }
 
-  sprintf(speedDisplay, "Speed = %3.2f", speed);
+  if (ardrone.onGround()) {
+    sprintf(flyingDisplay, "Landed");
+  }
+  else {
+    sprintf(flyingDisplay, "Flying");
+  }
 
-  //add speed to overlay
-  putText(image, speedDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  sprintf(speedDisplay, "Speed = %3.2f", speed);
+  sprintf(batteryDisplay, "Battery = %d\n", ardrone.getBatteryPercentage());
 
   //add flying mode to overlay
   putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
+  //add grounded or flying to overlay
+  putText(image, flyingDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
+  //add battery percentage to overlay
+  putText(image, batteryDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
+  //add speed to overlay
+  putText(image, speedDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
   cv::imshow("camera", image); //Display the camera feed
+}
+
+/*
+*/
+void Control::move() {
+  ardrone.move3D(velocities.vx * speed, velocities.vy * speed, velocities.vz * speed, velocities.vr);
+}
+
+
+/*
+  Close connection to drone
+*/
+void Control::close() {
+  ardrone.close();
 }
 
 int main(int argc, char *argv[])
@@ -166,11 +221,6 @@ int main(int argc, char *argv[])
   //TODO: ManualDriving manualDriving;
   //TODO: LineFollowing lineFollwing;
 
-  //Display variables
-  char flyingDisplay[80]; //print buffer for if flying
-
-  cv::Scalar green = CV_RGB(0,255,0); //putText color value
-
   control.initializeDroneControl(&objectFollowing);
 
   // Main loop
@@ -178,40 +228,12 @@ int main(int argc, char *argv[])
     control.key = cv::waitKey(33); // Key input
 
     if (control.detectEscape()) { break; } //Press ESC to close program
-
     control.detectFlyingMode(); //Press b, n, m to change mode
-
     control.changeSpeed(); //Press 0-9 to change speed
+    control.detectTakeoff(); //Press spacebar to take off
 
     control.getImage(); //get the image from the camera
 
-
-    //Take off / Landing
-    if (control.key == ' ') { //spacebar
-      if (control.ardrone.onGround()) {
-        control.ardrone.takeoff();
-	fprintf(control.flight_log, "TAKEOFF\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-      }
-      else {
-        control.ardrone.landing();
-	fprintf(control.flight_log, "LAND\n");
-      }
-    }
-
-    //TODO:Write battery percentage to screen
-    printf("%d\n", control.ardrone.getBatteryPercentage());
-
-
-    //Write if grounded or flying to image
-    if (control.ardrone.onGround()) {
-      sprintf(flyingDisplay, "Landed");
-    }
-    else {
-      sprintf(flyingDisplay, "Flying");
-    }
-    putText(control.image, flyingDisplay, cvPoint(200,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-    
     switch (control.flyingMode) {
       case Manual:
         //TODO: Allow user to set camera mode in Manual
@@ -220,7 +242,6 @@ int main(int argc, char *argv[])
         //TODO: Scale these values for normal human control when in manual mode
         control.velocities = manualMovement(control.key);
 
-
         //TODO: Move this into manualMovement(control.key) function
         displayManualInfo(&(control.image), control.velocities);
 
@@ -228,7 +249,6 @@ int main(int argc, char *argv[])
 
       case ObjectFollow:
         control.velocities = objectFollowing.detectObject(control.image, control.key);
-
         break;
 
       case LineFollow:
@@ -236,10 +256,9 @@ int main(int argc, char *argv[])
         break;
     }
 
-    control.overlayControl();
+    control.overlayControl(); //Display image overlay values
 
-    control.ardrone.move3D(control.velocities.vx * control.speed, control.velocities.vy * control.speed, control.velocities.vz * control.speed, control.velocities.vr);
-
+    control.move(); //Send move command to the drone
   }
 
   //Write hsv values to a file
@@ -247,8 +266,7 @@ int main(int argc, char *argv[])
   //TODO: closeManual();
   //TODO: closeLineFollowing();
 
-  //Close connection to drone
-  control.ardrone.close();
+  control.close();
 
   return 0;
 }
