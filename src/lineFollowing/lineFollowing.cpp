@@ -45,13 +45,13 @@ void line_main() {
 
 
 
-    erode(mask, mask, Mat(), Point(-1, -1), 5);
-    medianBlur(mask, mask, 5);
-    medianBlur(mask, mask, 5);
-    medianBlur(mask, mask, 5);
+//    erode(mask, mask, Mat(), Point(-1, -1), 5);
+//    medianBlur(mask, mask, 5);
+//    medianBlur(mask, mask, 5);
+//    medianBlur(mask, mask, 5);
 
-    vector<Vec4i> lines;
-    HoughLines(mask, lines, 1, CV_PI / 180.0, 10);
+    vector<Vec2f> lines;
+    HoughLines(mask, lines, 1, CV_PI/180, 100, 0, 0 );
 
     printf("Adding in %d lines\n", (int) lines.size());
     for (size_t i = 0; i < lines.size(); i++) {
