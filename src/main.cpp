@@ -27,11 +27,11 @@ class Control {
     
     int key;
     FlyingMode flyingMode = Manual;
-    double speed;
+    double speed = 0.0;
     int batteryPercentage;
     bool flying;
 
-    ControlMovements controlMovements;
+    ControlMovements velocities;
 
     FILE *flight_log;
 
@@ -74,17 +74,11 @@ int main(int argc, char *argv[])
   //TODO: LineFollowing lineFollwing;
 
   //Display variables
-  FILE *flight_log;
-
   char modeDisplay[80]; //print buffer for flying mode
   char flyingDisplay[80]; //print buffer for if flying
   char speedDisplay[80]; //print buffer for speed
 
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
-
-  //Drone control
-  float speed = 0.0;
-  ControlMovements controlMovements;
 
   //Initializing Message
   printf("Connecting to the drone\n");
@@ -108,7 +102,7 @@ int main(int argc, char *argv[])
   printf("Currently the drone is in manual mode.\n");
   printf("Use the b key for manual mode, the n key for object following, and the m key for line following. The number keys can be used to set a speed. Use spacebar to take off and land, which is required before any control can be executed.\n\n");
 
-  flight_log = fopen("flight_log.txt", "w");
+  control.flight_log = fopen("flight_log.txt", "w");
 
   // Main loop
   while (1) {
@@ -127,23 +121,23 @@ int main(int argc, char *argv[])
     //Speed
     if ((control.key >= '0') && (control.key <= '9')) //number keys
     {
-      speed = (control.key-'0')*0.1;
+      control.speed = (control.key-'0')*0.1;
     }
 
     //Write speed to image
-    sprintf(speedDisplay, "Speed = %3.2f", speed);
+    sprintf(speedDisplay, "Speed = %3.2f", control.speed);
     putText(image, speedDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
     //Take off / Landing
     if (control.key == ' ') { //spacebar
       if (control.ardrone.onGround()) {
         control.ardrone.takeoff();
-	fprintf(flight_log, "TAKEOFF\n");
+	fprintf(control.flight_log, "TAKEOFF\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
       }
       else {
         control.ardrone.landing();
-	fprintf(flight_log, "LAND\n");
+	fprintf(control.flight_log, "LAND\n");
       }
     }
 
@@ -162,18 +156,18 @@ int main(int argc, char *argv[])
         //TODO: Change 0/1 to CONSTANTS of 0 = front, 1 = bottom
 
         //TODO: Scale these values for normal human control when in manual mode
-        controlMovements = manualMovement(control.key);
+        control.velocities = manualMovement(control.key);
 
         sprintf(modeDisplay, "Manual Mode");
 
         //TODO: Move this into manualMovement(control.key) function
-        displayManualInfo(&image, controlMovements);
+        displayManualInfo(&image, control.velocities);
 
         break;
 
       case ObjectFollow:
 
-        controlMovements = objectFollowing.detectObject(image, control.key);
+        control.velocities = objectFollowing.detectObject(image, control.key);
 
         sprintf(modeDisplay, "Object Following Mode");
         break;
@@ -186,7 +180,7 @@ int main(int argc, char *argv[])
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
 
-    control.ardrone.move3D(controlMovements.vx * speed, controlMovements.vy * speed, controlMovements.vz * speed, controlMovements.vr);
+    control.ardrone.move3D(control.velocities.vx * control.speed, control.velocities.vy * control.speed, control.velocities.vz * control.speed, control.velocities.vr);
 
     //Display the camera feed
     cv::imshow("camera", image);
