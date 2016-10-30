@@ -21,6 +21,10 @@ class Control {
     //AR.Drone class
     ARDrone ardrone;
 
+    ManualFlying manualFlying;
+    ObjectFollowing objectFollowing;
+    LineFollowing lineFollowing;
+
     cv::Mat image;
     
     int key;
@@ -34,7 +38,9 @@ class Control {
 
     FILE *flight_log;
 
-    void initializeDroneControl(ObjectFollowing *objectFollowing, ManualFlying *manualFlying);
+    void initialize();
+    void close();
+    ControlMovements fly();
     void detectFlyingMode();
     bool detectEscape();
     void changeSpeed();
@@ -44,6 +50,5 @@ class Control {
 
     void overlayControl();
 
-    void close(ObjectFollowing *objectFollowing, ManualFlying *manualFlying);
 };
 

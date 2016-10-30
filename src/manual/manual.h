@@ -6,17 +6,10 @@
 
 class ManualFlying {
   public:
-    void initializeManualFlying();
-    void closeManualFlying();
+    void initialize();
+    void close();
+    ControlMovements fly(int key);
+    void displayManualInfo(cv::Mat *image, ControlMovements controlMovements);
 };
-
-/*
-*/
-ControlMovements manualMovement(int key);
-
-/*
-*/
-void displayManualInfo(cv::Mat *image, ControlMovements controlMovements);
-
 
 #endif

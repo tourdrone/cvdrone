@@ -6,7 +6,7 @@
 
 /*
 */
-void Control::initializeDroneControl(ObjectFollowing *objectFollowing, ManualFlying *manualFlying) {
+void Control::initialize() {
   //Initializing Message
   printf("Connecting to the drone\n");
   printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
@@ -26,13 +26,33 @@ void Control::initializeDroneControl(ObjectFollowing *objectFollowing, ManualFly
   ardrone.setFlatTrim();
 
   //initialize flying mode code
-  objectFollowing->initializeObjectFollowing();
-  manualFlying->initializeManualFlying();
+  manualFlying.initialize();
+  objectFollowing.initialize();
+  lineFollowing.initialize();
 
   //Print default command information
   printf("To disconnect, press the ESC key\n\n");
   printf("Currently the drone is in manual mode.\n");
   printf("Use the b key for manual mode, the n key for object following, and the m key for line following. The number keys can be used to set a speed. Use spacebar to take off and land, which is required before any control can be executed.\n\n");
+}
+
+ControlMovements Control::fly() {
+  //Execute flying instruction code
+  switch (flyingMode) {
+    case Manual:
+      //TODO: Scale these values for normal human control when in manual mode
+      velocities = manualFlying.fly(key);
+      manualFlying.displayManualInfo(&image, velocities);
+      break;
+    case ObjectFollow:
+      velocities = objectFollowing.fly(&image, key);
+      break;
+    case LineFollow:
+      velocities = lineFollowing.fly();
+      break;
+  }
+
+  return velocities;
 }
 
 /*
@@ -154,16 +174,24 @@ void Control::overlayControl() {
 */
 void Control::move() {
   ardrone.move3D(velocities.vx * speed, velocities.vy * speed, velocities.vz * speed, velocities.vr);
+
+  return;
 }
 
 
 /*
   Close connection to drone
 */
-void Control::close(ObjectFollowing *objectFollowing, ManualFlying *manualFlying) {
-  objectFollowing->closeObjectFollowing();
-  manualFlying->closeManualFlying();
+void Control::close() {
+  
+  //Close flying modes
+  manualFlying.close();
+  objectFollowing.close();
+  lineFollowing.close();
 
+  //close connections with drone
   ardrone.close();
+ 
+  return;
 }
 
