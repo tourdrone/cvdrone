@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 {
   Control control;
 
-  //Control classes
+  //Controlling classes
   ObjectFollowing objectFollowing;
   //TODO: ManualDriving manualDriving;
   //TODO: LineFollowing lineFollwing;
@@ -84,10 +84,6 @@ int main(int argc, char *argv[])
 
   //Drone control
   float speed = 0.0;
-  double vx = 0.0;
-  double vy = 0.0; 
-  double vz = 0.0; 
-  double vr = 0.0;
   ControlMovements controlMovements;
 
   //Initializing Message
@@ -173,20 +169,11 @@ int main(int argc, char *argv[])
         //TODO: Move this into manualMovement(control.key) function
         displayManualInfo(&image, controlMovements);
 
-        vx = controlMovements.vx;
-        vy = controlMovements.vy;
-        vz = controlMovements.vz;
-        vr = controlMovements.vr;
         break;
 
       case ObjectFollow:
 
         controlMovements = objectFollowing.detectObject(image, control.key);
-
-        vx = controlMovements.vx;
-        vy = controlMovements.vy;
-        vz = controlMovements.vz;
-        vr = controlMovements.vr;
 
         sprintf(modeDisplay, "Object Following Mode");
         break;
@@ -198,9 +185,8 @@ int main(int argc, char *argv[])
 
     putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
-    fprintf(flight_log, "ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n", (speed), (vy * speed), (vz * speed), vr);
 
-    control.ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
+    control.ardrone.move3D(controlMovements.vx * speed, controlMovements.vy * speed, controlMovements.vz * speed, controlMovements.vr);
 
     //Display the camera feed
     cv::imshow("camera", image);
