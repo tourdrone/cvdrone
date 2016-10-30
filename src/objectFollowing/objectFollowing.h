@@ -2,6 +2,7 @@
 #define OBJ_FOLLOWING_HEADER
 
 #include "../ardrone/ardrone.h"
+#include "../structures.h"
 
 class ObjectFollowing {
   public:
