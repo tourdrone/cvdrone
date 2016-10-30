@@ -32,7 +32,7 @@ void line_main() {
     //    low = Scalar(30, 0, 240);
 //    high = Scalar(80, 70, 255);
 
-    inRange(hsv, Scalar(30, 0, 0), Scalar(255, 255, 255), mask);
+    inRange(hsv, Scalar(50, 0, 0), Scalar(255, 255, 255), mask);
 
     bitwise_and(frame, frame, frame, mask);
 
