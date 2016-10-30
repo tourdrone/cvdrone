@@ -26,7 +26,7 @@ class Control {
     ARDrone ardrone;
     
     int key;
-    FlyingMode flyingmode;
+    FlyingMode flyingMode = Manual;
     double speed;
     int batteryPercentage;
     bool flying;
@@ -89,8 +89,6 @@ int main(int argc, char *argv[])
   double vr = 0.0;
   ControlMovements controlMovements;
 
-  FlyingMode flyingMode = Manual;
-
   //Initializing Message
   printf("Connecting to the drone\n");
   printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
@@ -124,7 +122,7 @@ int main(int argc, char *argv[])
     //TODO:Write battery percentage to screen
     printf("%d\n", control.ardrone.getBatteryPercentage());
 
-    detectFlyingMode(&(control.ardrone), control.key, &flyingMode);
+    detectFlyingMode(&(control.ardrone), control.key, &(control.flyingMode));
 
     // Get an image
     cv::Mat image = control.ardrone.getImage();
@@ -161,7 +159,7 @@ int main(int argc, char *argv[])
     }
     putText(image, flyingDisplay, cvPoint(200,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
     
-    switch (flyingMode) {
+    switch (control.flyingMode) {
       case Manual:
         //TODO: Allow user to set camera mode in Manual
         //TODO: Change 0/1 to CONSTANTS of 0 = front, 1 = bottom
