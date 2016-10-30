@@ -24,8 +24,13 @@ int main(int argc, char *argv[])
 {
   Control control;
 
-  //Initialize main control variables and flight modes
-  control.initialize();
+  try {
+    //Initialize main control variables and flight modes
+    control.initialize();
+  }catch (const char* msg){
+    cout << msg << endl;
+    return -1;
+  }
 
   // Main loop
   while (1) {
