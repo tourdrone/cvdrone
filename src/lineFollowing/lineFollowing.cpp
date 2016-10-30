@@ -30,11 +30,11 @@ void line_main() {
 
     cvtColor(frame, hsv, CV_BGR2HSV);
 
-    double minH = 0;
+    double minH = 30;
     double minS = 0;
-    double minV = 0;
-    double maxH = 255;
-    double maxS = 255;
+    double minV = 240;
+    double maxH = 80;
+    double maxS = 70;
     double maxV = 255;
 
     cv::Scalar lower(minH, minS, minV);
@@ -60,7 +60,7 @@ void line_main() {
     }
 
 
-    imshow("edges", frame);
+    imshow("edges", mask);
     if (waitKey(30) >= 0) break;
   }
   // the camera will be deinitialized automatically in VideoCapture destructor
