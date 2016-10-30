@@ -22,7 +22,7 @@ void line_main() {
     return;
 
   namedWindow("edges", CV_WINDOW_NORMAL);
-  Mat edges;
+//  Mat edges;
   for (; ;) {
     Mat mask, hsv_mask;
     Mat frame, gray;
@@ -39,7 +39,7 @@ void line_main() {
 //    cvtColor(mask, hsv_mask, CV_HS);
     hsv_mask = mask;
     vector <Vec4i> lines;
-    HoughLinesP(mask, lines, 1, CV_PI / 180, 100, 100, 10);
+//    HoughLinesP(mask, lines, 1, CV_PI / 180, 100, 100, 10);
 
     printf("Adding in %d lines\n", (int) lines.size());
     for (size_t i = 0; i < lines.size(); i++) {
