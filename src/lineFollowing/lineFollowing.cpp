@@ -20,6 +20,7 @@ ControlMovements lineFollowingControl() {
 
 void line_main() {
 //  printf("Hello, this is Caleb\n");
+//  no this is patric
 
   VideoCapture cap("../../tests/videos/top_down_1.m4v");
   if (!cap.isOpened())  // check if we succeeded
