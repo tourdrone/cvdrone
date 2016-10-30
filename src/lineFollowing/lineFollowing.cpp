@@ -40,13 +40,12 @@ void line_main() {
     HoughLinesP(mask, lines, 1, CV_PI / 180, 100, 100, 10);
 
     for (size_t i = 0; i < lines.size(); i++) {
-      cout << "adding a line\n";
       Vec4i l = lines[i];
       line(frame, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 3, CV_AA);
     }
 
 
-    imshow("edges", mask);
+    imshow("edges", frame);
     if (waitKey(30) >= 0) break;
   }
   // the camera will be deinitialized automatically in VideoCapture destructor
