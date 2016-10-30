@@ -52,7 +52,7 @@ void line_main() {
     printf("Adding in %d lines\n", (int) lines.size());
     for (size_t i = 0; i < lines.size(); i++) {
       Vec4i l = lines[i];
-      line(frame, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 3, CV_AA);
+      line(frame, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 1, CV_AA);
       // break;
     }
 //    if (lines.size() < 1) continue;
