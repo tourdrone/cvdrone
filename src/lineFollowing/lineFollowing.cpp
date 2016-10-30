@@ -47,7 +47,7 @@ void line_main() {
 
 
     vector <Vec4i> lines;
-    HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 100, 10);
+    HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10);
 
     printf("Adding in %d lines\n", (int) lines.size());
     for (size_t i = 0; i < lines.size(); i++) {
