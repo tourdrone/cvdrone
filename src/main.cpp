@@ -10,20 +10,25 @@
 
 #include "ardrone/ardrone.h"
 #include "structures.h"
-#include "objectFollowing/objectFollowing.h"
 #include "manual/manual.h"
+#include "objectFollowing/objectFollowing.h"
 #include "lineFollowing/lineFollowing.h"
 #include <iostream>
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <string>
 
 using namespace std;
 
 class Control {
   public:
+    const string flightLog = "flight_log.txt";
+
     //AR.Drone class
     ARDrone ardrone;
+
+    cv::Mat image;
     
     int key;
     FlyingMode flyingMode = Manual;
@@ -35,12 +40,72 @@ class Control {
 
     FILE *flight_log;
 
+    void initializeDroneControl(ObjectFollowing *objectFollowing);
     void detectFlyingMode();
+    bool detectEscape();
+    void changeSpeed();
+    void getImage();
+
+    void overlayControl();
 };
 
+/*
+*/
+void Control::initializeDroneControl(ObjectFollowing *objectFollowing) {
+  //Initializing Message
+  printf("Connecting to the drone\n");
+  printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
+  fflush(stdout);
+
+  // Initialize
+  if (!ardrone.open()) {
+    printf("Failed to initialize.\n");
+    //TODO: fix this return -1;
+  }
+
+  //Set drone on flat surface and initialize
+  ardrone.setFlatTrim();
+
+  //initialize object following code
+  objectFollowing->initializeObjectFollowing();
+  flight_log = fopen(flightLog.c_str(), "w");
+
+  //Print default command information
+  printf("To disconnect, press the ESC key\n\n");
+  printf("Currently the drone is in manual mode.\n");
+  printf("Use the b key for manual mode, the n key for object following, and the m key for line following. The number keys can be used to set a speed. Use spacebar to take off and land, which is required before any control can be executed.\n\n");
+}
+
+/*
+  Detect ESC key press and
+*/
+bool Control::detectEscape() {
+  //Escape key
+  if (key == 0x1b) { return true; }
+  return false;
+}
+
+/*
+*/
+void Control::changeSpeed() {
+  if ((key >= '0') && (key <= '9')) //number keys
+  {
+    speed = (key-'0')*0.1;
+  }
+}
+
+/*
+*/
+void Control::getImage() {
+//Get an image
+  image = ardrone.getImage();
+}
+
+/*
+  Switch between flying modes
+*/
 void Control::detectFlyingMode() {
 
-  //switch between flying modes
   if (key == 'b') {
     flyingMode = Manual;
     ardrone.setCamera(0);
@@ -64,6 +129,34 @@ void Control::detectFlyingMode() {
   }
 }
 
+void Control::overlayControl() {
+  //TODO: move this so it isnt called every time
+  cv::Scalar green = CV_RGB(0,255,0); //putText color value
+
+  char modeDisplay[80]; //print buffer for flying mode
+  char speedDisplay[80]; //print buffer for speed
+
+  if (flyingMode == Manual) {
+    sprintf(modeDisplay, "Manual Mode");
+  }
+  else if (ObjectFollow) {
+    sprintf(modeDisplay, "Object Following Mode");
+  }
+  else if (LineFollow) {
+    sprintf(modeDisplay, "Line Following Mode");
+  }
+
+  sprintf(speedDisplay, "Speed = %3.2f", speed);
+
+  //add speed to overlay
+  putText(image, speedDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
+  //add flying mode to overlay
+  putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
+  cv::imshow("camera", image); //Display the camera feed
+}
+
 int main(int argc, char *argv[])
 {
   Control control;
@@ -74,59 +167,24 @@ int main(int argc, char *argv[])
   //TODO: LineFollowing lineFollwing;
 
   //Display variables
-  char modeDisplay[80]; //print buffer for flying mode
   char flyingDisplay[80]; //print buffer for if flying
-  char speedDisplay[80]; //print buffer for speed
 
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
-  //Initializing Message
-  printf("Connecting to the drone\n");
-  printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
-  printf("To disconnect, press the ESC key\n\n");
-  fflush(stdout);
-
-  // Initialize
-  if (!(control.ardrone.open())) {
-    printf("Failed to initialize.\n");
-    return -1;
-  }
-
-  //Set drone on flat surface and initialize
-  control.ardrone.setFlatTrim();
-
-  //initialize object following code
-  objectFollowing.initializeObjectFollowing();
-
-  //Print default command information
-  printf("Currently the drone is in manual mode.\n");
-  printf("Use the b key for manual mode, the n key for object following, and the m key for line following. The number keys can be used to set a speed. Use spacebar to take off and land, which is required before any control can be executed.\n\n");
-
-  control.flight_log = fopen("flight_log.txt", "w");
+  control.initializeDroneControl(&objectFollowing);
 
   // Main loop
   while (1) {
     control.key = cv::waitKey(33); // Key input
 
-    if (control.key == 0x1b) { break; } //press the escape key to exit
+    if (control.detectEscape()) { break; } //Press ESC to close program
 
-    //TODO:Write battery percentage to screen
-    printf("%d\n", control.ardrone.getBatteryPercentage());
+    control.detectFlyingMode(); //Press b, n, m to change mode
 
-    control.detectFlyingMode();
+    control.changeSpeed(); //Press 0-9 to change speed
 
-    // Get an image
-    cv::Mat image = control.ardrone.getImage();
-    
-    //Speed
-    if ((control.key >= '0') && (control.key <= '9')) //number keys
-    {
-      control.speed = (control.key-'0')*0.1;
-    }
+    control.getImage(); //get the image from the camera
 
-    //Write speed to image
-    sprintf(speedDisplay, "Speed = %3.2f", control.speed);
-    putText(image, speedDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
     //Take off / Landing
     if (control.key == ' ') { //spacebar
@@ -141,6 +199,10 @@ int main(int argc, char *argv[])
       }
     }
 
+    //TODO:Write battery percentage to screen
+    printf("%d\n", control.ardrone.getBatteryPercentage());
+
+
     //Write if grounded or flying to image
     if (control.ardrone.onGround()) {
       sprintf(flyingDisplay, "Landed");
@@ -148,7 +210,7 @@ int main(int argc, char *argv[])
     else {
       sprintf(flyingDisplay, "Flying");
     }
-    putText(image, flyingDisplay, cvPoint(200,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(control.image, flyingDisplay, cvPoint(200,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
     
     switch (control.flyingMode) {
       case Manual:
@@ -158,32 +220,26 @@ int main(int argc, char *argv[])
         //TODO: Scale these values for normal human control when in manual mode
         control.velocities = manualMovement(control.key);
 
-        sprintf(modeDisplay, "Manual Mode");
 
         //TODO: Move this into manualMovement(control.key) function
-        displayManualInfo(&image, control.velocities);
+        displayManualInfo(&(control.image), control.velocities);
 
         break;
 
       case ObjectFollow:
+        control.velocities = objectFollowing.detectObject(control.image, control.key);
 
-        control.velocities = objectFollowing.detectObject(image, control.key);
-
-        sprintf(modeDisplay, "Object Following Mode");
         break;
 
       case LineFollow:
-        sprintf(modeDisplay, "Line Following Mode");
+        //control.velocities = lineFollowingControl();
         break;
     }
 
-    putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-
+    control.overlayControl();
 
     control.ardrone.move3D(control.velocities.vx * control.speed, control.velocities.vy * control.speed, control.velocities.vz * control.speed, control.velocities.vr);
 
-    //Display the camera feed
-    cv::imshow("camera", image);
   }
 
   //Write hsv values to a file
