@@ -25,17 +25,14 @@ void line_main() {
 //  Mat edges;
   for (; ;) {
     Mat mask, hsv_mask;
-    Mat frame, gray;
+    Mat frame, hsv;
     cap >> frame; // get a new frame from camera
-    cvtColor(frame, gray, CV_BGR2HSV);
+    cvtColor(frame, hsv, CV_BGR2HSV);
 
-    Scalar low, high;
-//    low = Scalar(30, 0, 240);
+    //    low = Scalar(30, 0, 240);
 //    high = Scalar(80, 70, 255);
-    low = Scalar(0, 0, 0);
-    high = Scalar(255, 255, 255);
 
-    inRange(gray, low, high, mask);
+    inRange(hsv, Scalar(0, 0, 0), Scalar(255, 255, 255), mask);
 //    cvtColor(mask, hsv_mask, CV_HS);
     hsv_mask = mask;
     vector <Vec4i> lines;
