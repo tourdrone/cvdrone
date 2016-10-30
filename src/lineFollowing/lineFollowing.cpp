@@ -17,7 +17,7 @@ ControlMovements lineFollowingControl() {
 void line_main() {
 //  printf("Hello, this is Caleb\n");
 
-  VideoCapture cap("../../tests/videos/top_down_4.m4v");
+  VideoCapture cap("../../tests/videos/top_down_1.m4v");
   if (!cap.isOpened())  // check if we succeeded
     return;
 
