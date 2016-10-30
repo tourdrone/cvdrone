@@ -32,9 +32,9 @@ void line_main() {
     double minH = 0;
     double minS = 0;
     double minV = 0;
-    double maxH = 0;
-    double maxS = 0;
-    double maxV = 0;
+    double maxH = 255;
+    double maxS = 255;
+    double maxV = 255;
 
     cv::Scalar lower(minH, minS, minV);
     cv::Scalar upper(maxH, maxS, maxV);
