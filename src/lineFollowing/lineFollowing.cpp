@@ -43,7 +43,7 @@ void line_main() {
 
 //    bitwise_and(frame, frame, frame, mask);
 
-    resize(mask, mask, Size(), .5, .5);
+    resize(mask, mask, Size(), .2, .2);
 
     vector <Vec4i> lines;
     HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 100, 10);
