@@ -51,7 +51,7 @@ void line_main() {
     medianBlur(mask, mask, 5);
 
     vector <Vec4i> lines;
-    HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 100, 10);
+    HoughLines(mask, lines, 1, CV_PI / 180.0, 10);
 
     printf("Adding in %d lines\n", (int) lines.size());
     for (size_t i = 0; i < lines.size(); i++) {
