@@ -1,5 +1,6 @@
-/*
-*/
+#ifndef CONTROL_HEADER
+#define CONTROL_HEADER 
+
 
 /*
 */
@@ -17,3 +18,5 @@ enum FlyingMode {
   ObjectFollow,
   LineFollow
 };
+
+#endif
