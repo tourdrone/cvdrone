@@ -27,7 +27,8 @@ void line_main() {
     Mat mask, hsv_mask;
     Mat frame, hsv;
     cap >> frame; // get a new frame from camera
-    cvtColor(frame, hsv, CV_BGR2HSV);
+
+    cvtColor(frame, frame, CV_BGR2HSV);
 
     double minH = 0;
     double minS = 0;
@@ -38,17 +39,17 @@ void line_main() {
 
     cv::Scalar lower(minH, minS, minV);
     cv::Scalar upper(maxH, maxS, maxV);
-    cv::inRange(hsv, lower, upper, mask);
+    cv::inRange(frame, lower, upper, mask);
     
     //    low = Scalar(30, 0, 240);
 //    high = Scalar(80, 70, 255);
 
 //    inRange(hsv, Scalar(100, 0, 0), Scalar(255, 255, 255), mask);
 
-    bitwise_and(frame, mask, frame);
+    bitwise_and(frame, frame, frame, mask);
 
 //    cvtColor(mask, hsv_mask, CV_HS);
-    hsv_mask = mask;
+
     vector <Vec4i> lines;
 //    HoughLinesP(mask, lines, 1, CV_PI / 180, 100, 100, 10);
 
