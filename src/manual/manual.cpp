@@ -1,33 +1,46 @@
 /*
 */
 
+
 #include "manual.h"
 
 /*
 */
-ControlMovements manualMovement(int key) {
-  ControlMovements controlMovements;
-  
-  controlMovements.vx = 0;
-  controlMovements.vy = 0;
-  controlMovements.vz = 0;
-  controlMovements.vr = 0;
-
-  if (key == 't') { controlMovements.vx =  1.0; } //t key
-  if (key == 'g') { controlMovements.vx = -1.0; } //g key
-  if (key == 'f') { controlMovements.vy =  1.0; } //f key
-  if (key == 'h') { controlMovements.vy = -1.0; } //h key
-  if (key == 'q') { controlMovements.vz =  1.0; } //q key
-  if (key == 'a') { controlMovements.vz = -1.0; } //a key
-  if (key == 'r') { controlMovements.vr =  1.0; } //r key
-  if (key == 'y') { controlMovements.vr = -1.0; } //y key
-
-  return controlMovements;
+void ManualFlying::initialize() {
+  return;
 }
 
 /*
 */
-void displayManualInfo(cv::Mat *image, ControlMovements controlMovements) {
+void ManualFlying::close() {  
+  return;
+}
+
+/*
+*/
+ControlMovements ManualFlying::fly(int key) {
+  ControlMovements velocities;
+  
+  velocities.vx = 0;
+  velocities.vy = 0;
+  velocities.vz = 0;
+  velocities.vr = 0;
+
+  if (key == 't') { velocities.vx =  1.0; } //t key
+  if (key == 'g') { velocities.vx = -1.0; } //g key
+  if (key == 'f') { velocities.vy =  1.0; } //f key
+  if (key == 'h') { velocities.vy = -1.0; } //h key
+  if (key == 'q') { velocities.vz =  1.0; } //q key
+  if (key == 'a') { velocities.vz = -1.0; } //a key
+  if (key == 'r') { velocities.vr =  1.0; } //r key
+  if (key == 'y') { velocities.vr = -1.0; } //y key
+
+  return velocities;
+}
+
+/*
+*/
+void ManualFlying::displayManualInfo(cv::Mat *image, ControlMovements controlMovements) {
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
   char vxDisplay[80]; //print buffer for x (forward/reverse) velocity
