@@ -33,6 +33,9 @@ void line_main() {
 //    high = Scalar(80, 70, 255);
 
     inRange(hsv, Scalar(0, 0, 0), Scalar(255, 255, 255), mask);
+
+    bitwise_and(frame, frame, frame, mask);
+
 //    cvtColor(mask, hsv_mask, CV_HS);
     hsv_mask = mask;
     vector <Vec4i> lines;
@@ -45,7 +48,7 @@ void line_main() {
     }
 
 
-    imshow("edges", mask);
+    imshow("edges", frame);
     if (waitKey(30) >= 0) break;
   }
   // the camera will be deinitialized automatically in VideoCapture destructor
