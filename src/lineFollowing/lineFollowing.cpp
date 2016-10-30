@@ -46,7 +46,7 @@ void line_main() {
     }
 
 
-    imshow("edges", gray);
+    imshow("edges", mask);
     if (waitKey(30) >= 0) break;
   }
   // the camera will be deinitialized automatically in VideoCapture destructor
