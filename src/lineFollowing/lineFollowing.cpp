@@ -43,27 +43,16 @@ void line_main() {
 
 //    bitwise_and(frame, frame, frame, mask);
 
+    resize(mask, mask, Size(), .5, .5);
 
-
-//    erode(mask, mask, Mat(), Point(-1, -1), 5);
-//    medianBlur(mask, mask, 5);
-//    medianBlur(mask, mask, 5);
-//    medianBlur(mask, mask, 5);
-
-    vector<Vec2f> lines;
-    HoughLines(mask, lines, 1, CV_PI/180, 100, 0, 0 );
+    vector <Vec4i> lines;
+    HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 100, 10);
 
     printf("Adding in %d lines\n", (int) lines.size());
     for (size_t i = 0; i < lines.size(); i++) {
-      float rho = lines[i][0], theta = lines[i][1];
-      Point pt1, pt2;
-      double a = cos(theta), b = sin(theta);
-      double x0 = a * rho, y0 = b * rho;
-      pt1.x = cvRound(x0 + 1000 * (-b));
-      pt1.y = cvRound(y0 + 1000 * (a));
-      pt2.x = cvRound(x0 - 1000 * (-b));
-      pt2.y = cvRound(y0 - 1000 * (a));
-      line(frame, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
+      Vec4i l = lines[i];
+      line(frame, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 3, CV_AA);
+      // break;
     }
 //    if (lines.size() < 1) continue;
 
