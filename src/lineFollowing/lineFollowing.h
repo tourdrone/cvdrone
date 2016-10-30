@@ -13,7 +13,7 @@ class LineFollowing {
   public:
     void initialize();
     void close();
-    ControlMovements fly();
+    ControlMovements fly(cv::Mat *image);
 };
 
 #endif

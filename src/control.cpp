@@ -48,7 +48,7 @@ ControlMovements Control::fly() {
       velocities = objectFollowing.fly(&image, key);
       break;
     case LineFollow:
-      velocities = lineFollowing.fly();
+      velocities = lineFollowing.fly(&image);
       break;
   }
 
