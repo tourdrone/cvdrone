@@ -1,9 +1,14 @@
 #ifndef MANUAL_HEADER
 #define MANUAL_HEADER
 
-
 #include "../ardrone/ardrone.h"
 #include "../structures.h"
+
+class ManualFlying {
+  public:
+    void initializeManualFlying();
+    void closeManualFlying();
+};
 
 /*
 */

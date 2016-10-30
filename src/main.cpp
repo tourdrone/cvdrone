@@ -26,22 +26,25 @@ int main(int argc, char *argv[])
 
   //Controlling classes
   ObjectFollowing objectFollowing;
-  //TODO: ManualDriving manualDriving;
+  ManualFlying manualFlying;
   //TODO: LineFollowing lineFollwing;
 
-  control.initializeDroneControl(&objectFollowing);
+  control.initializeDroneControl(&objectFollowing, &manualFlying);
 
   // Main loop
   while (1) {
-    control.key = cv::waitKey(33); // Key input
+    //Detect user key input
+    control.key = cv::waitKey(33); 
 
-    if (control.detectEscape()) { break; } //Press ESC to close program
-    control.detectFlyingMode(); //Press b, n, m to change mode
-    control.changeSpeed(); //Press 0-9 to change speed
-    control.detectTakeoff(); //Press spacebar to take off
+    if (control.detectEscape()) { break; } //esc to close program
+    control.detectFlyingMode(); //b, n, m to change mode
+    control.changeSpeed(); //0-9 to change speed
+    control.detectTakeoff(); //spacebar to take off
 
-    control.getImage(); //get the image from the camera
+    //Get the image from the camera
+    control.getImage();
 
+    //Execute flying instruction code
     switch (control.flyingMode) {
       case Manual:
         //TODO: Allow user to set camera mode in Manual
@@ -54,27 +57,22 @@ int main(int argc, char *argv[])
         displayManualInfo(&(control.image), control.velocities);
 
         break;
-
       case ObjectFollow:
         control.velocities = objectFollowing.detectObject(control.image, control.key);
         break;
-
       case LineFollow:
         //control.velocities = lineFollowingControl();
         break;
     }
 
-    control.overlayControl(); //Display image overlay values
+    //Display image overlay values
+    control.overlayControl(); 
 
     control.move(); //Send move command to the drone
   }
 
-  //Write hsv values to a file
-  objectFollowing.closeObjectFollowing();
-  //TODO: closeManual();
   //TODO: closeLineFollowing();
-
-  control.close();
+  control.close(&objectFollowing, &manualFlying);
 
   return 0;
 }

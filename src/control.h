@@ -1,11 +1,14 @@
+
 /*
 */
 #include "ardrone/ardrone.h"
-#include <string>
 #include "structures.h"
 #include "objectFollowing/objectFollowing.h"
 #include "manual/manual.h"
 #include "lineFollowing/lineFollowing.h"
+#include <string>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -31,7 +34,7 @@ class Control {
 
     FILE *flight_log;
 
-    void initializeDroneControl(ObjectFollowing *objectFollowing);
+    void initializeDroneControl(ObjectFollowing *objectFollowing, ManualFlying *manualFlying);
     void detectFlyingMode();
     bool detectEscape();
     void changeSpeed();
@@ -41,5 +44,6 @@ class Control {
 
     void overlayControl();
 
-    void close();
+    void close(ObjectFollowing *objectFollowing, ManualFlying *manualFlying);
 };
+

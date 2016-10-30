@@ -1,13 +1,12 @@
 /*
 */
 
+
 #include "control.h"
-#include <chrono>
-#include <thread>
 
 /*
 */
-void Control::initializeDroneControl(ObjectFollowing *objectFollowing) {
+void Control::initializeDroneControl(ObjectFollowing *objectFollowing, ManualFlying *manualFlying) {
   //Initializing Message
   printf("Connecting to the drone\n");
   printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
@@ -26,8 +25,9 @@ void Control::initializeDroneControl(ObjectFollowing *objectFollowing) {
   //Set drone trim on flat surface
   ardrone.setFlatTrim();
 
-  //initialize object following code
+  //initialize flying mode code
   objectFollowing->initializeObjectFollowing();
+  manualFlying->initializeManualFlying();
 
   //Print default command information
   printf("To disconnect, press the ESC key\n\n");
@@ -160,7 +160,10 @@ void Control::move() {
 /*
   Close connection to drone
 */
-void Control::close() {
+void Control::close(ObjectFollowing *objectFollowing, ManualFlying *manualFlying) {
+  objectFollowing->closeObjectFollowing();
+  manualFlying->closeManualFlying();
+
   ardrone.close();
 }
 
