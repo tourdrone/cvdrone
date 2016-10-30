@@ -9,7 +9,6 @@ class ManualFlying {
     void initialize();
     void close();
     ControlMovements fly(int key);
-    void displayManualInfo(cv::Mat *image, ControlMovements controlMovements);
 };
 
 #endif
