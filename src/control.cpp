@@ -16,8 +16,7 @@ void Control::initialize() {
 
   //Connect to drone
   if (!ardrone.open()) {
-    printf("Failed to initialize.\n");
-    //TODO: fix this return -1;
+    throw "Failed to initialize.";
   }
 
   //Set drone trim on flat surface
