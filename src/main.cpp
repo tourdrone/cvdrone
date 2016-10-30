@@ -171,8 +171,8 @@ int main(int argc, char *argv[])
 
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
-  control.initializeDroneControl(&objectFollowing);
   line_main();
+  control.initializeDroneControl(&objectFollowing);
 
   // Main loop
   while (1) {
