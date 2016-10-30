@@ -31,6 +31,7 @@ class Control {
     FlyingMode flyingMode = Manual;
     double speed = 0.0;
     int batteryPercentage;
+    int altitude;
     bool flying;
     cv::Scalar green; //overlay putText color value
 

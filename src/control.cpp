@@ -1,7 +1,6 @@
 /*
 */
 
-
 #include "control.h"
 
 /*
@@ -11,7 +10,6 @@ void Control::initialize() {
   printf("Connecting to the drone\n");
   printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
   fflush(stdout);
-
 
   flight_log = fopen(flightLog.c_str(), "w");
   green = CV_RGB(0,255,0); 
@@ -40,9 +38,7 @@ ControlMovements Control::fly() {
   //Execute flying instruction code
   switch (flyingMode) {
     case Manual:
-      //TODO: Scale these values for normal human control when in manual mode
       velocities = manualFlying.fly(key);
-      manualFlying.displayManualInfo(&image, velocities);
       break;
     case ObjectFollow:
       velocities = objectFollowing.fly(&image, key);
@@ -116,8 +112,6 @@ void Control::detectTakeoff() {
     if (ardrone.onGround()) {
       ardrone.takeoff();
       fprintf(flight_log, "TAKEOFF\n");
-      //TODO: is this working?
-      std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
     else {
       ardrone.landing();
@@ -134,9 +128,26 @@ void Control::overlayControl() {
   char speedDisplay[80]; //print buffer for speed
   char flyingDisplay[80]; //print buffer for if flying
   char batteryDisplay[80]; //print buffer for battery
+  char altitudeDisplay[80]; //print buffer for altitude
+
+  char vxDisplay[80]; //print buffer for x (forward/reverse) velocity
+  char vyDisplay[80]; //print buffer for y (sideways) velocity
+  char vzDisplay[80]; //print buffer for z (up/down) velocity
+  char vrDisplay[80]; //print buffer for r rotational velocity
 
   if (flyingMode == Manual) {
     sprintf(modeDisplay, "Manual Mode");
+
+
+    sprintf(vxDisplay, "vx = %3.2f", velocities.vx);
+    sprintf(vyDisplay, "vy = %3.2f", velocities.vy);
+    sprintf(vzDisplay, "vz = %3.2f", velocities.vz);
+    sprintf(vrDisplay, "vr = %3.2f", velocities.vr);
+
+    putText(image, vxDisplay, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(image, vyDisplay, cvPoint(30,140), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(image, vzDisplay, cvPoint(30,160), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(image, vrDisplay, cvPoint(30,180), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
   }
   else if (ObjectFollow) {
     sprintf(modeDisplay, "Object Following Mode");
@@ -153,7 +164,8 @@ void Control::overlayControl() {
   }
 
   sprintf(speedDisplay, "Speed = %3.2f", speed);
-  sprintf(batteryDisplay, "Battery = %d\n", ardrone.getBatteryPercentage());
+  sprintf(batteryDisplay, "Battery = %d", ardrone.getBatteryPercentage());
+  sprintf(altitudeDisplay, "Altitude = %f", ardrone.getAltitude());
 
   //add flying mode to overlay
   putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
@@ -164,8 +176,11 @@ void Control::overlayControl() {
   //add battery percentage to overlay
   putText(image, batteryDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
+  //add altitude to overlay
+  putText(image, altitudeDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+
   //add speed to overlay
-  putText(image, speedDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(image, speedDisplay, cvPoint(30,100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
   cv::imshow("camera", image); //Display the camera feed
 }

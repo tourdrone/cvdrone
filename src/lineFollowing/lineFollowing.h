@@ -12,16 +12,16 @@
 class LineFollowing {
 public:
   void initialize();
-
   void close();
-
   ControlMovements fly(cv::Mat *image);
 };
 
-
+/*
+*/
 void line_main();
 
+/*
+*/
 void detect_lines(cv::Mat &original_frame, double scale_factor);
-
 
 #endif

@@ -205,9 +205,11 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key) {
     moveStatus = true;
   }
 
+  controlMovements.vx = 0;
   controlMovements.vy = 0;
   controlMovements.vz = 0;
-  controlMovements.vr = -heading;
+  controlMovements.vr = 0;
+  //controlMovements.vr = -heading;
 
   return controlMovements;
 }
@@ -243,8 +245,8 @@ void ObjectFollowing::displayObjectFollowingInfo(cv::Mat *image, double heading,
     sprintf(moveStatusDisplay, "move status = STOP");
   }
 
-  putText(*image, headingDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-  putText(*image, hsvSampleDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-  putText(*image, moveStatusDisplay, cvPoint(30,100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(*image, headingDisplay, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(*image, hsvSampleDisplay, cvPoint(30,140), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(*image, moveStatusDisplay, cvPoint(30,160), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
 }
