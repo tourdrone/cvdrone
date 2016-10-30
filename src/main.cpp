@@ -29,7 +29,7 @@ class Control {
     ARDrone ardrone;
 
     cv::Mat image;
-    
+
     int key;
     FlyingMode flyingMode = Manual;
     double speed = 0.0;
@@ -139,10 +139,10 @@ void Control::overlayControl() {
   if (flyingMode == Manual) {
     sprintf(modeDisplay, "Manual Mode");
   }
-  else if (ObjectFollow) {
+  else if (flyingMode == ObjectFollow) {
     sprintf(modeDisplay, "Object Following Mode");
   }
-  else if (LineFollow) {
+  else if (flyingMode == LineFollow) {
     sprintf(modeDisplay, "Line Following Mode");
   }
 
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
       sprintf(flyingDisplay, "Flying");
     }
     putText(control.image, flyingDisplay, cvPoint(200,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-    
+
     switch (control.flyingMode) {
       case Manual:
         //TODO: Allow user to set camera mode in Manual
@@ -232,6 +232,7 @@ int main(int argc, char *argv[])
         break;
 
       case LineFollow:
+          //TODO implement for real
         control.velocities = lineFollowingControl();
         break;
     }
