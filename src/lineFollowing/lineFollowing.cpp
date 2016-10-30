@@ -28,7 +28,7 @@ void line_main() {
     Mat frame, hsv;
     cap >> frame; // get a new frame from camera
 
-    cvtColor(frame, frame, CV_BGR2HSV);
+    cvtColor(frame, hsv, CV_BGR2HSV);
 
     double minH = 0;
     double minS = 0;
@@ -39,7 +39,7 @@ void line_main() {
 
     cv::Scalar lower(minH, minS, minV);
     cv::Scalar upper(maxH, maxS, maxV);
-    cv::inRange(frame, lower, upper, mask);
+    cv::inRange(hsv, lower, upper, mask);
     
     //    low = Scalar(30, 0, 240);
 //    high = Scalar(80, 70, 255);
