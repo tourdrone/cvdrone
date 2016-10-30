@@ -96,7 +96,7 @@ ControlMovements ObjectFollowing::fly(cv::Mat *image, int key) {
 */
 ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key) {
 
-  int tolerance = 30;
+  int tolerance = 50;
   cv::Vec3b hsvSample;
   ControlMovements controlMovements;
 
@@ -196,7 +196,11 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key) {
   rect_area = rect.width * rect.height;
 
   //Execute drone movement
-  if (rect_area > 10000) {
+  if (rect_area > 20000) {
+    controlMovements.vx = -1.0;
+    moveStatus = false;
+  }
+  else if (rect_area <= 20000 && rect_area >= 15000) {
     controlMovements.vx = 0;
     moveStatus = false;
   }
@@ -205,11 +209,9 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key) {
     moveStatus = true;
   }
 
-  controlMovements.vx = 0;
   controlMovements.vy = 0;
   controlMovements.vz = 0;
-  controlMovements.vr = 0;
-  //controlMovements.vr = -heading;
+  controlMovements.vr = -heading;
 
   return controlMovements;
 }
