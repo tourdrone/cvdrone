@@ -14,7 +14,7 @@ void LineFollowing::close() {
   return;
 }
 
-ControlMovements LineFollowing::fly() {
+ControlMovements LineFollowing::fly(cv::Mat *image) {
   ControlMovements velocities;
 
   velocities.vx = 0;
