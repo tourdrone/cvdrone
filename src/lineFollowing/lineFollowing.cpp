@@ -11,6 +11,8 @@ using namespace cv;
 void detect_lines(Mat &original_frame, double scale_factor);
 
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 void line_main() {
 //  printf("Hello, this is Caleb\n");
 //  no this is patric
@@ -34,6 +36,7 @@ void line_main() {
 
   return;
 }
+#pragma clang diagnostic pop
 
 void detect_lines(Mat &original_frame, double scale_factor) {
   Mat hsv;
