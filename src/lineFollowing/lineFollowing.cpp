@@ -56,7 +56,7 @@ void line_main() {
     }
 //    if (lines.size() < 1) continue;
 
-    imshow("edges", mask);
+    imshow("edges", frame);
     if (waitKey(30) >= 0) break;
 
   }
