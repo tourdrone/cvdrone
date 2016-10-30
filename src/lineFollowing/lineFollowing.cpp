@@ -24,16 +24,17 @@ void line_main() {
   namedWindow("edges", CV_WINDOW_NORMAL);
   Mat edges;
   for (; ;) {
-    Mat frame, mask;
+    Mat mask;
+    Mat frame, gray;
     cap >> frame; // get a new frame from camera
-    cvtColor(frame, edges, CV_BGR2HSV);
+    cvtColor(frame, gray, CV_BGR2HSV);
 
     Scalar low, high;
     low = Scalar(30, 0, 240);
     high = Scalar(80, 70, 255);
 
 
-    inRange(frame, low, high, mask);
+    inRange(gray, low, high, mask);
 
     vector <Vec4i> lines;
     HoughLinesP(mask, lines, 1, CV_PI / 180, 100, 100, 10);
@@ -45,7 +46,7 @@ void line_main() {
     }
 
 
-    imshow("edges", mask);
+    imshow("edges", gray);
     if (waitKey(30) >= 0) break;
   }
   // the camera will be deinitialized automatically in VideoCapture destructor
