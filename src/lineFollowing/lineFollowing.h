@@ -1,6 +1,6 @@
 /*
-*/
 
+*/
 #ifndef LINE_FOLLOWING_HEADER
 #define LINE_FOLLOWING_HEADER
 
@@ -10,10 +10,20 @@
 /*
 */
 class LineFollowing {
-  public:
-    void initialize();
-    void close();
-    ControlMovements fly(cv::Mat *image);
+public:
+  void initialize();
+
+  void close();
+
+  ControlMovements fly(cv::Mat *image);
 };
+
+
+ControlMovements lineFollowingControl();
+
+void line_main();
+
+void detect_lines(cv::Mat &frame, double scale_factor);
+
 
 #endif
