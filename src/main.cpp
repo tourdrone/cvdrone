@@ -24,12 +24,8 @@ int main(int argc, char *argv[])
 {
   Control control;
 
-  //Controlling classes
-  ObjectFollowing objectFollowing;
-  ManualFlying manualFlying;
-  //TODO: LineFollowing lineFollwing;
-
-  control.initializeDroneControl(&objectFollowing, &manualFlying);
+  //Initialize main control variables and flight modes
+  control.initialize();
 
   // Main loop
   while (1) {
@@ -44,35 +40,18 @@ int main(int argc, char *argv[])
     //Get the image from the camera
     control.getImage();
 
-    //Execute flying instruction code
-    switch (control.flyingMode) {
-      case Manual:
-        //TODO: Allow user to set camera mode in Manual
-        //TODO: Change 0/1 to CONSTANTS of 0 = front, 1 = bottom
-
-        //TODO: Scale these values for normal human control when in manual mode
-        control.velocities = manualMovement(control.key);
-
-        //TODO: Move this into manualMovement(control.key) function
-        displayManualInfo(&(control.image), control.velocities);
-
-        break;
-      case ObjectFollow:
-        control.velocities = objectFollowing.detectObject(control.image, control.key);
-        break;
-      case LineFollow:
-        //control.velocities = lineFollowingControl();
-        break;
-    }
+    //Run drone control
+    control.fly();
 
     //Display image overlay values
     control.overlayControl(); 
 
-    control.move(); //Send move command to the drone
+    //Send move command to the drone
+    control.move(); 
   }
 
-  //TODO: closeLineFollowing();
-  control.close(&objectFollowing, &manualFlying);
+  //Close flying modes and drone connection
+  control.close();
 
   return 0;
 }

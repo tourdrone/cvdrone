@@ -12,7 +12,7 @@ const double dt = 1.0; //Sampling time [s]
 
 /*
 */
-void ObjectFollowing::initializeObjectFollowing() {
+void ObjectFollowing::initialize() {
   kalman = cv::KalmanFilter(4, 2, 0);
 
   // XML save data for object following color thresholds
@@ -70,7 +70,7 @@ void ObjectFollowing::initializeObjectFollowing() {
 
 /*
 */
-void ObjectFollowing::closeObjectFollowing() {
+void ObjectFollowing::close() {
   //Save thresholds
   cv::FileStorage fs(THRESHOLDS_FILE_NAME, cv::FileStorage::READ);
   fs.open(THRESHOLDS_FILE_NAME, cv::FileStorage::WRITE);
@@ -83,6 +83,12 @@ void ObjectFollowing::closeObjectFollowing() {
     cv::write(fs, "V_MIN", minV);
     fs.release();
   }
+}
+
+/*
+*/
+ControlMovements ObjectFollowing::fly(cv::Mat *image, int key) {
+  return detectObject(*image, key);
 }
 
 /*
