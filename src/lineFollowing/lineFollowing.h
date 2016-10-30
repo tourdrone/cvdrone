@@ -19,8 +19,6 @@ public:
 };
 
 
-ControlMovements lineFollowingControl();
-
 void line_main();
 
 void detect_lines(cv::Mat &original_frame, double scale_factor);

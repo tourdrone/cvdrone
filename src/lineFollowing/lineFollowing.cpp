@@ -11,13 +11,6 @@ using namespace cv;
 void detect_lines(Mat &original_frame, double scale_factor);
 
 
-ControlMovements lineFollowingControl() {
-
-  line_main();
-
-  return ControlMovements();
-}
-
 void line_main() {
 //  printf("Hello, this is Caleb\n");
 //  no this is patric
@@ -95,6 +88,7 @@ ControlMovements LineFollowing::fly(cv::Mat *image) {
   velocities.vz = 0;
   velocities.vr = 0;
 
+  detect_lines(*image, 1);
 
   return velocities;
 }
