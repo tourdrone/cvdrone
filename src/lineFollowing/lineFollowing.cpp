@@ -29,12 +29,23 @@ void line_main() {
     cap >> frame; // get a new frame from camera
     cvtColor(frame, hsv, CV_BGR2HSV);
 
+    double minH = 0;
+    double minS = 0;
+    double minV = 0;
+    double maxH = 0;
+    double maxS = 0;
+    double maxV = 0;
+
+    cv::Scalar lower(minH, minS, minV);
+    cv::Scalar upper(maxH, maxS, maxV);
+    cv::inRange(hsv, lower, upper, mask);
+    
     //    low = Scalar(30, 0, 240);
 //    high = Scalar(80, 70, 255);
 
     inRange(hsv, Scalar(100, 0, 0), Scalar(255, 255, 255), mask);
 
-    bitwise_and(frame, frame, frame, mask);
+    bitwise_and(frame, mask, frame);
 
 //    cvtColor(mask, hsv_mask, CV_HS);
     hsv_mask = mask;
