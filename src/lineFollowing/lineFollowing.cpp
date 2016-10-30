@@ -43,9 +43,11 @@ void line_main() {
 
 //    bitwise_and(frame, frame, frame, mask);
 
-    medianBlur(mask, mask, 5);
+
 
     erode(mask, mask, Mat(), Point(-1,-1), 5);
+    medianBlur(mask, mask, 5);
+
     vector <Vec4i> lines;
     HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 100, 10);
 
