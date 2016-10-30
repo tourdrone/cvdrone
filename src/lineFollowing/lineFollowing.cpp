@@ -45,7 +45,7 @@ void line_main() {
 
 //    medianBlur(mask, mask, 5);
 
-    erode(mask, mask, Mat(), Point(-1,-1), 20);
+    erode(mask, mask, Mat(), Point(-1,-1), 12);
     vector <Vec4i> lines;
     HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 100, 10);
 
