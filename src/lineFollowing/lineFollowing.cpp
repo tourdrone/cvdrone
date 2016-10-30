@@ -4,10 +4,12 @@
 
 #include "lineFollowing.h"
 
-void detect_lines(Mat &frame, double scale_factor);
 
 using namespace std;
 using namespace cv;
+
+void detect_lines(Mat &frame, double scale_factor);
+
 
 ControlMovements lineFollowingControl() {
 
