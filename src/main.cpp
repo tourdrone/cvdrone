@@ -20,6 +20,23 @@
 
 using namespace std;
 
+class Control {
+  public:
+    //AR.Drone class
+    ARDrone ardrone;
+    
+    int key;
+    FlyingMode flyingmode;
+    double speed;
+    int batteryPercentage;
+    bool flying;
+
+    ControlMovements controlMovements;
+
+    FILE *flight_log;
+
+};
+
 void detectFlyingMode(ARDrone *ardrone, int key, FlyingMode *flyingMode) {
 
   //switch between flying modes
@@ -48,8 +65,7 @@ void detectFlyingMode(ARDrone *ardrone, int key, FlyingMode *flyingMode) {
 
 int main(int argc, char *argv[])
 {
-  //AR.Drone class
-  ARDrone ardrone;
+  Control control;
 
   //Control classes
   ObjectFollowing objectFollowing;
@@ -82,13 +98,13 @@ int main(int argc, char *argv[])
   fflush(stdout);
 
   // Initialize
-  if (!ardrone.open()) {
+  if (!control.ardrone.open()) {
     printf("Failed to initialize.\n");
     return -1;
   }
 
   //Set drone on flat surface and initialize
-  ardrone.setFlatTrim();
+  control.ardrone.setFlatTrim();
 
   //initialize object following code
   objectFollowing.initializeObjectFollowing();
@@ -101,22 +117,22 @@ int main(int argc, char *argv[])
 
   // Main loop
   while (1) {
-    int key = cv::waitKey(33); // Key input
+    control.key = cv::waitKey(33); // Key input
 
-    if (key == 0x1b) { break; } //press the escape key to exit
+    if (control.key == 0x1b) { break; } //press the escape key to exit
 
     //TODO:Write battery percentage to screen
-    printf("%d\n", ardrone.getBatteryPercentage());
+    printf("%d\n", control.ardrone.getBatteryPercentage());
 
-    detectFlyingMode(&ardrone, key, &flyingMode);
+    detectFlyingMode(&(control.ardrone), control.key, &flyingMode);
 
     // Get an image
-    cv::Mat image = ardrone.getImage();
+    cv::Mat image = control.ardrone.getImage();
     
     //Speed
-    if ((key >= '0') && (key <= '9')) //number keys
+    if ((control.key >= '0') && (control.key <= '9')) //number keys
     {
-      speed = (key-'0')*0.1;
+      speed = (control.key-'0')*0.1;
     }
 
     //Write speed to image
@@ -124,20 +140,20 @@ int main(int argc, char *argv[])
     putText(image, speedDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
     //Take off / Landing
-    if (key == ' ') { //spacebar
-      if (ardrone.onGround()) {
-        ardrone.takeoff();
+    if (control.key == ' ') { //spacebar
+      if (control.ardrone.onGround()) {
+        control.ardrone.takeoff();
 	fprintf(flight_log, "TAKEOFF\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
       }
       else {
-        ardrone.landing();
+        control.ardrone.landing();
 	fprintf(flight_log, "LAND\n");
       }
     }
 
     //Write if grounded or flying to image
-    if (ardrone.onGround()) {
+    if (control.ardrone.onGround()) {
       sprintf(flyingDisplay, "Landed");
     }
     else {
@@ -151,11 +167,11 @@ int main(int argc, char *argv[])
         //TODO: Change 0/1 to CONSTANTS of 0 = front, 1 = bottom
 
         //TODO: Scale these values for normal human control when in manual mode
-        controlMovements = manualMovement(key);
+        controlMovements = manualMovement(control.key);
 
         sprintf(modeDisplay, "Manual Mode");
 
-        //TODO: Move this into manualMovement(key) function
+        //TODO: Move this into manualMovement(control.key) function
         displayManualInfo(&image, controlMovements);
 
         vx = controlMovements.vx;
@@ -166,7 +182,7 @@ int main(int argc, char *argv[])
 
       case ObjectFollow:
 
-        controlMovements = objectFollowing.detectObject(image, key);
+        controlMovements = objectFollowing.detectObject(image, control.key);
 
         vx = controlMovements.vx;
         vy = controlMovements.vy;
@@ -185,7 +201,7 @@ int main(int argc, char *argv[])
 
     fprintf(flight_log, "ardrone.move3D(vx=%f, vy=%f, vz=%f, vr=%f)\n", (speed), (vy * speed), (vz * speed), vr);
 
-    ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
+    control.ardrone.move3D(vx * speed, vy * speed, vz * speed, vr);
 
     //Display the camera feed
     cv::imshow("camera", image);
@@ -197,7 +213,7 @@ int main(int argc, char *argv[])
   //TODO: closeLineFollowing();
 
   //Close connection to drone
-  ardrone.close();
+  control.ardrone.close();
 
   return 0;
 }
