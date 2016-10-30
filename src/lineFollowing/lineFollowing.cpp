@@ -39,6 +39,7 @@ void line_main() {
     vector <Vec4i> lines;
     HoughLinesP(mask, lines, 1, CV_PI / 180, 100, 100, 10);
 
+    printf("Adding in %d lines\n", (int) lines.size());
     for (size_t i = 0; i < lines.size(); i++) {
       Vec4i l = lines[i];
       line(frame, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 3, CV_AA);
