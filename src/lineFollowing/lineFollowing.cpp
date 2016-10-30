@@ -55,7 +55,7 @@ void line_main() {
       line(frame, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 3, CV_AA);
       // break;
     }
-    if (lines.size() < 1) continue;
+//    if (lines.size() < 1) continue;
 
     imshow("edges", mask);
     if (waitKey(30) >= 0) break;
