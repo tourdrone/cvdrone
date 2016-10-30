@@ -9,6 +9,6 @@
 
 *.opensdf
 *.o
-
+test.a
 obj
 
