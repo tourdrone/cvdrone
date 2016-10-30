@@ -35,28 +35,29 @@ class Control {
 
     FILE *flight_log;
 
+    void detectFlyingMode();
 };
 
-void detectFlyingMode(ARDrone *ardrone, int key, FlyingMode *flyingMode) {
+void Control::detectFlyingMode() {
 
   //switch between flying modes
   if (key == 'b') {
-    *flyingMode = Manual;
-    ardrone->setCamera(0);
+    flyingMode = Manual;
+    ardrone.setCamera(0);
     printf("Manual flying mode is enabled\n");
     printf("Press n for object following and m for line following\n");
     printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
   }
   else if (key == 'n') {
-    *flyingMode = ObjectFollow;
-    ardrone->setCamera(0);
+    flyingMode = ObjectFollow;
+    ardrone.setCamera(0);
     printf("Object Following flying mode is enabled\n");
     printf("Press b for manual and m for line following\n");
     printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
   }
   else if (key == 'm') {
-    *flyingMode = LineFollow;
-    ardrone->setCamera(1);
+    flyingMode = LineFollow;
+    ardrone.setCamera(1);
     printf("Line Following flying mode is enabled\n");
     printf("Press b for manual and n for object following\n");
     printf("No control for line following yet exists\n\n");
@@ -96,7 +97,7 @@ int main(int argc, char *argv[])
   fflush(stdout);
 
   // Initialize
-  if (!control.ardrone.open()) {
+  if (!(control.ardrone.open())) {
     printf("Failed to initialize.\n");
     return -1;
   }
@@ -122,7 +123,7 @@ int main(int argc, char *argv[])
     //TODO:Write battery percentage to screen
     printf("%d\n", control.ardrone.getBatteryPercentage());
 
-    detectFlyingMode(&(control.ardrone), control.key, &(control.flyingMode));
+    control.detectFlyingMode();
 
     // Get an image
     cv::Mat image = control.ardrone.getImage();
