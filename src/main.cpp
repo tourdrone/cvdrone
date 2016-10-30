@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
         break;
 
       case LineFollow:
-        //control.velocities = lineFollowingControl();
+        control.velocities = lineFollowingControl();
         break;
     }
 
