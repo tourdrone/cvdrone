@@ -1,3 +1,5 @@
+#ifndef OBJ_FOLLOWING_HEADER
+#define OBJ_FOLLOWING_HEADER
 
 #include "../ardrone/ardrone.h"
 
@@ -41,3 +43,4 @@ class ObjectFollowing {
 */
 void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance);
 
+#endif
