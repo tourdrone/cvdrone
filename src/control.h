@@ -50,7 +50,7 @@ class Control {
     ControlMovements velocities;
     time_t takeoff_time;
     double speed = 0.0;
-    int key;
+    char key;
     int batteryPercentage;
     int altitude;
     bool flying;
