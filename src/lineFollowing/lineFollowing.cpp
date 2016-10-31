@@ -45,19 +45,19 @@ void detect_lines(Mat &original_frame, double scale_factor) {
 
   resize(original_frame, image, Size(), scale_factor, scale_factor); //Potentially scale down the frame
 
-  cvtColor(image, image, CV_BGR2HSV); // Image is now HSV
+  cvtColor(image, hsv, CV_BGR2HSV); // Image is now HSV
 
-  double minH = 30;
-  double minS = 0;
-  double minV = 240;
-  double maxH = 80;
-  double maxS = 70;
+  double minH = 50;
+  double minS = 20;
+  double minV = 150;
+  double maxH = 125;
+  double maxS = 100;
   double maxV = 255;
 
 
   Scalar lower(minH, minS, minV);
   Scalar upper(maxH, maxS, maxV);
-  inRange(image, lower, upper, mask); // Create a mask of only the desired color
+  inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
 
 
   vector<Vec4i> lines;
@@ -71,7 +71,7 @@ void detect_lines(Mat &original_frame, double scale_factor) {
   }
 //    if (lines.size() < 1) continue;
 
-  imshow("line_window", original_frame);
+  imshow("line_window", image);
 }
 
 void LineFollowing::initialize() {
@@ -91,7 +91,7 @@ ControlMovements LineFollowing::fly(cv::Mat *image) {
   velocities.vz = 0;
   velocities.vr = 0;
 
-  detect_lines(*image, 1);
+  detect_lines(*image, .3);
 
   return velocities;
 }
