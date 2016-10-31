@@ -2,10 +2,13 @@
 */
 
 #include "control.h"
+#include "lineFollowing/lineFollowing.h"
+#include "objectFollowing/objectFollowing.h"
+#include "manual/manual.h"
 
 /*
 */
-void Control::initialize() {
+Control::Control() {
   //Initializing Message
   printf("Connecting to the drone\n");
   printf("If there is no version number response in the next 10 seconds, please restart the drone and code.\n");
@@ -23,9 +26,9 @@ void Control::initialize() {
   ardrone.setFlatTrim();
 
   //initialize flying mode code
-  manualFlying.initialize();
-  objectFollowing.initialize();
-  lineFollowing.initialize();
+  manualFlying = new ManualFlying(this);
+  objectFollowing = new ObjectFollowing(this);
+  lineFollowing = new LineFollowing(this);
 
   //Print default command information
   printf("To disconnect, press the ESC key\n\n");
@@ -33,30 +36,31 @@ void Control::initialize() {
   printf("Use the b key for manual mode, the n key for object following, and the m key for line following. The number keys can be used to set a speed. Use spacebar to take off and land, which is required before any control can be executed.\n\n");
 }
 
-ControlMovements Control::fly() {
+void Control::fly() {
   //Execute flying instruction code
   switch (flyingMode) {
     case Manual:
-      velocities = manualFlying.fly(key);
+      manualFlying->fly();
       break;
     case ObjectFollow:
-      velocities = objectFollowing.fly(&image, key, takeoff_time);
+      objectFollowing->fly();
       break;
     case LineFollow:
-      velocities = lineFollowing.fly(&image);
+      lineFollowing->fly();
       break;
   }
 
-  return velocities;
+  return;
 }
 
 /*
   Detect ESC key press and
 */
-bool Control::detectEscape() {
+bool Control::getKey(int wait) {
   //Escape key
-  if (key == 0x1b) { return true; }
-  return false;
+  key = cv::waitKey(wait);
+  if (key == 0x1b) { return false; }
+  return true;
 }
 
 /*
@@ -163,6 +167,7 @@ void Control::overlayControl() {
     sprintf(flyingDisplay, "Flying");
   }
 
+  altitude = ardrone.getAltitude();
   sprintf(speedDisplay, "Speed = %3.2f", speed);
   sprintf(batteryDisplay, "Battery = %d", ardrone.getBatteryPercentage());
   sprintf(altitudeDisplay, "Altitude = %f", ardrone.getAltitude());
@@ -200,9 +205,9 @@ void Control::move() {
 void Control::close() {
   
   //Close flying modes
-  manualFlying.close();
-  objectFollowing.close();
-  lineFollowing.close();
+  manualFlying->close();
+  objectFollowing->close();
+  lineFollowing->close();
 
   //close connections with drone
   ardrone.close();

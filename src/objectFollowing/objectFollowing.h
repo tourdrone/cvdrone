@@ -4,29 +4,33 @@
 #include "../ardrone/ardrone.h"
 #include "../structures.h"
 
+class Control;
+
 class ObjectFollowing {
   public:
+    //int targetH;
+    //int targetS
+    //int targetV
+
+	ObjectFollowing(Control *control);
+    cv::KalmanFilter kalman;
+    cv::Rect rect;
+
+    void fly();
+    void close();
+	void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value);
+
+  private:
+  	Control *control_ptr;
     int minH = 0;
     int maxH = 255;
     int minS = 0;
     int maxS = 255;
     int minV = 0;
     int maxV = 255;
-
-    //int targetH;
-    //int targetS
-    //int targetV
-    cv::KalmanFilter kalman;
+    int rect_area = 0;
     bool learnMode = false;
     bool moveStatus = false;
-    cv::Rect rect;
-    int rect_area = 0;
-
-    void initialize();
-    void close();
-    ControlMovements fly(cv::Mat *image, int key, time_t takeoff_time);
-    ControlMovements detectObject(cv::Mat image, int key, time_t takeoff_time);
-    void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value);
 };
 
 /*

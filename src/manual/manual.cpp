@@ -3,10 +3,12 @@
 
 
 #include "manual.h"
+#include "../control.h"
 
 /*
 */
-void ManualFlying::initialize() {
+ManualFlying::ManualFlying(Control *control) {
+  control_ptr = control; 
   return;
 }
 
@@ -18,23 +20,23 @@ void ManualFlying::close() {
 
 /*
 */
-ControlMovements ManualFlying::fly(int key) {
-  ControlMovements velocities;
+void ManualFlying::fly() {
+  int key = control_ptr->key;
   
-  velocities.vx = 0;
-  velocities.vy = 0;
-  velocities.vz = 0;
-  velocities.vr = 0;
+  control_ptr->velocities.vx = 0;
+  control_ptr->velocities.vy = 0;
+  control_ptr->velocities.vz = 0;
+  control_ptr->velocities.vr = 0;
 
-  if (key == 't') { velocities.vx =  1.0; } //t key
-  if (key == 'g') { velocities.vx = -1.0; } //g key
-  if (key == 'f') { velocities.vy =  1.0; } //f key
-  if (key == 'h') { velocities.vy = -1.0; } //h key
-  if (key == 'q') { velocities.vz =  1.0; } //q key
-  if (key == 'a') { velocities.vz = -1.0; } //a key
-  if (key == 'r') { velocities.vr =  1.0; } //r key
-  if (key == 'y') { velocities.vr = -1.0; } //y key
+  if (key == 't') { control_ptr->velocities.vx =  1.0; } //t key
+  if (key == 'g') { control_ptr->velocities.vx = -1.0; } //g key
+  if (key == 'f') { control_ptr->velocities.vy =  1.0; } //f key
+  if (key == 'h') { control_ptr->velocities.vy = -1.0; } //h key
+  if (key == 'q') { control_ptr->velocities.vz =  1.0; } //q key
+  if (key == 'a') { control_ptr->velocities.vz = -1.0; } //a key
+  if (key == 'r') { control_ptr->velocities.vr =  1.0; } //r key
+  if (key == 'y') { control_ptr->velocities.vr = -1.0; } //y key
 
-  return velocities;
+  return;
 }
 

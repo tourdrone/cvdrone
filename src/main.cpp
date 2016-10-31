@@ -11,9 +11,6 @@
 #include "ardrone/ardrone.h"
 #include "control.h"
 #include "structures.h"
-#include "manual/manual.h"
-#include "objectFollowing/objectFollowing.h"
-#include "lineFollowing/lineFollowing.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -22,11 +19,12 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  Control control;
+  Control *control;
+  int wait = 33;
 
   try {
     //Initialize main control variables and flight modes
-    control.initialize();
+    control = new Control();
   }catch (const char* msg){
     cout << msg << endl;
     return -1;
@@ -34,29 +32,28 @@ int main(int argc, char *argv[])
 
   // Main loop
   while (1) {
-    //Detect user key input
-    control.key = cv::waitKey(33); 
+    //Detect user key input and end game if excape is pressed
+	if (!control->getKey(wait)) break;
 
-    if (control.detectEscape()) { break; } //esc to close program
-    control.detectFlyingMode(); //b, n, m to change mode
-    control.changeSpeed(); //0-9 to change speed
-    control.detectTakeoff(); //spacebar to take off
+    control->detectFlyingMode(); //b, n, m to change mode
+    control->changeSpeed(); //0-9 to change speed
+    control->detectTakeoff(); //spacebar to take off
 
     //Get the image from the camera
-    control.getImage();
+    control->getImage();
 
     //Run drone control
-    control.fly();
+    control->fly();
 
     //Display image overlay values
-    control.overlayControl(); 
+    control->overlayControl(); 
 
     //Send move command to the drone
-    control.move(); 
+    control->move(); 
   }
 
   //Close flying modes and drone connection
-  control.close();
+  control->close();
 
   return 0;
 }
