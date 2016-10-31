@@ -1,11 +1,8 @@
 
 /*
-*/
+ */
 #include "ardrone/ardrone.h"
 #include "structures.h"
-#include "objectFollowing/objectFollowing.h"
-#include "manual/manual.h"
-#include "lineFollowing/lineFollowing.h"
 #include <string>
 #include <chrono>
 #include <thread>
@@ -14,7 +11,12 @@
 using namespace std;
 
 /*
-*/
+ */
+
+class ManualFlying;
+class LineFollowing;
+class ObjectFollowing;
+
 class Control {
   public:
     const string flightLog = "flight_log.txt";
@@ -22,30 +24,17 @@ class Control {
     //AR.Drone class
     ARDrone ardrone;
 
-    ManualFlying manualFlying;
-    ObjectFollowing objectFollowing;
-    LineFollowing lineFollowing;
-
-    cv::Mat image;
-    
-    time_t takeoff_time;
-    int key;
-    FlyingMode flyingMode = Manual;
-    double speed = 0.0;
-    int batteryPercentage;
-    int altitude;
-    bool flying;
-    cv::Scalar green; //overlay putText color value
-
-    ControlMovements velocities;
+    friend class ManualFlying;
+    friend class ObjectFollowing;
+    friend class LineFollowing;
 
     FILE *flight_log;
 
-    void initialize();
+	Control();
     void close();
-    ControlMovements fly();
+    void fly();
+	bool getKey(int wait);
     void detectFlyingMode();
-    bool detectEscape();
     void changeSpeed();
     void detectTakeoff();
     void getImage();
@@ -53,5 +42,20 @@ class Control {
 
     void overlayControl();
 
-};
+  private:
 
+    cv::Mat image;
+    cv::Scalar green; //overlay putText color value
+    FlyingMode flyingMode = Manual;
+    ControlMovements velocities;
+    time_t takeoff_time;
+    double speed = 0.0;
+    int key;
+    int batteryPercentage;
+    int altitude;
+    bool flying;
+
+    ManualFlying *manualFlying;
+    ObjectFollowing *objectFollowing;
+    LineFollowing *lineFollowing;
+};

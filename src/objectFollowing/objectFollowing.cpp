@@ -4,6 +4,7 @@
 */
 
 #include "objectFollowing.h"
+#include "../control.h"
 #include <string>
 using namespace std;
 
@@ -12,7 +13,8 @@ const double dt = 1.0; //Sampling time [s]
 
 /*
 */
-void ObjectFollowing::initialize() {
+ObjectFollowing::ObjectFollowing(Control *control) {
+  control_ptr = control;
   kalman = cv::KalmanFilter(4, 2, 0);
 
   // XML save data for object following color thresholds
@@ -86,24 +88,19 @@ void ObjectFollowing::close() {
 }
 
 /*
-*/
-ControlMovements ObjectFollowing::fly(cv::Mat *image, int key, time_t takeoff_time) {
-  return detectObject(*image, key, takeoff_time);
-}
-
-/*
   returns heading for control
 */
-ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t takeoff_time) {
+void ObjectFollowing::fly() {
+
+  ControlMovements *controlMovements = &(control_ptr->velocities);
+  cv::Mat *image = &(control_ptr->image);
 
   int tolerance = 50;
   cv::Vec3b hsvSample;
-  ControlMovements controlMovements;
-
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
     //switch between learning and non-learning mode
-    if (key == 'l') {
+    if (control_ptr->key == 'l') {
       learnMode = !learnMode;
       if (learnMode) {
         printf("Learning mode is enabled\n");
@@ -119,7 +116,7 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t ta
   
   // HSV image
   cv::Mat hsv;
-  cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV_FULL);
+  cv::cvtColor(*image, hsv, cv::COLOR_BGR2HSV_FULL);
 
   // Binalize
   cv::Mat binalized;
@@ -165,7 +162,7 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t ta
 
     // Show result
     rect = cv::boundingRect(contours[contour_index]);
-    cv::rectangle(image, rect, cv::Scalar(0, 255, 0));
+    cv::rectangle(*image, rect, cv::Scalar(0, 255, 0));
   }
 
   // Prediction
@@ -173,54 +170,54 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t ta
   int radius = 1e+3 * kalman.errorCovPre.at<float>(0, 0);
 
   // Show predicted position
-  cv::circle(image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
+  cv::circle(*image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
     
   // Calculate object heading fraction
-  float heading = -((image.cols/2) - prediction(0, 0))/(image.cols/2);
+  float heading = -(((*image).cols/2) - prediction(0, 0))/((*image).cols/2);
 
   // Sample the object color
   if(learnMode) {
     // Show targeting crosshairs
-    cv::line(image, cvPoint(image.cols/2, 0), cvPoint(image.cols/2, image.rows/2 - 2), green); //top vertical crosshair
-    cv::line(image, cvPoint(image.cols/2, image.rows/2 + 2), cvPoint(image.cols/2, image.rows), green); //bottom vertical crosshair
-    cv::line(image, cvPoint(0, image.rows/2), cvPoint(image.cols/2 - 2, image.rows/2), green); //left horizontal crosshair
-    cv::line(image, cvPoint(image.cols/2 + 2, image.rows/2), cvPoint(image.cols, image.rows/2), green); //right horizontal crosshair
+    cv::line(*image, cvPoint((*image).cols/2, 0), cvPoint((*image).cols/2, (*image).rows/2 - 2), green); //top vertical crosshair
+    cv::line(*image, cvPoint((*image).cols/2, (*image).rows/2 + 2), cvPoint((*image).cols/2, (*image).rows), green); //bottom vertical crosshair
+    cv::line(*image, cvPoint(0, (*image).rows/2), cvPoint((*image).cols/2 - 2, (*image).rows/2), green); //left horizontal crosshair
+    cv::line(*image, cvPoint((*image).cols/2 + 2, (*image).rows/2), cvPoint((*image).cols, (*image).rows/2), green); //right horizontal crosshair
 
-    hsvSample = hsv.at<cv::Vec3b>(cvPoint(image.cols/2, image.rows/2));
+    hsvSample = hsv.at<cv::Vec3b>(cvPoint((*image).cols/2, (*image).rows/2));
 
     setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
   }
 
-  displayObjectFollowingInfo(&image, heading, hsvSample[0], hsvSample[1], hsvSample[2]);
+  displayObjectFollowingInfo(image, heading, hsvSample[0], hsvSample[1], hsvSample[2]);
 
   rect_area = rect.width * rect.height;
 
   //Execute drone movement
   if (rect_area > 25000) {
-    controlMovements.vx = -1.0;
+    controlMovements->vx = -1.0;
     moveStatus = false;
   }
   else if (rect_area <= 25000 && rect_area >= 20000) {
-    controlMovements.vx = 0;
+    controlMovements->vx = 0;
     moveStatus = false;
   }
   else {
-    controlMovements.vx = 1.0;
+    controlMovements->vx = 1.0;
     moveStatus = true;
   }
 
-  controlMovements.vy = 0;
-  controlMovements.vz = 0;
-   time_t current_time = time(0);
-   double elapsed_time = difftime(current_time, takeoff_time);
-   if (elapsed_time < 5){
-     controlMovements.vr = 0;
-   }
-   else{
-     controlMovements.vr = -(heading * 0.5);
-   } 
+  controlMovements->vy = 0;
+  controlMovements->vz = 0;
+  time_t current_time = time(0);
+  double elapsed_time = difftime(current_time, control_ptr->takeoff_time);
+  if (elapsed_time < 5){
+    controlMovements->vr = 0;
+  } else {
+    controlMovements->vz = (control_ptr->altitude < 1.0) ? 1.0 : 0.0;
+    controlMovements->vr = -(heading * 0.5);
+  } 
 
-  return controlMovements;
+  return;
 }
 
 //Auto set Hue, Saturation, and Value tracking bars
@@ -230,14 +227,14 @@ void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) 
 
   cv::setTrackbarPos("Saturation max", "binalized", saturation + tolerance);
   cv::setTrackbarPos("Saturation min", "binalized", saturation - tolerance);
-      
+
   cv::setTrackbarPos("Value max", "binalized", value + tolerance);
   cv::setTrackbarPos("Value min", "binalized", value - tolerance);
 
 }
 
 /*
-*/
+ */
 void ObjectFollowing::displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value) {
   char headingDisplay[80]; //print buffer for heading
   char hsvSampleDisplay[80]; //print buffer for learning HSV values

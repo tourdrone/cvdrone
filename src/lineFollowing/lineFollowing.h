@@ -7,13 +7,17 @@
 #include "../ardrone/ardrone.h"
 #include "../structures.h"
 
+class Control;
+
 /*
 */
 class LineFollowing {
 public:
-  void initialize();
+  LineFollowing(Control *control);
   void close();
-  ControlMovements fly(cv::Mat *image);
+  void fly();
+private:
+  Control *control_ptr;
 };
 
 /*

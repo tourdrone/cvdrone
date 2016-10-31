@@ -3,7 +3,7 @@
 */
 
 #include "lineFollowing.h"
-
+#include "../control.h"
 
 using namespace std;
 using namespace cv;
@@ -39,6 +39,7 @@ void line_main() {
 #pragma clang diagnostic pop
 
 void detect_lines(Mat &original_frame, double scale_factor) {
+  
   Mat hsv;
   Mat mask;
   Mat image;
@@ -75,8 +76,9 @@ void detect_lines(Mat &original_frame, double scale_factor) {
   resize(image, original_frame, Size(), 1/scale_factor, 1/scale_factor);
 }
 
-void LineFollowing::initialize() {
+LineFollowing::LineFollowing(Control *control) {
   namedWindow("line_window", CV_WINDOW_NORMAL);
+  control_ptr = control;
   return;
 }
 
@@ -84,15 +86,14 @@ void LineFollowing::close() {
   return;
 }
 
-ControlMovements LineFollowing::fly(cv::Mat *image) {
-  ControlMovements velocities;
+void LineFollowing::fly() {
 
-  velocities.vx = 0;
-  velocities.vy = 0;
-  velocities.vz = 0;
-  velocities.vr = 0;
+  control_ptr->velocities.vx = 0;
+  control_ptr->velocities.vy = 0;
+  control_ptr->velocities.vz = 0;
+  control_ptr->velocities.vr = 0;
 
-  detect_lines(*image, .3);
+  detect_lines(control_ptr->image, 0.3);
 
-  return velocities;
+  return;
 }

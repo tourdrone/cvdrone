@@ -4,11 +4,15 @@
 #include "../ardrone/ardrone.h"
 #include "../structures.h"
 
+class Control;
+
 class ManualFlying {
   public:
-    void initialize();
+    ManualFlying(Control *control);
     void close();
-    ControlMovements fly(int key);
+    void fly();
+  private:
+    Control *control_ptr;
 };
 
 #endif
