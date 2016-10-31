@@ -196,11 +196,11 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t ta
   rect_area = rect.width * rect.height;
 
   //Execute drone movement
-  if (rect_area > 20000) {
+  if (rect_area > 25000) {
     controlMovements.vx = -1.0;
     moveStatus = false;
   }
-  else if (rect_area <= 20000 && rect_area >= 15000) {
+  else if (rect_area <= 25000 && rect_area >= 20000) {
     controlMovements.vx = 0;
     moveStatus = false;
   }
@@ -217,7 +217,7 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t ta
      controlMovements.vr = 0;
    }
    else{
-     controlMovements.vr = -heading;
+     controlMovements.vr = -(heading * 0.5);
    } 
 
   return controlMovements;
