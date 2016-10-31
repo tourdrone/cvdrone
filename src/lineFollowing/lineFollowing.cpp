@@ -71,7 +71,8 @@ void detect_lines(Mat &original_frame, double scale_factor) {
   }
 //    if (lines.size() < 1) continue;
 
-  imshow("line_window", image);
+//  imshow("line_window", image);
+  original_frame = image;
 }
 
 void LineFollowing::initialize() {
