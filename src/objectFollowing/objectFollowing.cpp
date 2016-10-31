@@ -96,7 +96,7 @@ ControlMovements ObjectFollowing::fly(cv::Mat *image, int key, time_t takeoff_ti
 */
 ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t takeoff_time) {
 
-  int tolerance = 30;
+  int tolerance = 50;
   cv::Vec3b hsvSample;
   ControlMovements controlMovements;
 
@@ -196,7 +196,11 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t ta
   rect_area = rect.width * rect.height;
 
   //Execute drone movement
-  if (rect_area > 10000) {
+  if (rect_area > 20000) {
+    controlMovements.vx = -1.0;
+    moveStatus = false;
+  }
+  else if (rect_area <= 20000 && rect_area >= 15000) {
     controlMovements.vx = 0;
     moveStatus = false;
   }
@@ -205,11 +209,8 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t ta
     moveStatus = true;
   }
 
-  controlMovements.vx = 0;
   controlMovements.vy = 0;
   controlMovements.vz = 0;
-  controlMovements.vr = 0;
-  //controlMovements.vr = -heading;
    time_t current_time = time(0);
    double elapsed_time = difftime(current_time, takeoff_time);
    if (elapsed_time < 5){
@@ -218,7 +219,6 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t ta
    else{
      controlMovements.vr = -heading;
    } 
-
 
   return controlMovements;
 }
