@@ -57,7 +57,7 @@ void detect_lines(Mat &original_frame, double scale_factor) {
 
   Scalar lower(minH, minS, minV);
   Scalar upper(maxH, maxS, maxV);
-  inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
+  inRange(image, lower, upper, mask); // Create a mask of only the desired color
 
 
   vector<Vec4i> lines;
