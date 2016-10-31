@@ -21,7 +21,7 @@ void ManualFlying::close() {
 /*
 */
 void ManualFlying::fly() {
-  int key = control_ptr->key;
+  char key = control_ptr->key;
   
   control_ptr->velocities.vx = 0;
   control_ptr->velocities.vy = 0;
