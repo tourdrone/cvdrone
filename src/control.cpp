@@ -40,7 +40,7 @@ ControlMovements Control::fly() {
       velocities = manualFlying.fly(key);
       break;
     case ObjectFollow:
-      velocities = objectFollowing.fly(&image, key);
+      velocities = objectFollowing.fly(&image, key, takeoff_time);
       break;
     case LineFollow:
       velocities = lineFollowing.fly(&image);
@@ -111,6 +111,7 @@ void Control::detectTakeoff() {
     if (ardrone.onGround()) {
       ardrone.takeoff();
       fprintf(flight_log, "TAKEOFF\n");
+      takeoff_time = time(0);
     }
     else {
       ardrone.landing();

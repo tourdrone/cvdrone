@@ -87,14 +87,14 @@ void ObjectFollowing::close() {
 
 /*
 */
-ControlMovements ObjectFollowing::fly(cv::Mat *image, int key) {
-  return detectObject(*image, key);
+ControlMovements ObjectFollowing::fly(cv::Mat *image, int key, time_t takeoff_time) {
+  return detectObject(*image, key, takeoff_time);
 }
 
 /*
   returns heading for control
 */
-ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key) {
+ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key, time_t takeoff_time) {
 
   int tolerance = 30;
   cv::Vec3b hsvSample;
@@ -210,6 +210,15 @@ ControlMovements ObjectFollowing::detectObject(cv::Mat image, int key) {
   controlMovements.vz = 0;
   controlMovements.vr = 0;
   //controlMovements.vr = -heading;
+   time_t current_time = time(0);
+   double elapsed_time = difftime(current_time, takeoff_time);
+   if (elapsed_time < 5){
+     controlMovements.vr = 0;
+   }
+   else{
+     controlMovements.vr = -heading;
+   } 
+
 
   return controlMovements;
 }
