@@ -24,8 +24,8 @@ class ObjectFollowing {
 
     void initialize();
     void close();
-    ControlMovements fly(cv::Mat *image, int key);
-    ControlMovements detectObject(cv::Mat image, int key);
+    ControlMovements fly(cv::Mat *image, int key, time_t takeoff_time);
+    ControlMovements detectObject(cv::Mat image, int key, time_t takeoff_time);
     void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value);
 };
 

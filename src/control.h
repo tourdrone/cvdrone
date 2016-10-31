@@ -9,6 +9,7 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <ctime>
 
 using namespace std;
 
@@ -27,6 +28,7 @@ class Control {
 
     cv::Mat image;
     
+    time_t takeoff_time;
     int key;
     FlyingMode flyingMode = Manual;
     double speed = 0.0;
