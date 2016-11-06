@@ -63,7 +63,7 @@ void detect_lines(Mat &original_frame, double scale_factor) {
   inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
 
 
-  vector<Vec4i> lines;
+  vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
 //  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10); // Find all lines in the image
 
