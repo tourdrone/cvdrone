@@ -16,16 +16,13 @@ void draw_lines(Mat &image, const vector<Vec2f> &lines);
 vector<Vec2f> condense_lines(vector<Vec2f> lines);
 
 
-void LineFollowing::detect_lines(Mat &original_frame, double scale_factor) {
+void LineFollowing::detect_lines(Mat &original_frame) {
 
   Mat hsv;
   Mat mask;
-  Mat image;
 
 
   cvtColor(original_frame, hsv, CV_BGR2HSV); // Image is now HSV
-
-
 
   Scalar lower(minH, minS, minV);
   Scalar upper(maxH, maxS, maxV);
@@ -37,8 +34,8 @@ void LineFollowing::detect_lines(Mat &original_frame, double scale_factor) {
 
   printf("Adding in %d lines\n", (int) lines.size());
 
-  vector<Vec2f> condensed = condense_lines(lines);
-  draw_lines(original_frame, condensed);
+  found_lines = condense_lines(lines);
+  draw_lines(original_frame, found_lines);
 
 
 }
@@ -152,7 +149,7 @@ void LineFollowing::fly() {
   control_ptr->velocities.vz = 0;
   control_ptr->velocities.vr = 0;
 
-  detect_lines(control_ptr->image, 1);
+  detect_lines(control_ptr->image);
 
   return;
 }
