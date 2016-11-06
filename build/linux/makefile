@@ -45,7 +45,7 @@ PROGRAM       = test.a
 $(PROGRAM):     $(OBJS)
 		$(CXX) $(OBJS) -o $(PROGRAM) $(CXXFLAGS) $(LDFLAGS) $(LIBS) 
 
-clean:;         rm -f *.o *~ $(PROGRAM)
+clean:;         rm -f *.o *~ $(PROGRAM) ../../src/*.o ../../src/*/*.o
 
 install:        $(PROGRAM)
 		install -s $(PROGRAM) $(DEST)
