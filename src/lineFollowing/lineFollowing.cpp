@@ -33,7 +33,7 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
 
-  printf("Adding in %d lines\n", (int) lines.size());
+  // printf("Adding in %d lines\n", (int) lines.size());
 
   found_lines = condense_lines(lines);
   draw_lines(original_frame, found_lines);
@@ -169,11 +169,16 @@ void LineFollowing::fly() {
 
   else {
     // I need to snap myself to the line
-    if (found_lines[0][0] >= deg2rad(10)) {
-      control_ptr->velocities.vr = -1;
+    if (found_lines[0][0] >= deg2rad(5)) {
+      control_ptr->velocities.vr = -.2;
+      printf("Turning Right\n");
     }
-    else if (found_lines[0][0] <= deg2rad(-10)) {
-      control_ptr->velocities.vr = 1;
+    else if (found_lines[0][0] <= deg2rad(-1 * 5)) {
+      control_ptr->velocities.vr = .2;
+      printf("Turning Left\n");
+    } else {
+      printf("Checking Distance\n");
+      
     }
   }
 
