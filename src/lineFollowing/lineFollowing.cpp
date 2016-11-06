@@ -15,6 +15,8 @@ void draw_lines(Mat &image, const vector<Vec2f> &lines);
 
 vector<Vec2f> condense_lines(vector<Vec2f> lines);
 
+double deg2rad(double deg);
+
 void LineFollowing::detect_lines(Mat &original_frame) {
 
   Mat hsv;
@@ -70,7 +72,7 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
       tmp_list.push_back(to_manipulate);
       continue;
     } else {
-      if (abs(to_manipulate[0] - tmp_list.front()[0]) < 20 * (CV_PI / 180.0)) {
+      if (abs(to_manipulate[0] - tmp_list.front()[0]) < deg2rad(20)) {
         //The angles are similar
         if (abs(to_manipulate[1] - tmp_list.front()[1]) < 50) {
           //the distances are similar
@@ -91,6 +93,10 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
     compress_lines(condensed, tmp_list);
   }
   return condensed;
+}
+
+double deg2rad(double deg) {
+  return deg * (CV_PI / 180.0);
 }
 
 void draw_lines(Mat &image, const vector<Vec2f> &lines) {
@@ -142,13 +148,34 @@ void LineFollowing::close() {
 }
 
 void LineFollowing::fly() {
+  detect_lines(control_ptr->image);
 
   control_ptr->velocities.vx = 0;
   control_ptr->velocities.vy = 0;
   control_ptr->velocities.vz = 0;
   control_ptr->velocities.vr = 0;
 
-  detect_lines(control_ptr->image);
+  if (found_lines.size() < 1) {
+    //I found no lines
+
+    return;
+  }
+
+  else if (found_lines.size() > 1) {
+    // I need to turn
+    //TODO: move until line is centered
+    //TODO: look for symbol, and turn
+  }
+
+  else {
+    // I need to snap myself to the line
+    if (found_lines[0][0] >= deg2rad(10)) {
+      control_ptr->velocities.vr = -1;
+    }
+    else if (found_lines[0][0] <= deg2rad(-10)) {
+      control_ptr->velocities.vr = 1;
+    }
+  }
 
 
   return;
