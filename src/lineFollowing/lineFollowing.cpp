@@ -17,34 +17,6 @@ void draw_lines(const Mat &image, const vector<Vec2f> &lines);
 
 vector<Vec2f> condense_lines(vector<Vec2f> &lines);
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-
-void line_main() {
-//  printf("Hello, this is Caleb\n");
-//  no this is patric
-
-  VideoCapture cap("../../tests/videos/top_down_1.m4v");
-  if (!cap.isOpened())  // check if we succeeded
-    return;
-
-//  Mat edges;
-  for (; ;) {
-    Mat frame;
-    cap >> frame; // get a new frame from camera
-
-    detect_lines(frame, .2);
-
-
-    if (waitKey(30) >= 0) break;
-
-  }
-  // the camera will be deinitialized automatically in VideoCapture destructor
-
-  return;
-}
-
-#pragma clang diagnostic pop
 
 void detect_lines(Mat &original_frame, double scale_factor) {
 
