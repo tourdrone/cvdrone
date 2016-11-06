@@ -15,7 +15,6 @@ void draw_lines(Mat &image, const vector<Vec2f> &lines);
 
 vector<Vec2f> condense_lines(vector<Vec2f> lines);
 
-
 void LineFollowing::detect_lines(Mat &original_frame) {
 
   Mat hsv;
