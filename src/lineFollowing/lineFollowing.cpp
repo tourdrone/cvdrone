@@ -89,7 +89,7 @@ void detect_lines(Mat &original_frame, double scale_factor) {
 
   //Order from least to greatest theta
   std::sort(lines.begin(), lines.end(),
-            [](const std::vector<int> &a, const std::vector<int> &b) {
+            [](const Vec2f &a, const Vec2f &b) {
               return a[0] < b[0];
             });
 
