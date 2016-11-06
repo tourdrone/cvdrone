@@ -11,9 +11,9 @@ using namespace cv;
 
 void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list);
 
-void draw_lines(const Mat &image, const vector<Vec2f> &lines);
+void draw_lines(Mat &image, const vector<Vec2f> &lines);
 
-vector<Vec2f> condense_lines(vector<Vec2f> &lines);
+vector<Vec2f> condense_lines(vector<Vec2f> lines);
 
 
 void LineFollowing::detect_lines(Mat &original_frame, double scale_factor) {
@@ -97,7 +97,7 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
   return condensed;
 }
 
-void draw_lines(const Mat &image, const vector<Vec2f> &lines) {
+void draw_lines(Mat &image, const vector<Vec2f> &lines) {
   for (size_t i = 0; i < lines.size(); i++) {
     float theta = lines[i][0], rho = lines[i][1];
     // float rho = lines[i][0], theta = lines[i][1];
