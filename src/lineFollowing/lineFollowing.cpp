@@ -217,7 +217,7 @@ double LineFollowing::distance_from_center(float rho, float theta, double width,
   double rv = rho * sin(theta);
   double excess = (width / 2.0) - rh;
   double lv = rv + (height / 2.0);
-  double lh = lv * sin(theta);
+  double lh = lv * tan(theta);
   double x = lh - excess;
 
   return x;
