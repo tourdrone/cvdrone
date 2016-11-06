@@ -179,8 +179,8 @@ void LineFollowing::fly() {
     } else {
       printf("Checking Distance\n");
 
-      double offset = found_lines[0][0] - (control_ptr->image.cols / 2.0);
-      printf("Offset is: %f\n", offset);
+      double offset = found_lines[0][1] - (control_ptr->image.cols / 2.0);
+      printf("Offset is: %10f with a distance of %10f and width of %10f halved to %10f\n", offset, found_lines[0][1], control_ptr->image.cols, (control_ptr->image.cols/2.0));
     }
   }
 
