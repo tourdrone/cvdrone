@@ -36,8 +36,7 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   // printf("Adding in %d lines\n", (int) lines.size());
 
   vector<Vec2f> tmp = condense_lines(lines);
-  if (tmp.size() > 0)
-  {
+  if (tmp.size() > 0) {
     found_lines = tmp;
   }
   draw_lines(original_frame, found_lines);
@@ -154,6 +153,7 @@ void LineFollowing::close() {
 void LineFollowing::fly() {
   detect_lines(control_ptr->image);
 
+
   control_ptr->velocities.vx = 0;
   control_ptr->velocities.vy = 0;
   control_ptr->velocities.vz = 0;
@@ -164,8 +164,12 @@ void LineFollowing::fly() {
 
     return;
   }
+  double calculated_distance = distance_from_center(found_lines[0][1],found_lines[0][0], control_ptr->image.cols, control_ptr->image.rows);
+  Point pt1 = cvPoint(0, 0);
+  Point pt2 = cvPoint(0 + cvRound(calculated_distance), 0);
+  line(control_ptr->image, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
 
-  else if (found_lines.size() > 1) {
+  if (found_lines.size() > 1) {
     // I need to turn
     //TODO: move until line is centered
     //TODO: look for symbol, and turn
@@ -184,18 +188,19 @@ void LineFollowing::fly() {
       printf("Checking Distance\n");
 
       double offset = found_lines[0][1] - (control_ptr->image.cols / 2.0);
-      printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset, found_lines[0][1],
+      printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset,
+             found_lines[0][1],
              (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
       if (-60 <= offset && offset <= 60) {
         printf("No need to move\n");
       } else if (offset < 0) {
         //we are to the right of the line
         //we need to move left
-        control_ptr->velocities.vy =  1.0;
+        control_ptr->velocities.vy = 1.0;
         printf("Move left\n");
       } else {
         //we need to move right
-        control_ptr->velocities.vy =  -1.0;
+        control_ptr->velocities.vy = -1.0;
         printf("Move right\n");
       }
     }
@@ -203,4 +208,15 @@ void LineFollowing::fly() {
 
 
   return;
+}
+
+double LineFollowing::distance_from_center(float rho, float theta, double width, double height) {
+  double rh = rho * cos(theta);
+  double rv = rho * sin(theta);
+  double excess = (width / 2.0) - rh;
+  double lv = rv + (height / 2.0);
+  double lh = lv * sin(theta);
+  double x = lh - excess;
+
+  return x;
 }
