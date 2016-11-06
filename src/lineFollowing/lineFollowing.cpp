@@ -8,8 +8,6 @@
 using namespace std;
 using namespace cv;
 
-void detect_lines(Mat &original_frame, double scale_factor);
-
 
 void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list);
 
@@ -18,22 +16,15 @@ void draw_lines(const Mat &image, const vector<Vec2f> &lines);
 vector<Vec2f> condense_lines(vector<Vec2f> &lines);
 
 
-void detect_lines(Mat &original_frame, double scale_factor) {
+void LineFollowing::detect_lines(Mat &original_frame, double scale_factor) {
 
   Mat hsv;
   Mat mask;
   Mat image;
 
-  // resize(original_frame, image, Size(), scale_factor, scale_factor); //Potentially scale down the frame
 
   cvtColor(original_frame, hsv, CV_BGR2HSV); // Image is now HSV
 
-  double minH = 50;
-  double minS = 20;
-  double minV = 150;
-  double maxH = 125;
-  double maxS = 100;
-  double maxV = 255;
 
 
   Scalar lower(minH, minS, minV);
@@ -43,18 +34,10 @@ void detect_lines(Mat &original_frame, double scale_factor) {
 
   vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
-//  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10); // Find all lines in the image
 
   printf("Adding in %d lines\n", (int) lines.size());
 
-
-  //Flipping any backwards lines
   vector<Vec2f> condensed = condense_lines(lines);
-
-  //  printf("Compressed down to %d lines\n", (int) condensed.size());
-
-
-
   draw_lines(original_frame, condensed);
 
 
@@ -149,6 +132,12 @@ void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list) {
 LineFollowing::LineFollowing(Control *control) {
   namedWindow("line_window", CV_WINDOW_NORMAL);
   control_ptr = control;
+  minH = 50;
+  minS = 20;
+  minV = 150;
+  maxH = 125;
+  maxS = 100;
+  maxV = 255;
   return;
 }
 
