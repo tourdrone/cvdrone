@@ -13,6 +13,10 @@ void detect_lines(Mat &original_frame, double scale_factor);
 
 void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list);
 
+void draw_lines(const Mat &image, const vector<Vec2f> &lines);
+
+vector<Vec2f> condense_lines(vector<Vec2f> &lines);
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
@@ -65,14 +69,28 @@ void detect_lines(Mat &original_frame, double scale_factor) {
   inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
   Canny(mask, mask, 50, 200, 3);
 
-  vector<Vec2f> lines, condensed, tmp_list;
+  vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
 //  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10); // Find all lines in the image
 
   printf("Adding in %d lines\n", (int) lines.size());
 
-  
+
   //Flipping any backwards lines
+  vector<Vec2f> condensed = condense_lines(lines);
+
+  //  printf("Compressed down to %d lines\n", (int) condensed.size());
+
+
+
+  draw_lines(original_frame, condensed);
+
+
+}
+
+vector<Vec2f> condense_lines(vector<Vec2f> lines) {
+  vector<Vec2f> condensed;
+  vector<Vec2f> tmp_list;
   for (int i = 0; i < lines.size(); i++) {
     if (lines[i][1] > CV_PI / 2) {
       lines[i][1] -= CV_PI;
@@ -88,10 +106,10 @@ void detect_lines(Mat &original_frame, double scale_factor) {
   }
 
   //Order from least to greatest theta
-  std::sort(lines.begin(), lines.end(),
-            [](const Vec2f &a, const Vec2f &b) {
-              return a[0] < b[0];
-            });
+  sort(lines.begin(), lines.end(),
+       [](const Vec2f &a, const Vec2f &b) {
+         return a[0] < b[0];
+       });
 
   while (!lines.empty()) {
     Vec2f to_manipulate = lines.front();
@@ -121,15 +139,12 @@ void detect_lines(Mat &original_frame, double scale_factor) {
   if (!tmp_list.empty()) {
     compress_lines(condensed, tmp_list);
   }
+  return condensed;
+}
 
-  printf("Compressed down to %d lines\n", (int) condensed.size()); 
-  
-
-  // Undoing work:
-  // condensed = lines;
-
-  for (size_t i = 0; i < condensed.size(); i++) {
-    float theta = condensed[i][0], rho = condensed[i][1];
+void draw_lines(const Mat &image, const vector<Vec2f> &lines) {
+  for (size_t i = 0; i < lines.size(); i++) {
+    float theta = lines[i][0], rho = lines[i][1];
     // float rho = lines[i][0], theta = lines[i][1];
     Point pt1, pt2;
     double a = cos(theta), b = sin(theta);
@@ -138,12 +153,8 @@ void detect_lines(Mat &original_frame, double scale_factor) {
     pt1.y = cvRound(y0 + 1000 * (a));
     pt2.x = cvRound(x0 - 1000 * (-b));
     pt2.y = cvRound(y0 - 1000 * (a));
-    line(original_frame, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
+    line(image, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
   }
-
-//  imshow("line_window", image);
-  // resize(image, original_frame, Size(), 1 / scale_factor, 1 / scale_factor);
-  // original_frame = image;
 }
 
 void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list) {
