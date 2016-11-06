@@ -165,8 +165,10 @@ void LineFollowing::fly() {
     return;
   }
   double calculated_distance = distance_from_center(found_lines[0][1],found_lines[0][0], control_ptr->image.cols, control_ptr->image.rows);
-  Point pt1 = cvPoint(0, 0);
-  Point pt2 = cvPoint(0 + cvRound(calculated_distance), 0);
+  int origin_x = 0 + (control_ptr->image.cols / 2);
+  int origin_y = 0 + (control_ptr->image.rows / 2);
+  Point pt1 = cvPoint(origin_x, origin_y);
+  Point pt2 = cvPoint(origin_x + cvRound(calculated_distance), origin_y);
   line(control_ptr->image, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
 
   if (found_lines.size() > 1) {
