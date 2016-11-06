@@ -13,6 +13,7 @@ void detect_lines(Mat &original_frame, double scale_factor);
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+
 void line_main() {
 //  printf("Hello, this is Caleb\n");
 //  no this is patric
@@ -36,10 +37,11 @@ void line_main() {
 
   return;
 }
+
 #pragma clang diagnostic pop
 
 void detect_lines(Mat &original_frame, double scale_factor) {
-  
+
   Mat hsv;
   Mat mask;
   Mat image;
@@ -62,18 +64,25 @@ void detect_lines(Mat &original_frame, double scale_factor) {
 
 
   vector<Vec4i> lines;
-  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10); // Find all lines in the image
+  HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
+//  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10); // Find all lines in the image
 
   printf("Adding in %d lines\n", (int) lines.size());
   for (size_t i = 0; i < lines.size(); i++) {
-    Vec4i l = lines[i];
-    line(image, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 1, CV_AA);
-    // break;
+    float rho = lines[i][0], theta = lines[i][1];
+    Point pt1, pt2;
+    double a = cos(theta), b = sin(theta);
+    double x0 = a * rho, y0 = b * rho;
+    pt1.x = cvRound(x0 + 1000 * (-b));
+    pt1.y = cvRound(y0 + 1000 * (a));
+    pt2.x = cvRound(x0 - 1000 * (-b));
+    pt2.y = cvRound(y0 - 1000 * (a));
+    line(image, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
   }
 //    if (lines.size() < 1) continue;
 
 //  imshow("line_window", image);
-  resize(image, original_frame, Size(), 1/scale_factor, 1/scale_factor);
+  resize(image, original_frame, Size(), 1 / scale_factor, 1 / scale_factor);
 }
 
 LineFollowing::LineFollowing(Control *control) {
