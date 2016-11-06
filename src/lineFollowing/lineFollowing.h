@@ -21,18 +21,11 @@ public:
 
 private:
   Control *control_ptr;
-  void detect_lines(Mat &original_frame);
+  void detect_lines(cv::Mat &original_frame);
 
   double minH, minS, minV, maxH, maxS, maxV;
   std::vector<cv::Vec2f> found_lines;
 };
-
-/*
-*/
-void line_main();
-
-/*
-*/
 
 
 #endif
