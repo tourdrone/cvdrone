@@ -180,7 +180,18 @@ void LineFollowing::fly() {
       printf("Checking Distance\n");
 
       double offset = found_lines[0][1] - (control_ptr->image.cols / 2.0);
-      printf("Offset is: %10f with a distance of %10f and width of %10f halved to %10f\n", offset, found_lines[0][1], control_ptr->image.cols, (control_ptr->image.cols/2.0));
+      printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset, found_lines[0][1],
+             (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
+      if (-60 <= offset && offset <= 60) {
+        printf("No need to move\n");
+      } else if (offset < 0) {
+        //we are to the right of the line
+        //we need to move left
+        control_ptr->velocities.vy =  1.0;
+      } else {
+        //we need to move right
+        control_ptr->velocities.vy =  -1.0;
+      }
     }
   }
 
