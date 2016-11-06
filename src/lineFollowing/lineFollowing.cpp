@@ -11,6 +11,8 @@ using namespace cv;
 void detect_lines(Mat &original_frame, double scale_factor);
 
 
+void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list);
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
@@ -63,7 +65,7 @@ void detect_lines(Mat &original_frame, double scale_factor) {
   inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
 
 
-  vector<Vec2f> lines;
+  vector<Vec2f> lines, condensed, tmp_list;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
 //  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10); // Find all lines in the image
 
@@ -85,9 +87,45 @@ void detect_lines(Mat &original_frame, double scale_factor) {
     swap(lines[i][0], lines[i][1]);
   }
 
+  //Order from least to greatest theta
+  std::sort(lines.begin(), lines.end(),
+            [](const std::vector<int> &a, const std::vector<int> &b) {
+              return a[0] < b[0];
+            });
 
-  for (size_t i = 0; i < lines.size(); i++) {
-    float theta = lines[i][0], rho = lines[i][1];
+  while (!lines.empty()) {
+    Vec2f to_manipulate = lines.front();
+    lines.erase(lines.begin());
+
+    if (tmp_list.empty()) {
+      tmp_list.push_back(to_manipulate);
+      continue;
+    } else {
+      if (abs(to_manipulate[0] - tmp_list.back()[0]) < 20) {
+        //The angles are similar
+        if (abs(to_manipulate[1] - tmp_list.back()[1]) < 50) {
+          //the distances are similar
+          tmp_list.push_back(to_manipulate);
+          continue;
+        }
+      } else {
+        //Need to clear out the tmp_list
+        compress_lines(condensed, tmp_list);
+
+        tmp_list.clear();
+        tmp_list.push_back(to_manipulate);
+
+      }
+    }
+  }
+  if (!tmp_list.empty()) {
+    compress_lines(condensed, tmp_list);
+  }
+
+  printf("Compressed down to %d lines\n", (int) condensed.size());
+
+  for (size_t i = 0; i < condensed.size(); i++) {
+    float theta = condensed[i][0], rho = condensed[i][1];
     Point pt1, pt2;
     double a = cos(theta), b = sin(theta);
     double x0 = a * rho, y0 = b * rho;
@@ -100,6 +138,23 @@ void detect_lines(Mat &original_frame, double scale_factor) {
 
 //  imshow("line_window", image);
   resize(image, original_frame, Size(), 1 / scale_factor, 1 / scale_factor);
+}
+
+void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list) {
+  Vec2f new_point;
+  float angle_sum = 0;
+  float rho_sum = 0;
+  for (int j = 0; j < tmp_list.size(); ++j) {
+    angle_sum += tmp_list[j][0];
+    rho_sum += tmp_list[j][1];
+  }
+  angle_sum /= tmp_list.size();
+  rho_sum /= tmp_list.size();
+
+  new_point[0] = angle_sum;
+  new_point[1] = rho_sum;
+
+  condensed.push_back(new_point);
 }
 
 LineFollowing::LineFollowing(Control *control) {
