@@ -35,7 +35,11 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
   // printf("Adding in %d lines\n", (int) lines.size());
 
-  found_lines = condense_lines(lines);
+  vector<Vec2f> tmp = condense_lines(lines);
+  if (tmp.size() > 0)
+  {
+    found_lines = tmp;
+  }
   draw_lines(original_frame, found_lines);
 
 
@@ -188,9 +192,11 @@ void LineFollowing::fly() {
         //we are to the right of the line
         //we need to move left
         control_ptr->velocities.vy =  1.0;
+        printf("Move left\n");
       } else {
         //we need to move right
         control_ptr->velocities.vy =  -1.0;
+        printf("Move right\n");
       }
     }
   }
