@@ -80,11 +80,14 @@ void detect_lines(Mat &original_frame, double scale_factor) {
       lines[i][1] += CV_PI;
       lines[i][0] *= -1;
     }
+
+    //put in order of theta, rho
+    swap(lines[i][0], lines[i][1]);
   }
 
 
   for (size_t i = 0; i < lines.size(); i++) {
-    float rho = lines[i][0], theta = lines[i][1];
+    float theta = lines[i][0], rho = lines[i][1];
     Point pt1, pt2;
     double a = cos(theta), b = sin(theta);
     double x0 = a * rho, y0 = b * rho;
