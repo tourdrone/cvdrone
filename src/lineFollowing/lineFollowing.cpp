@@ -174,7 +174,7 @@ void LineFollowing::fly() {
   control_ptr->velocities.vz = 0;
   control_ptr->velocities.vr = 0;
 
-  detect_lines(control_ptr->image, 0.3);
+  detect_lines(control_ptr->image, 1);
 
   return;
 }
