@@ -68,6 +68,21 @@ void detect_lines(Mat &original_frame, double scale_factor) {
 //  HoughLinesP(mask, lines, 1, CV_PI / 180.0, 10, 50, 10); // Find all lines in the image
 
   printf("Adding in %d lines\n", (int) lines.size());
+
+
+  //Flipping any backwards lines
+  for (int i = 0; i < lines.size(); i++) {
+    if (lines[i][1] > CV_PI / 2) {
+      lines[i][1] -= CV_PI;
+      lines[i][0] *= -1;
+    }
+    else if (lines[i][1] < ((CV_PI / 2) * -1)) {
+      lines[i][1] += CV_PI;
+      lines[i][0] *= -1;
+    }
+  }
+
+
   for (size_t i = 0; i < lines.size(); i++) {
     float rho = lines[i][0], theta = lines[i][1];
     Point pt1, pt2;
@@ -79,7 +94,6 @@ void detect_lines(Mat &original_frame, double scale_factor) {
     pt2.y = cvRound(y0 - 1000 * (a));
     line(image, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
   }
-//    if (lines.size() < 1) continue;
 
 //  imshow("line_window", image);
   resize(image, original_frame, Size(), 1 / scale_factor, 1 / scale_factor);
