@@ -28,6 +28,8 @@ private:
   std::vector<cv::Vec2f> found_lines;
 
   double distance_from_center(float rho, float theta, double width, double height);
+
+  cv::Vec2i find_intersection(cv::Vec2f a, cv::Vec2f b);
 };
 
 

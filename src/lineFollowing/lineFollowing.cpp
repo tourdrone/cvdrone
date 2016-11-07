@@ -165,7 +165,8 @@ void LineFollowing::fly() {
     // printf("Found nothing\n");
     return;
   }
-  double calculated_distance = distance_from_center(found_lines[0][1],found_lines[0][0], control_ptr->image.cols, control_ptr->image.rows);
+  double calculated_distance = distance_from_center(found_lines[0][1], found_lines[0][0], control_ptr->image.cols,
+                                                    control_ptr->image.rows);
 
   printf("calc dist of %f ", calculated_distance);
   int origin_x = 0 + (control_ptr->image.cols / 2);
@@ -178,6 +179,11 @@ void LineFollowing::fly() {
     // I need to turn
     //TODO: move until line is centered
     //TODO: look for symbol, and turn
+
+    Vec2i point = find_intersection(found_lines[0], found_lines[1]);
+    line(control_ptr->image, cvPoint(point[0]+10, point[1]), cvPoint(point[0]-10, point[1]), Scalar(0, 0, 255), 3, CV_AA);
+    line(control_ptr->image, cvPoint(point[0], point[1]+10), cvPoint(point[0], point[1]-10), Scalar(0, 0, 255), 3, CV_AA);
+
   }
 
   else {
@@ -194,8 +200,8 @@ void LineFollowing::fly() {
 
       double offset = calculated_distance;
       // printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset,
-             // found_lines[0][1],
-             // (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
+      // found_lines[0][1],
+      // (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
       if (-100 <= offset && offset <= 100) {
         printf("No need to move\n");
       } else if (offset < 0) {
@@ -217,7 +223,7 @@ void LineFollowing::fly() {
 
 double LineFollowing::distance_from_center(float rho, float theta, double width, double height) {
   // printf("width: %f height: %f\n", width, height);
-   theta = -1*(theta);
+  theta = -1 * (theta);
   double rh = rho * cos(theta);
   double rv = rho * sin(theta);
   // rh = abs(rh);
@@ -232,4 +238,23 @@ double LineFollowing::distance_from_center(float rho, float theta, double width,
   // printf("ro: %4f th: %4f rh: %4f rv: %4f ex: %4f lv: %4f lh: %4f x: %4f\n", rho, theta ,rh, rv, excess, lv,lh,x);
 
   return x;
+}
+
+cv::Vec2i LineFollowing::find_intersection(cv::Vec2f a, cv::Vec2f b) {
+  Vec2i rv;
+  float theta1, theta2, rho1, rho2;
+  theta1 = a[0];
+  rho1 = a[1];
+  theta2 = b[0];
+  rho2 = b[1];
+  float a1 = 1 / atan(theta1);
+  float a2 = 1 / atan(theta2);
+  float b1 = rho1;
+  float b2 = rho2;
+  float x = (b2 - b1) / (a1 - a2);
+  float y = (a1 * b2 - a2 * b1) / (a1 - a2);
+  rv[0] = (int) round(x);
+  rv[1] = (int) round(y);
+
+  return rv;
 }
