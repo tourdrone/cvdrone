@@ -169,7 +169,7 @@ void LineFollowing::fly() {
   double calculated_distance = distance_from_center(found_lines[0][1], found_lines[0][0], control_ptr->image.cols,
                                                     control_ptr->image.rows);
 
-  printf("calc dist of %f ", calculated_distance);
+  // printf("calc dist of %f ", calculated_distance);
   int origin_x = 0 + (control_ptr->image.cols / 2);
   int origin_y = 0 + (control_ptr->image.rows / 2);
   Point pt1 = cvPoint(origin_x, origin_y);
@@ -182,8 +182,9 @@ void LineFollowing::fly() {
     //TODO: look for symbol, and turn
 
     Vec2i point = find_intersection(found_lines[0], found_lines[1]);
-    line(control_ptr->image, cvPoint(point[0]+10, point[1]), cvPoint(point[0]-10, point[1]), Scalar(0, 0, 255), 3, CV_AA);
-    line(control_ptr->image, cvPoint(point[0], point[1]+10), cvPoint(point[0], point[1]-10), Scalar(0, 0, 255), 3, CV_AA);
+    printf("My coords are x: %3d y %3d\n", point[0], point[1]);
+    line(control_ptr->image, cvPoint(point[0]+10, point[1]), cvPoint(point[0]-10, point[1]), Scalar(0, 255,0 ), 3, CV_AA);
+    line(control_ptr->image, cvPoint(point[0], point[1]+10), cvPoint(point[0], point[1]-10), Scalar(0, 255,0), 3, CV_AA);
     return;
   }
 
