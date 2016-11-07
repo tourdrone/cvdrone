@@ -183,8 +183,8 @@ void LineFollowing::fly() {
 
     Vec2i point = find_intersection(found_lines[0], found_lines[1]);
     printf("My coords are x: %3d y %3d\n", point[0], point[1]);
-    line(control_ptr->image, cvPoint(point[0]+10, point[1]), cvPoint(point[0]-10, point[1]), Scalar(0, 255,0 ), 3, CV_AA);
-    line(control_ptr->image, cvPoint(point[0], point[1]+10), cvPoint(point[0], point[1]-10), Scalar(0, 255,0), 3, CV_AA);
+    line(control_ptr->image, cvPoint(origin_x + point[0]+10, origin_y+point[1]), cvPoint(origin_x+point[0]-10, origin_y+point[1]), Scalar(0, 255,0 ), 3, CV_AA);
+    line(control_ptr->image, cvPoint(origin_x+point[0], origin_y+point[1]+10), cvPoint(origin_x+point[0], origin_y+point[1]-10), Scalar(0, 255,0), 3, CV_AA);
     return;
   }
 
