@@ -151,7 +151,7 @@ void LineFollowing::close() {
 }
 
 void LineFollowing::fly() {
-  cout << "line following\n";
+  // cout << "line following\n";
   detect_lines(control_ptr->image);
 
 
@@ -162,7 +162,7 @@ void LineFollowing::fly() {
 
   if (found_lines.size() < 1) {
     //I found no lines
-    printf("Found nothing\n");
+    // printf("Found nothing\n");
     return;
   }
   double calculated_distance = distance_from_center(found_lines[0][1],found_lines[0][0], control_ptr->image.cols, control_ptr->image.rows);
@@ -192,20 +192,20 @@ void LineFollowing::fly() {
     } else {
       printf("Checking Distance\n");
 
-      double offset = found_lines[0][1] - (control_ptr->image.cols / 2.0);
-      printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset,
-             found_lines[0][1],
-             (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
-      if (-60 <= offset && offset <= 60) {
+      double offset = calculated_distance;
+      // printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset,
+             // found_lines[0][1],
+             // (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
+      if (-100 <= offset && offset <= 100) {
         printf("No need to move\n");
       } else if (offset < 0) {
         //we are to the right of the line
         //we need to move left
-        control_ptr->velocities.vy = 1.0;
+        control_ptr->velocities.vy = 1;
         printf("Move left\n");
       } else {
         //we need to move right
-        control_ptr->velocities.vy = -1.0;
+        control_ptr->velocities.vy = -1;
         printf("Move right\n");
       }
     }
