@@ -30,7 +30,7 @@ private:
 
   double distance_from_center(float rho, float theta, double width, double height);
 
-  cv::Vec2i find_intersection(cv::Vec2f a, cv::Vec2f b);
+  cv::Point find_intersection(cv::Vec2f a, cv::Vec2f b);
 };
 
 
