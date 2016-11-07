@@ -151,6 +151,7 @@ void LineFollowing::close() {
 }
 
 void LineFollowing::fly() {
+  cout << "line following\n";
   detect_lines(control_ptr->image);
 
 
@@ -161,10 +162,12 @@ void LineFollowing::fly() {
 
   if (found_lines.size() < 1) {
     //I found no lines
-
+    printf("Found nothing\n");
     return;
   }
   double calculated_distance = distance_from_center(found_lines[0][1],found_lines[0][0], control_ptr->image.cols, control_ptr->image.rows);
+
+  printf("calc dist of %f ", calculated_distance);
   int origin_x = 0 + (control_ptr->image.cols / 2);
   int origin_y = 0 + (control_ptr->image.rows / 2);
   Point pt1 = cvPoint(origin_x, origin_y);
@@ -213,12 +216,20 @@ void LineFollowing::fly() {
 }
 
 double LineFollowing::distance_from_center(float rho, float theta, double width, double height) {
+  // printf("width: %f height: %f\n", width, height);
+   theta = -1*(theta);
   double rh = rho * cos(theta);
   double rv = rho * sin(theta);
+  // rh = abs(rh);
+  // rv *= -1;
   double excess = (width / 2.0) - rh;
+  // excess *=-1;
   double lv = rv + (height / 2.0);
   double lh = lv * tan(theta);
+  // lh = abs(lh);
   double x = lh - excess;
+
+  // printf("ro: %4f th: %4f rh: %4f rv: %4f ex: %4f lv: %4f lh: %4f x: %4f\n", rho, theta ,rh, rv, excess, lv,lh,x);
 
   return x;
 }
