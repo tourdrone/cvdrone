@@ -25,6 +25,7 @@ private:
   void detect_lines(cv::Mat &original_frame);
 
   double minH, minS, minV, maxH, maxS, maxV;
+  double width, height;
   std::vector<cv::Vec2f> found_lines;
 
   double distance_from_center(float rho, float theta, double width, double height);
