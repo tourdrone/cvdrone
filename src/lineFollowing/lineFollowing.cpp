@@ -21,7 +21,8 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
   Mat hsv;
   Mat mask;
-
+  width = original_frame.cols;
+  height = original_frame.rows;
 
   cvtColor(original_frame, hsv, CV_BGR2HSV); // Image is now HSV
 
@@ -183,7 +184,7 @@ void LineFollowing::fly() {
     Vec2i point = find_intersection(found_lines[0], found_lines[1]);
     line(control_ptr->image, cvPoint(point[0]+10, point[1]), cvPoint(point[0]-10, point[1]), Scalar(0, 0, 255), 3, CV_AA);
     line(control_ptr->image, cvPoint(point[0], point[1]+10), cvPoint(point[0], point[1]-10), Scalar(0, 0, 255), 3, CV_AA);
-
+    return;
   }
 
   else {
