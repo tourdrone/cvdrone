@@ -17,6 +17,10 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines);
 
 double deg2rad(double deg);
 
+vector<Point> to_points(float theta, float rho);
+
+bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y);
+
 void LineFollowing::detect_lines(Mat &original_frame) {
 
   Mat hsv;
@@ -106,16 +110,21 @@ double deg2rad(double deg) {
 void draw_lines(Mat &image, const vector<Vec2f> &lines) {
   for (size_t i = 0; i < lines.size(); i++) {
     float theta = lines[i][0], rho = lines[i][1];
-    // float rho = lines[i][0], theta = lines[i][1];
-    Point pt1, pt2;
-    double a = cos(theta), b = sin(theta);
-    double x0 = a * rho, y0 = b * rho;
-    pt1.x = cvRound(x0 + 1000 * (-b));
-    pt1.y = cvRound(y0 + 1000 * (a));
-    pt2.x = cvRound(x0 - 1000 * (-b));
-    pt2.y = cvRound(y0 - 1000 * (a));
-    line(image, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
+    // float rho = lines[i][0], theta = lines[i][1];Point pt1;
+    vector<Point> p = to_points(theta, rho);
+    line(image, p[0], p[1], Scalar(0, 0, 255), 3, CV_AA);
   }
+}
+
+vector<Point> to_points(float theta, float rho) {
+  vector<Point> rv = {Point(), Point()};
+  double a = cos(theta), b = sin(theta);
+  double x0 = a * rho, y0 = b * rho;
+  rv[0].x = cvRound(x0 + 1000 * (-b));
+  rv[0].y = cvRound(y0 + 1000 * (a));
+  rv[1].x = cvRound(x0 - 1000 * (-b));
+  rv[1].y = cvRound(y0 - 1000 * (a));
+  return rv;
 }
 
 void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list) {
@@ -180,11 +189,14 @@ void LineFollowing::fly() {
     // I need to turn
     //TODO: move until line is centered
     //TODO: look for symbol, and turn
-
+    origin_x = 0;
+    origin_y = 0;
     Vec2i point = find_intersection(found_lines[0], found_lines[1]);
     printf("My coords are x: %3d y %3d\n", point[0], point[1]);
-    line(control_ptr->image, cvPoint(origin_x + point[0]+10, origin_y+point[1]), cvPoint(origin_x+point[0]-10, origin_y+point[1]), Scalar(0, 255,0 ), 3, CV_AA);
-    line(control_ptr->image, cvPoint(origin_x+point[0], origin_y+point[1]+10), cvPoint(origin_x+point[0], origin_y+point[1]-10), Scalar(0, 255,0), 3, CV_AA);
+    line(control_ptr->image, cvPoint(origin_x + point[0] + 10, origin_y + point[1]),
+         cvPoint(origin_x + point[0] - 10, origin_y + point[1]), Scalar(0, 255, 0), 3, CV_AA);
+    line(control_ptr->image, cvPoint(origin_x + point[0], origin_y + point[1] + 10),
+         cvPoint(origin_x + point[0], origin_y + point[1] - 10), Scalar(0, 255, 0), 3, CV_AA);
     return;
   }
 
@@ -242,21 +254,28 @@ double LineFollowing::distance_from_center(float rho, float theta, double width,
   return x;
 }
 
-cv::Vec2i LineFollowing::find_intersection(cv::Vec2f a, cv::Vec2f b) {
-  Vec2i rv;
-  float theta1, theta2, rho1, rho2;
-  theta1 = a[0];
-  rho1 = a[1];
-  theta2 = b[0];
-  rho2 = b[1];
-  float a1 = 1 / atan(theta1);
-  float a2 = 1 / atan(theta2);
-  float b1 = rho1;
-  float b2 = rho2;
-  float x = (b2 - b1) / (a1 - a2);
-  float y = (a1 * b2 - a2 * b1) / (a1 - a2);
-  rv[0] = (int) round(x);
-  rv[1] = (int) round(y);
+cv::Point LineFollowing::find_intersection(Vec2f a, Vec2f b) {
+  Point rv;
+  bool do_intersect = parametricIntersect(a[1], a[0], b[1], b[0], rv.x, rv.y);
+  if (!do_intersect) {
+    printf("No intersection!\n");
+  }
 
   return rv;
+}
+
+
+bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y) {
+  float ct1 = cosf(t1);     //matrix element a
+  float st1 = sinf(t1);     //b
+  float ct2 = cosf(t2);     //c
+  float st2 = sinf(t2);     //d
+  float d = ct1 * st2 - st1 * ct2;        //determinative (rearranged matrix for inverse)
+  if (d != 0.0f) {
+    x = (int) ((st2 * r1 - st1 * r2) / d);
+    y = (int) ((-ct2 * r1 + ct1 * r2) / d);
+    return (true);
+  } else { //lines are parallel and will NEVER intersect!
+    return (false);
+  }
 }
