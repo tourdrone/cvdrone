@@ -12,16 +12,16 @@ class ObjectFollowing {
     //int targetS
     //int targetV
 
-	ObjectFollowing(Control *control);
+    ObjectFollowing(Control *control);
     cv::KalmanFilter kalman;
     cv::Rect rect;
 
     void fly();
     void close();
-	void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value);
+    void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value);
 
   private:
-  	Control *control_ptr;
+    Control *control_ptr;
     int minH = 0;
     int maxH = 255;
     int minS = 0;
@@ -31,6 +31,8 @@ class ObjectFollowing {
     int rect_area = 0;
     bool learnMode = false;
     bool moveStatus = false;
+	int goalArea = 22500;
+	double k = 0.000054054;
 };
 
 /*

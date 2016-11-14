@@ -1,7 +1,7 @@
 /*
-  Min Kao Drone Tour
-  Modified by Elliot Greenlee
-*/
+   Min Kao Drone Tour
+   Modified by Elliot Greenlee
+ */
 
 #include "objectFollowing.h"
 #include "../control.h"
@@ -12,7 +12,7 @@ const string THRESHOLDS_FILE_NAME = "thresholds.xml";
 const double dt = 1.0; //Sampling time [s]
 
 /*
-*/
+ */
 ObjectFollowing::ObjectFollowing(Control *control) {
   control_ptr = control;
   kalman = cv::KalmanFilter(4, 2, 0);
@@ -44,34 +44,34 @@ ObjectFollowing::ObjectFollowing(Control *control) {
   // Transition matrix (x, y, vx, vy)
   cv::Mat1f A(4, 4);
   A << 1.0, 0.0,  dt, 0.0,
-       0.0, 1.0, 0.0,  dt,
-       0.0, 0.0, 1.0, 0.0,
-       0.0, 0.0, 0.0, 1.0;
+    0.0, 1.0, 0.0,  dt,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0;
   kalman.transitionMatrix = A;
 
   // Measurement matrix (x, y)
   cv::Mat1f H(2, 4);
   H << 1, 0, 0, 0,
-       0, 1, 0, 0;
+    0, 1, 0, 0;
   kalman.measurementMatrix = H;
 
   // Process noise covairance (x, y, vx, vy)
   cv::Mat1f Q(4, 4);
   Q << 1e-5,  0.0,  0.0,  0.0,
-        0.0, 1e-5,  0.0,  0.0,
-        0.0,  0.0, 1e-5,  0.0,
-        0.0,  0.0,  0.0, 1e-5;
+    0.0, 1e-5,  0.0,  0.0,
+    0.0,  0.0, 1e-5,  0.0,
+    0.0,  0.0,  0.0, 1e-5;
   kalman.processNoiseCov = Q;
 
   // Measurement noise covariance (x, y)
   cv::Mat1f R(2, 2);
   R << 1e-1,  0.0,
-        0.0, 1e-1;
+    0.0, 1e-1;
   kalman.measurementNoiseCov = R;
 }
 
 /*
-*/
+ */
 void ObjectFollowing::close() {
   //Save thresholds
   cv::FileStorage fs(THRESHOLDS_FILE_NAME, cv::FileStorage::READ);
@@ -88,8 +88,8 @@ void ObjectFollowing::close() {
 }
 
 /*
-  returns heading for control
-*/
+   returns heading for control
+ */
 void ObjectFollowing::fly() {
 
   ControlMovements *controlMovements = &(control_ptr->velocities);
@@ -99,21 +99,21 @@ void ObjectFollowing::fly() {
   cv::Vec3b hsvSample;
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
-    //switch between learning and non-learning mode
-    if (control_ptr->key == 'l') {
-      learnMode = !learnMode;
-      if (learnMode) {
-        printf("Learning mode is enabled\n");
-        printf("The color at the crosshairs is being learned\n");
-        printf("Press l again to turn off learning mode\n\n");
-      }
-      else {
-        printf("Learning mode is disabled\n");
-        printf("The color last at the crosshairs will be targeted\n");
-        printf("Press l again to learn a different color\n\n");
-      }
+  //switch between learning and non-learning mode
+  if (control_ptr->key == 'l') {
+    learnMode = !learnMode;
+    if (learnMode) {
+      printf("Learning mode is enabled\n");
+      printf("The color at the crosshairs is being learned\n");
+      printf("Press l again to turn off learning mode\n\n");
     }
-  
+    else {
+      printf("Learning mode is disabled\n");
+      printf("The color last at the crosshairs will be targeted\n");
+      printf("Press l again to learn a different color\n\n");
+    }
+  }
+
   // HSV image
   cv::Mat hsv;
   cv::cvtColor(*image, hsv, cv::COLOR_BGR2HSV_FULL);
@@ -171,7 +171,7 @@ void ObjectFollowing::fly() {
 
   // Show predicted position
   cv::circle(*image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
-    
+
   // Calculate object heading fraction
   float heading = -(((*image).cols/2) - prediction(0, 0))/((*image).cols/2);
 
@@ -192,28 +192,52 @@ void ObjectFollowing::fly() {
 
   rect_area = rect.width * rect.height;
 
+
+
+  /*
   //Execute drone movement
   if (rect_area > 25000) {
-    controlMovements->vx = -1.0;
-    moveStatus = false;
+  controlMovements->vx = -1.0;
+  moveStatus = false;
   }
   else if (rect_area <= 25000 && rect_area >= 20000) {
-    controlMovements->vx = 0;
-    moveStatus = false;
+  controlMovements->vx = 0;
+  moveStatus = false;
   }
   else {
-    controlMovements->vx = 1.0;
-    moveStatus = true;
+  controlMovements->vx = 1.0;
+  moveStatus = true;
+  }
+   */
+
+
+  controlMovements->vx = k*(goalArea-rect_area);
+
+  if(controlMovements->vx > 1) {
+    controlMovements->vx = 1;
+  } 
+  else if (controlMovements->vx < -1){
+    controlMovements->vx = -1;
   }
 
+  if( control_ptr->altitude < 1.2 )
+  {
+    controlMovements->vz = 1.0;
+  } 
+  else if (control_ptr->altitude > 1.3 ) {
+    controlMovements->vz = -1.0;
+  } 
+  else {
+    controlMovements->vz = 0.0;
+  }
+
+
   controlMovements->vy = 0;
-  controlMovements->vz = 0;
   time_t current_time = time(0);
   double elapsed_time = difftime(current_time, control_ptr->takeoff_time);
   if (elapsed_time < 5){
     controlMovements->vr = 0;
   } else {
-    controlMovements->vz = (control_ptr->altitude < 1.0) ? 1.0 : 0.0;
     controlMovements->vr = -(heading * 0.5);
   } 
 
