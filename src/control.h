@@ -30,10 +30,10 @@ class Control {
 
     FILE *flight_log;
 
-	Control();
+    Control();
     void close();
     void fly();
-	bool getKey(int wait);
+    bool getKey(int wait);
     void detectFlyingMode();
     void changeSpeed();
     void detectTakeoff();
@@ -52,7 +52,7 @@ class Control {
     double speed = 0.0;
     char key;
     int batteryPercentage;
-    int altitude;
+    double altitude = 0.0;
     bool flying;
 
     ManualFlying *manualFlying;

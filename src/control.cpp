@@ -191,19 +191,19 @@ void Control::overlayControl() {
 }
 
 /*
-*/
+ */
 void Control::move() {
-  ardrone.move3D(velocities.vx * speed, velocities.vy * speed, velocities.vz * speed, velocities.vr);
+  ardrone.move3D(velocities.vx * speed, velocities.vy * speed, velocities.vz, velocities.vr);
 
   return;
 }
 
 
 /*
-  Close connection to drone
-*/
+   Close connection to drone
+ */
 void Control::close() {
-  
+
   //Close flying modes
   manualFlying->close();
   objectFollowing->close();
