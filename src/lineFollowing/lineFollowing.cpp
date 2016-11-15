@@ -70,21 +70,22 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
         lines[i][0] *= -1;
       }*/
 
-    lines[i][1] -= deg2rad(360);
+    swap(lines[i][0], lines[i][1]);
+    lines[i][0] -= deg2rad(360);
 
-    while (lines[i][1] < 0) {
-      lines[i][1] += deg2rad(360);
+    while (lines[i][0] < 0) {
+      lines[i][0] += deg2rad(360);
     }
     
-      if (lines[i][1] >= deg2rad(90)) {
-        lines[i][1] -= deg2rad(180);
-        lines[i][0] *= -1;
+      if (lines[i][0] >= deg2rad(90)) {
+        lines[i][0] -= deg2rad(180);
+        lines[i][1] *= -1;
       }
     
 
 
     //put in order of theta, rho
-    swap(lines[i][0], lines[i][1]);
+
 
   }
   // return lines;
