@@ -7,7 +7,7 @@
 
 static const int degree_tolerance = 10;
 
-static const int distance_tolerance = 5;
+static const int distance_tolerance = 15;
 
 void compress_lines(vector<cv::Vec2f> &condensed, const vector<cv::Vec2f> &tmp_list);
 

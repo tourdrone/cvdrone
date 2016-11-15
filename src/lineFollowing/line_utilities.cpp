@@ -77,7 +77,7 @@ vector<Point> to_points(float theta, float rho) {
 Vec2f normalize_point(Vec2f point) {
   point[0] -= deg2rad(360);
   while (point[0] < 0) {
-    point[0] += deg2rad(360);
+    point[0] += deg2rad(180);
   }
   return point;
 }
