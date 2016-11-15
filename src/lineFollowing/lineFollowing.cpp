@@ -41,9 +41,14 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   // printf("Adding in %d lines\n", (int) lines.size());
 
   vector<Vec2f> tmp = condense_lines(lines);
+  sort(tmp.begin(), tmp.end(),
+       [](const Vec2f &a, const Vec2f &b) {
+         return a[0] < b[0];
+       });
   if (tmp.size() > 0) {
     found_lines = tmp;
   }
+
   draw_lines(original_frame, found_lines);
 
 
