@@ -58,13 +58,17 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
   vector<Vec2f> condensed;
   vector<Vec2f> tmp_list;
   for (int i = 0; i < (int) lines.size(); i++) {
-    if (lines[i][1] > CV_PI / 2) {
-      lines[i][1] -= CV_PI;
-      lines[i][0] *= -1;
-    }
-    else if (lines[i][1] < ((CV_PI / 2) * -1)) {
-      lines[i][1] += CV_PI;
-      lines[i][0] *= -1;
+//    if (lines[i][1] > CV_PI / 2) {
+//      lines[i][1] -= CV_PI;
+//      lines[i][0] *= -1;
+//    }
+//    else if (lines[i][1] < ((CV_PI / 2) * -1)) {
+//      lines[i][1] += CV_PI;
+//      lines[i][0] *= -1;
+//    }
+    lines[i][1] -= deg2rad(360);
+    while (lines[i][1] < 0) {
+      lines[i][1] += deg2rad(360);
     }
 
     //put in order of theta, rho
