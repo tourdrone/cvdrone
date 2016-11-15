@@ -39,7 +39,8 @@ OBJS          = ../../src/ardrone/ardrone.o \
                 ../../src/main.o
 PROGRAM       = test.a
 
-
+debug: $(PROGRAM)
+debug: CXXFLAGS = -Wall -D__STDC_CONSTANT_MACROS -std=c++11 -g
 
 
 $(PROGRAM):     $(OBJS)
@@ -50,6 +51,5 @@ clean:;         rm -f *.o *~ $(PROGRAM) ../../src/*.o ../../src/*/*.o
 install:        $(PROGRAM)
 		install -s $(PROGRAM) $(DEST)
 
-debug: $(PROGRAM)
-debug: CXXFLAGS = -Wall -D__STDC_CONSTANT_MACROS -std=c++11 -g
+
 	
