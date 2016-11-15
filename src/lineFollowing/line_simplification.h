@@ -5,6 +5,10 @@
 #ifndef CVDRONE_LINE_SIMPLIFICATION_H
 #define CVDRONE_LINE_SIMPLIFICATION_H
 
+static const int degree_tolerance = 10;
+
+static const int distance_tolerance = 5;
+
 void compress_lines(vector<cv::Vec2f> &condensed, const vector<cv::Vec2f> &tmp_list);
 
 vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going);
