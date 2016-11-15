@@ -57,6 +57,7 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 vector<Vec2f> condense_lines(vector<Vec2f> lines) {
   vector<Vec2f> condensed;
   vector<Vec2f> tmp_list;
+  double diff;
   for (int i = 0; i < (int) lines.size(); i++) {
 //    if (lines[i][1] > CV_PI / 2) {
 //      lines[i][1] -= CV_PI;
@@ -66,14 +67,19 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
 //      lines[i][1] += CV_PI;
 //      lines[i][0] *= -1;
 //    }
+
     lines[i][1] -= deg2rad(360);
+	
     while (lines[i][1] < 0) {
       lines[i][1] += deg2rad(360);
     }
-    if (lines[i][1] >= deg2rad(180)) {
+	/*
+    if (lines[i][1] >= deg2rad(90)) {
       lines[i][1] -= deg2rad(180);
       lines[i][0] *= -1;
     }
+	*/
+
 
     //put in order of theta, rho
     swap(lines[i][0], lines[i][1]);
@@ -93,7 +99,11 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
       tmp_list.push_back(to_manipulate);
       continue;
     } else {
-      if (abs(to_manipulate[0] - tmp_list.front()[0]) < deg2rad(20)) {
+	  diff = abs(to_manipulate[0] - tmp_list.front()[0]);
+	  if(diff > deg2rad(180)){
+		diff = deg2rad(360)-diff;
+	  }
+      if (diff < deg2rad(20)) {
         //The angles are similar
         if (abs(to_manipulate[1] - tmp_list.front()[1]) < 50) {
           //the distances are similar
@@ -209,11 +219,17 @@ void LineFollowing::fly() {
     origin_x = 0;
     origin_y = 0;
     Vec2i point = find_intersection(found_lines[0], found_lines[1]);
-    printf("My coords are x: %3d y %3d\n", point[0], point[1]);
+    //printf("My coords are x: %3d y %3d\n", point[0], point[1]);
     line(control_ptr->image, cvPoint(origin_x + point[0] + 10, origin_y + point[1]),
          cvPoint(origin_x + point[0] - 10, origin_y + point[1]), Scalar(0, 255, 0), 3, CV_AA);
     line(control_ptr->image, cvPoint(origin_x + point[0], origin_y + point[1] + 10),
          cvPoint(origin_x + point[0], origin_y + point[1] - 10), Scalar(0, 255, 0), 3, CV_AA);
+	if(found_lines.size() >= 4){
+		for(int j = 0; j < (int) found_lines.size(); j++){
+		  printf("theta: %.1f rho: %.0f  ", found_lines[j][0]*(180/CV_PI), found_lines[j][1]);
+		}
+		printf("\n");
+	}
     return;
   }
 
