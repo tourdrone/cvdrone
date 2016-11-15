@@ -36,16 +36,6 @@ private:
   cv::Point find_intersection(cv::Vec2f a, cv::Vec2f b);
 };
 
-void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list);
-
-void draw_lines(Mat &image, const vector<Vec2f> &lines);
-
-vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going);
-
-vector<Point> to_points(float theta, float rho);
-
-bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y);
-
 Vec2f normalize_point(Vec2f point);
 
 

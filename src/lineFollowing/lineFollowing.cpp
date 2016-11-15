@@ -5,6 +5,7 @@
 #include "lineFollowing.h"
 #include "line_utilities.h"
 #include "../control.h"
+#include "line_simplification.h"
 
 using namespace std;
 using namespace cv;
@@ -40,73 +41,6 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
   draw_lines(original_frame, found_lines);
 
-
-}
-
-vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
-  vector<Vec2f> condensed;
-  vector<Vec2f> tmp_list;
-  double diff;
-  if (keep_going) {
-    for (int i = 0; i < (int) lines.size(); i++) {
-      //put in order of theta, rho
-      swap(lines[i][0], lines[i][1]);
-
-      lines[i] = normalize_point(lines[i]);
-
-      if (lines[i][0] >= deg2rad(90)) {
-        lines[i] = flip_line(lines[i]);
-      }
-
-    }
-    // return lines;
-  }
-  //Order from least to greatest theta
-  sort(lines.begin(), lines.end(),
-       [](const Vec2f &a, const Vec2f &b) {
-         return a[0] < b[0];
-       });
-
-  while (!lines.empty()) {
-    Vec2f to_manipulate = lines.front();
-    lines.erase(lines.begin());
-
-    if (tmp_list.empty()) {
-      tmp_list.push_back(to_manipulate);
-      continue;
-    } else {
-      diff = abs(to_manipulate[0] - tmp_list.front()[0]);
-      if (diff > deg2rad(180)) {
-        diff = deg2rad(360) - diff;
-      }
-      if (diff < deg2rad(10)) {
-        //The angles are similar
-        if (abs(to_manipulate[1] - tmp_list.front()[1]) < 5) {
-          //the distances are similar
-          tmp_list.push_back(to_manipulate);
-          continue;
-        }
-      } else {
-        //Need to clear out the tmp_list
-        compress_lines(condensed, tmp_list);
-
-        tmp_list.clear();
-        tmp_list.push_back(to_manipulate);
-
-      }
-    }
-  }
-  if (!tmp_list.empty()) {
-    compress_lines(condensed, tmp_list);
-  }
-  if (condensed.size() >= 2) {
-    condensed.back() = flip_line(condensed.back());
-
-    if (keep_going) {
-      condensed = condense_lines(condensed, false);
-    }
-  }
-  return condensed;
 }
 
 Vec2f normalize_point(Vec2f point) {
@@ -115,43 +49,6 @@ Vec2f normalize_point(Vec2f point) {
     point[0] += deg2rad(360);
   }
   return point;
-}
-
-void draw_lines(Mat &image, const vector<Vec2f> &lines) {
-  for (size_t i = 0; i < lines.size(); i++) {
-    float theta = lines[i][0], rho = lines[i][1];
-    // float rho = lines[i][0], theta = lines[i][1];Point pt1;
-    vector<Point> p = to_points(theta, rho);
-    line(image, p[0], p[1], Scalar(255 * (i == 0), 255 * (i == 1), 255 * (i == 2)), 3, CV_AA);
-  }
-}
-
-vector<Point> to_points(float theta, float rho) {
-  vector<Point> rv = {Point(), Point()};
-  double a = cos(theta), b = sin(theta);
-  double x0 = a * rho, y0 = b * rho;
-  rv[0].x = cvRound(x0 + 1000 * (-b));
-  rv[0].y = cvRound(y0 + 1000 * (a));
-  rv[1].x = cvRound(x0 - 1000 * (-b));
-  rv[1].y = cvRound(y0 - 1000 * (a));
-  return rv;
-}
-
-void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list) {
-  Vec2f new_point;
-  float angle_sum = 0;
-  float rho_sum = 0;
-  for (int j = 0; j < (int) tmp_list.size(); ++j) {
-    angle_sum += tmp_list[j][0];
-    rho_sum += tmp_list[j][1];
-  }
-  angle_sum /= tmp_list.size();
-  rho_sum /= tmp_list.size();
-
-  new_point[0] = angle_sum;
-  new_point[1] = rho_sum;
-
-  condensed.push_back(new_point);
 }
 
 LineFollowing::LineFollowing(Control *control) {
@@ -251,25 +148,6 @@ void LineFollowing::fly() {
   return;
 }
 
-double LineFollowing::distance_from_center(float rho, float theta, double width, double height) {
-  // printf("width: %f height: %f\n", width, height);
-  theta = -1 * (theta);
-  double rh = rho * cos(theta);
-  double rv = rho * sin(theta);
-  // rh = abs(rh);
-  // rv *= -1;
-  double excess = (width / 2.0) - rh;
-  // excess *=-1;
-  double lv = rv + (height / 2.0);
-  double lh = lv * tan(theta);
-  // lh = abs(lh);
-  double x = lh - excess;
-
-  // printf("ro: %4f th: %4f rh: %4f rv: %4f ex: %4f lv: %4f lh: %4f x: %4f\n", rho, theta ,rh, rv, excess, lv,lh,x);
-
-  return x;
-}
-
 cv::Point LineFollowing::find_intersection(Vec2f a, Vec2f b) {
   Point rv;
   bool do_intersect = parametricIntersect(a[1], a[0], b[1], b[0], rv.x, rv.y);
@@ -280,17 +158,3 @@ cv::Point LineFollowing::find_intersection(Vec2f a, Vec2f b) {
   return rv;
 }
 
-bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y) {
-  float ct1 = cosf(t1);     //matrix element a
-  float st1 = sinf(t1);     //b
-  float ct2 = cosf(t2);     //c
-  float st2 = sinf(t2);     //d
-  float d = ct1 * st2 - st1 * ct2;        //determinative (rearranged matrix for inverse)
-  if (d != 0.0f) {
-    x = (int) ((st2 * r1 - st1 * r2) / d);
-    y = (int) ((-ct2 * r1 + ct1 * r2) / d);
-    return (true);
-  } else { //lines are parallel and will NEVER intersect!
-    return (false);
-  }
-}
