@@ -98,7 +98,7 @@ void LineFollowing::fly() {
          cvPoint(origin_x + point[0], origin_y + point[1] - 10), Scalar(255, 255, 255), 3, CV_AA);
     if (found_lines.size() >= 3) {
       for (int j = 0; j < (int) found_lines.size(); j++) {
-        printf("(%.1f, %.0f) ", rad2deg(found_lines[j][0]) + 90, found_lines[j][1]);
+        printf("(%5.1f, %5.0f) ", rad2deg(found_lines[j][0]) + 180, found_lines[j][1]);
       }
       printf("\n");
     }
