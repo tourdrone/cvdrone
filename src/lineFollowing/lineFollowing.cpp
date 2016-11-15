@@ -120,6 +120,10 @@ double deg2rad(double deg) {
   return deg * (CV_PI / 180.0);
 }
 
+double rad2deg(double rad) {
+  return rad * (180.0 / CV_PI);
+}
+
 void draw_lines(Mat &image, const vector<Vec2f> &lines) {
   for (size_t i = 0; i < lines.size(); i++) {
     float theta = lines[i][0], rho = lines[i][1];
