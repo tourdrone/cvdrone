@@ -43,14 +43,6 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
 }
 
-Vec2f normalize_point(Vec2f point) {
-  point[0] -= deg2rad(360);
-  while (point[0] < 0) {
-    point[0] += deg2rad(360);
-  }
-  return point;
-}
-
 LineFollowing::LineFollowing(Control *control) {
   namedWindow("line_window", CV_WINDOW_NORMAL);
   control_ptr = control;

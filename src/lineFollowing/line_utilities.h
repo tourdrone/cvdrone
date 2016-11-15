@@ -19,4 +19,6 @@ void draw_lines(Mat &image, const vector<Vec2f> &lines);
 
 vector<Point> to_points(float theta, float rho);
 
+Vec2f normalize_point(Vec2f point);
+
 #endif //CVDRONE_LINE_UTILITIES_H
