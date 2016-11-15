@@ -8,6 +8,7 @@
 using namespace std;
 using namespace cv;
 
+double rad2deg(double rad);
 
 void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list);
 
@@ -58,6 +59,7 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
   vector<Vec2f> condensed;
   vector<Vec2f> tmp_list;
   double diff;
+  if (keep_going){
   for (int i = 0; i < (int) lines.size(); i++) {
     /*    if (lines[i][1] > CV_PI / 2) {
         lines[i][1] -= CV_PI;
@@ -73,18 +75,20 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
     while (lines[i][1] < 0) {
       lines[i][1] += deg2rad(360);
     }
-    /*
+    
       if (lines[i][1] >= deg2rad(90)) {
         lines[i][1] -= deg2rad(180);
         lines[i][0] *= -1;
       }
-    */
+    
 
 
     //put in order of theta, rho
     swap(lines[i][0], lines[i][1]);
-  }
 
+  }
+  // return lines;
+}
   //Order from least to greatest theta
   sort(lines.begin(), lines.end(),
        [](const Vec2f &a, const Vec2f &b) {
@@ -103,9 +107,9 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
       if (diff > deg2rad(180)) {
         diff = deg2rad(360) - diff;
       }
-      if (diff < deg2rad(20)) {
+      if (diff < deg2rad(10)) {
         //The angles are similar
-        if (abs(to_manipulate[1] - tmp_list.front()[1]) < 50) {
+        if (abs(to_manipulate[1] - tmp_list.front()[1]) < 5) {
           //the distances are similar
           tmp_list.push_back(to_manipulate);
           continue;
@@ -123,11 +127,16 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
   if (!tmp_list.empty()) {
     compress_lines(condensed, tmp_list);
   }
-
-  condensed.back()[0] -= 360;
+  if (condensed.size() >= 2)
+  {
+    // printf("changing %.1f", rad2deg(condensed.back()[0]));
+  condensed.back()[0] -= deg2rad(180);
+  condensed.back()[1] *= -1;
+  // printf(" to %.1f\n", rad2deg(condensed.back()[0]));
   if (keep_going) {
     condensed = condense_lines(condensed, false);
   }
+}
   return condensed;
 }
 
@@ -215,7 +224,7 @@ void LineFollowing::fly() {
   int origin_y = 0 + (control_ptr->image.rows / 2);
   Point pt1 = cvPoint(origin_x, origin_y);
   Point pt2 = cvPoint(origin_x + cvRound(calculated_distance), origin_y);
-  line(control_ptr->image, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
+  line(control_ptr->image, pt1, pt2, Scalar(255, 255, 255), 3, CV_AA);
 
   if (found_lines.size() > 1) {
     // I need to turn
@@ -226,12 +235,12 @@ void LineFollowing::fly() {
     Vec2i point = find_intersection(found_lines[0], found_lines[1]);
     //printf("My coords are x: %3d y %3d\n", point[0], point[1]);
     line(control_ptr->image, cvPoint(origin_x + point[0] + 10, origin_y + point[1]),
-         cvPoint(origin_x + point[0] - 10, origin_y + point[1]), Scalar(0, 255, 0), 3, CV_AA);
+         cvPoint(origin_x + point[0] - 10, origin_y + point[1]), Scalar(255, 255, 255), 3, CV_AA);
     line(control_ptr->image, cvPoint(origin_x + point[0], origin_y + point[1] + 10),
-         cvPoint(origin_x + point[0], origin_y + point[1] - 10), Scalar(0, 255, 0), 3, CV_AA);
-    if (found_lines.size() >= 4) {
+         cvPoint(origin_x + point[0], origin_y + point[1] - 10), Scalar(255, 255, 255), 3, CV_AA);
+    if (found_lines.size() >= 3) {
       for (int j = 0; j < (int) found_lines.size(); j++) {
-        printf("theta: %.1f rho: %.0f  ", found_lines[j][0] * (180 / CV_PI), found_lines[j][1]);
+        printf("(%.1f, %.0f) ", rad2deg(found_lines[j][0]) + 90, found_lines[j][1]);
       }
       printf("\n");
     }
@@ -242,29 +251,29 @@ void LineFollowing::fly() {
     // I need to snap myself to the line
     if (found_lines[0][0] >= deg2rad(5)) {
       control_ptr->velocities.vr = -.2;
-      printf("Turning Right\n");
+      // printf("Turning Right\n");
     }
     else if (found_lines[0][0] <= deg2rad(-1 * 5)) {
       control_ptr->velocities.vr = .2;
-      printf("Turning Left\n");
+      // printf("Turning Left\n");
     } else {
-      printf("Checking Distance\n");
+      // printf("Checking Distance\n");
 
       double offset = calculated_distance;
       // printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset,
       // found_lines[0][1],
       // (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
       if (-100 <= offset && offset <= 100) {
-        printf("No need to move\n");
+        // printf("No need to move\n");
       } else if (offset < 0) {
         //we are to the right of the line
         //we need to move left
         control_ptr->velocities.vy = 1;
-        printf("Move left\n");
+        // printf("Move left\n");
       } else {
         //we need to move right
         control_ptr->velocities.vy = -1;
-        printf("Move right\n");
+        // printf("Move right\n");
       }
     }
   }
