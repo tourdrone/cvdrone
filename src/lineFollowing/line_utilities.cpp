@@ -73,3 +73,11 @@ vector<Point> to_points(float theta, float rho) {
   rv[1].y = cvRound(y0 - 1000 * (a));
   return rv;
 }
+
+Vec2f normalize_point(Vec2f point) {
+  point[0] -= deg2rad(360);
+  while (point[0] < 0) {
+    point[0] += deg2rad(360);
+  }
+  return point;
+}

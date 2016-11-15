@@ -36,7 +36,5 @@ private:
   cv::Point find_intersection(cv::Vec2f a, cv::Vec2f b);
 };
 
-Vec2f normalize_point(Vec2f point);
-
 
 #endif
