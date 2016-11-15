@@ -13,7 +13,7 @@ void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list);
 
 void draw_lines(Mat &image, const vector<Vec2f> &lines);
 
-vector<Vec2f> condense_lines(vector<Vec2f> lines);
+vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going);
 
 double deg2rad(double deg);
 
@@ -40,7 +40,7 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
   // printf("Adding in %d lines\n", (int) lines.size());
 
-  vector<Vec2f> tmp = condense_lines(lines);
+  vector<Vec2f> tmp = condense_lines(lines, true);
   sort(tmp.begin(), tmp.end(),
        [](const Vec2f &a, const Vec2f &b) {
          return a[0] < b[0];
@@ -54,31 +54,31 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
 }
 
-vector<Vec2f> condense_lines(vector<Vec2f> lines) {
+vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
   vector<Vec2f> condensed;
   vector<Vec2f> tmp_list;
   double diff;
   for (int i = 0; i < (int) lines.size(); i++) {
-//    if (lines[i][1] > CV_PI / 2) {
-//      lines[i][1] -= CV_PI;
-//      lines[i][0] *= -1;
-//    }
-//    else if (lines[i][1] < ((CV_PI / 2) * -1)) {
-//      lines[i][1] += CV_PI;
-//      lines[i][0] *= -1;
-//    }
+    /*    if (lines[i][1] > CV_PI / 2) {
+        lines[i][1] -= CV_PI;
+        lines[i][0] *= -1;
+      }
+      else if (lines[i][1] < ((CV_PI / 2) * -1)) {
+        lines[i][1] += CV_PI;
+        lines[i][0] *= -1;
+      }*/
 
     lines[i][1] -= deg2rad(360);
-	
+
     while (lines[i][1] < 0) {
       lines[i][1] += deg2rad(360);
     }
-	/*
-    if (lines[i][1] >= deg2rad(90)) {
-      lines[i][1] -= deg2rad(180);
-      lines[i][0] *= -1;
-    }
-	*/
+    /*
+      if (lines[i][1] >= deg2rad(90)) {
+        lines[i][1] -= deg2rad(180);
+        lines[i][0] *= -1;
+      }
+    */
 
 
     //put in order of theta, rho
@@ -99,10 +99,10 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
       tmp_list.push_back(to_manipulate);
       continue;
     } else {
-	  diff = abs(to_manipulate[0] - tmp_list.front()[0]);
-	  if(diff > deg2rad(180)){
-		diff = deg2rad(360)-diff;
-	  }
+      diff = abs(to_manipulate[0] - tmp_list.front()[0]);
+      if (diff > deg2rad(180)) {
+        diff = deg2rad(360) - diff;
+      }
       if (diff < deg2rad(20)) {
         //The angles are similar
         if (abs(to_manipulate[1] - tmp_list.front()[1]) < 50) {
@@ -123,6 +123,11 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
   if (!tmp_list.empty()) {
     compress_lines(condensed, tmp_list);
   }
+
+  condensed.back()[0] -= 360;
+  if (keep_going) {
+    condensed = condense_lines(condensed, false);
+  }
   return condensed;
 }
 
@@ -139,7 +144,7 @@ void draw_lines(Mat &image, const vector<Vec2f> &lines) {
     float theta = lines[i][0], rho = lines[i][1];
     // float rho = lines[i][0], theta = lines[i][1];Point pt1;
     vector<Point> p = to_points(theta, rho);
-    line(image, p[0], p[1], Scalar(255*(i==0), 255*(i==1), 255*(i==2)), 3, CV_AA);
+    line(image, p[0], p[1], Scalar(255 * (i == 0), 255 * (i == 1), 255 * (i == 2)), 3, CV_AA);
   }
 }
 
@@ -224,12 +229,12 @@ void LineFollowing::fly() {
          cvPoint(origin_x + point[0] - 10, origin_y + point[1]), Scalar(0, 255, 0), 3, CV_AA);
     line(control_ptr->image, cvPoint(origin_x + point[0], origin_y + point[1] + 10),
          cvPoint(origin_x + point[0], origin_y + point[1] - 10), Scalar(0, 255, 0), 3, CV_AA);
-	if(found_lines.size() >= 4){
-		for(int j = 0; j < (int) found_lines.size(); j++){
-		  printf("theta: %.1f rho: %.0f  ", found_lines[j][0]*(180/CV_PI), found_lines[j][1]);
-		}
-		printf("\n");
-	}
+    if (found_lines.size() >= 4) {
+      for (int j = 0; j < (int) found_lines.size(); j++) {
+        printf("theta: %.1f rho: %.0f  ", found_lines[j][0] * (180 / CV_PI), found_lines[j][1]);
+      }
+      printf("\n");
+    }
     return;
   }
 
