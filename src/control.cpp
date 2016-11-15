@@ -15,7 +15,7 @@ Control::Control() {
   fflush(stdout);
 
   flight_log = fopen(flightLog.c_str(), "w");
-  green = CV_RGB(0,255,0); 
+  green = CV_RGB(0, 255, 0);
 
   //Connect to drone
   if (!ardrone.open()) {
@@ -68,7 +68,7 @@ bool Control::getKey(int wait) {
 void Control::changeSpeed() {
   if ((key >= '0') && (key <= '9')) //number keys
   {
-    speed = (key-'0')*0.1;
+    speed = (key - '0') * 0.1;
   }
 }
 
@@ -148,15 +148,15 @@ void Control::overlayControl() {
     sprintf(vzDisplay, "vz = %3.2f", velocities.vz);
     sprintf(vrDisplay, "vr = %3.2f", velocities.vr);
 
-    putText(image, vxDisplay, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-    putText(image, vyDisplay, cvPoint(30,140), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-    putText(image, vzDisplay, cvPoint(30,160), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-    putText(image, vrDisplay, cvPoint(30,180), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(image, vxDisplay, cvPoint(30, 120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(image, vyDisplay, cvPoint(30, 140), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(image, vzDisplay, cvPoint(30, 160), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+    putText(image, vrDisplay, cvPoint(30, 180), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
   }
-  else if (ObjectFollow) {
+  else if (flyingMode == ObjectFollow) {
     sprintf(modeDisplay, "Object Following Mode");
   }
-  else if (LineFollow) {
+  else if (flyingMode == LineFollow) {
     sprintf(modeDisplay, "Line Following Mode");
   }
 
@@ -173,19 +173,19 @@ void Control::overlayControl() {
   sprintf(altitudeDisplay, "Altitude = %f", ardrone.getAltitude());
 
   //add flying mode to overlay
-  putText(image, modeDisplay, cvPoint(30,20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(image, modeDisplay, cvPoint(30, 20), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
   //add grounded or flying to overlay
-  putText(image, flyingDisplay, cvPoint(30,40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(image, flyingDisplay, cvPoint(30, 40), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
   //add battery percentage to overlay
-  putText(image, batteryDisplay, cvPoint(30,60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(image, batteryDisplay, cvPoint(30, 60), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
   //add altitude to overlay
-  putText(image, altitudeDisplay, cvPoint(30,80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(image, altitudeDisplay, cvPoint(30, 80), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
   //add speed to overlay
-  putText(image, speedDisplay, cvPoint(30,100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(image, speedDisplay, cvPoint(30, 100), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
   cv::imshow("camera", image); //Display the camera feed
 }
@@ -211,7 +211,7 @@ void Control::close() {
 
   //close connections with drone
   ardrone.close();
- 
+
   return;
 }
 
