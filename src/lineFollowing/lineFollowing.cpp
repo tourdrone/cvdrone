@@ -52,7 +52,7 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 vector<Vec2f> condense_lines(vector<Vec2f> lines) {
   vector<Vec2f> condensed;
   vector<Vec2f> tmp_list;
-  for (int i = 0; i < lines.size(); i++) {
+  for (int i = 0; i < (int) lines.size(); i++) {
     if (lines[i][1] > CV_PI / 2) {
       lines[i][1] -= CV_PI;
       lines[i][0] *= -1;
@@ -131,7 +131,7 @@ void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list) {
   Vec2f new_point;
   float angle_sum = 0;
   float rho_sum = 0;
-  for (int j = 0; j < tmp_list.size(); ++j) {
+  for (int j = 0; j < (int) tmp_list.size(); ++j) {
     angle_sum += tmp_list[j][0];
     rho_sum += tmp_list[j][1];
   }
