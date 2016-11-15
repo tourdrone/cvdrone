@@ -70,6 +70,10 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines) {
     while (lines[i][1] < 0) {
       lines[i][1] += deg2rad(360);
     }
+    if (lines[i][1] >= deg2rad(180)) {
+      lines[i][1] -= deg2rad(180);
+      lines[i][0] *= -1;
+    }
 
     //put in order of theta, rho
     swap(lines[i][0], lines[i][1]);
