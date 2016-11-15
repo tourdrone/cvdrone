@@ -125,7 +125,7 @@ void draw_lines(Mat &image, const vector<Vec2f> &lines) {
     float theta = lines[i][0], rho = lines[i][1];
     // float rho = lines[i][0], theta = lines[i][1];Point pt1;
     vector<Point> p = to_points(theta, rho);
-    line(image, p[0], p[1], Scalar(0, 0, 255), 3, CV_AA);
+    line(image, p[0], p[1], Scalar(255*(i==0), 255*(i==1), 255*(i==2)), 3, CV_AA);
   }
 }
 
