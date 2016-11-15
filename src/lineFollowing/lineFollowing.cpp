@@ -3,6 +3,7 @@
 */
 
 #include "lineFollowing.h"
+#include "line_utilities.h"
 #include "../control.h"
 
 using namespace std;
@@ -21,6 +22,8 @@ double deg2rad(double deg);
 vector<Point> to_points(float theta, float rho);
 
 bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y);
+
+Vec2f normalize_point(Vec2f point);
 
 void LineFollowing::detect_lines(Mat &original_frame) {
 
@@ -59,37 +62,20 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
   vector<Vec2f> condensed;
   vector<Vec2f> tmp_list;
   double diff;
-  if (keep_going){
-  for (int i = 0; i < (int) lines.size(); i++) {
-    /*    if (lines[i][1] > CV_PI / 2) {
-        lines[i][1] -= CV_PI;
-        lines[i][0] *= -1;
-      }
-      else if (lines[i][1] < ((CV_PI / 2) * -1)) {
-        lines[i][1] += CV_PI;
-        lines[i][0] *= -1;
-      }*/
+  if (keep_going) {
+    for (int i = 0; i < (int) lines.size(); i++) {
+      //put in order of theta, rho
+      swap(lines[i][0], lines[i][1]);
 
-    swap(lines[i][0], lines[i][1]);
-    lines[i][0] -= deg2rad(360);
+      lines[i] = normalize_point(lines[i]);
 
-    while (lines[i][0] < 0) {
-      lines[i][0] += deg2rad(360);
-    }
-    
       if (lines[i][0] >= deg2rad(90)) {
-        lines[i][0] -= deg2rad(180);
-        lines[i][1] *= -1;
+        lines[i] = flip_line(lines[i]);
       }
-    
 
-
-    //put in order of theta, rho
-
-
+    }
+    // return lines;
   }
-  // return lines;
-}
   //Order from least to greatest theta
   sort(lines.begin(), lines.end(),
        [](const Vec2f &a, const Vec2f &b) {
@@ -128,17 +114,22 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
   if (!tmp_list.empty()) {
     compress_lines(condensed, tmp_list);
   }
-  if (condensed.size() >= 2)
-  {
-    // printf("changing %.1f", rad2deg(condensed.back()[0]));
-  condensed.back()[0] -= deg2rad(180);
-  condensed.back()[1] *= -1;
-  // printf(" to %.1f\n", rad2deg(condensed.back()[0]));
-  if (keep_going) {
-    condensed = condense_lines(condensed, false);
+  if (condensed.size() >= 2) {
+    condensed.back() = flip_line(condensed.back());
+
+    if (keep_going) {
+      condensed = condense_lines(condensed, false);
+    }
   }
-}
   return condensed;
+}
+
+Vec2f normalize_point(Vec2f point) {
+  point[0] -= deg2rad(360);
+  while (point[0] < 0) {
+    point[0] += deg2rad(360);
+  }
+  return point;
 }
 
 double deg2rad(double deg) {
@@ -311,7 +302,6 @@ cv::Point LineFollowing::find_intersection(Vec2f a, Vec2f b) {
 
   return rv;
 }
-
 
 bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y) {
   float ct1 = cosf(t1);     //matrix element a
