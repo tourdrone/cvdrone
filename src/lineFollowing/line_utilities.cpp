@@ -19,3 +19,57 @@ double deg2rad(double deg) {
 double rad2deg(double rad) {
   return rad * (180.0 / CV_PI);
 }
+
+double LineFollowing::distance_from_center(float rho, float theta, double width, double height) {
+  // printf("width: %f height: %f\n", width, height);
+  theta = -1 * (theta);
+  double rh = rho * cos(theta);
+  double rv = rho * sin(theta);
+  // rh = abs(rh);
+  // rv *= -1;
+  double excess = (width / 2.0) - rh;
+  // excess *=-1;
+  double lv = rv + (height / 2.0);
+  double lh = lv * tan(theta);
+  // lh = abs(lh);
+  double x = lh - excess;
+
+  // printf("ro: %4f th: %4f rh: %4f rv: %4f ex: %4f lv: %4f lh: %4f x: %4f\n", rho, theta ,rh, rv, excess, lv,lh,x);
+
+  return x;
+}
+
+bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y) {
+  float ct1 = cosf(t1);     //matrix element a
+  float st1 = sinf(t1);     //b
+  float ct2 = cosf(t2);     //c
+  float st2 = sinf(t2);     //d
+  float d = ct1 * st2 - st1 * ct2;        //determinative (rearranged matrix for inverse)
+  if (d != 0.0f) {
+    x = (int) ((st2 * r1 - st1 * r2) / d);
+    y = (int) ((-ct2 * r1 + ct1 * r2) / d);
+    return (true);
+  } else { //lines are parallel and will NEVER intersect!
+    return (false);
+  }
+}
+
+void draw_lines(Mat &image, const vector<Vec2f> &lines) {
+  for (size_t i = 0; i < lines.size(); i++) {
+    float theta = lines[i][0], rho = lines[i][1];
+    // float rho = lines[i][0], theta = lines[i][1];Point pt1;
+    vector<Point> p = to_points(theta, rho);
+    line(image, p[0], p[1], Scalar(255 * (i == 0), 255 * (i == 1), 255 * (i == 2)), 3, CV_AA);
+  }
+}
+
+vector<Point> to_points(float theta, float rho) {
+  vector<Point> rv = {Point(), Point()};
+  double a = cos(theta), b = sin(theta);
+  double x0 = a * rho, y0 = b * rho;
+  rv[0].x = cvRound(x0 + 1000 * (-b));
+  rv[0].y = cvRound(y0 + 1000 * (a));
+  rv[1].x = cvRound(x0 - 1000 * (-b));
+  rv[1].y = cvRound(y0 - 1000 * (a));
+  return rv;
+}
