@@ -59,9 +59,9 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
       if (diff > deg2rad(180)) {
         diff = deg2rad(360) - diff;
       }
-      if (diff < deg2rad(10)) {
+      if (diff < deg2rad(degree_tolerance)) {
         //The angles are similar
-        if (abs(to_manipulate[1] - tmp_list.front()[1]) < 5) {
+        if (abs(to_manipulate[1] - tmp_list.front()[1]) < distance_tolerance) {
           //the distances are similar
           tmp_list.push_back(to_manipulate);
           continue;
