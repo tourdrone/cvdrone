@@ -31,7 +31,7 @@ class ObjectFollowing {
     int rect_area = 0;
     bool learnMode = false;
     bool moveStatus = false;
-    int goalArea = 15000;
+    int goalArea = 30000;
     double k = 0.000054054;
 };
 
