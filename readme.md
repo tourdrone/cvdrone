@@ -1,7 +1,7 @@
-INTRODUCTION
+# INTRODUCTION
 This project implements three modes of control used to navigate indoors. These modes can be used to carry out a tour of a building using on floor line navigation, colored object following, and manual control. More about this project can be found on our website at https://tourdrone.github.io. Demos of the project working, as well as some of our attempts along the way, can be found at https://www.youtube.com/channel/UCb4gyYxqb0HRZoYWGTBV6GA. 
     
-INSTALLATION
+# INSTALLATION
 The code runs on Ubuntu 16.4.01 LTS, which can be loaded and run using VMware Fusion. Additionally, this project runs on a Raspberry Pi 3.0, again using Ubuntu 16.4.01 LTS. It is intended as a Linux install.
 
 Linux install instructions:
@@ -22,11 +22,11 @@ Mac install instructions
   4. Additional modification of the dependency libraries may be required.
 
 
-EXECUTION
+# EXECUTION
 Run ./test.a form the build/linux folder
 
 
-CONTROL
+# CONTROL
   Keyboard input is used to control this project.
   
   Default:
@@ -56,7 +56,7 @@ CONTROL
     Learn Line Color: l
 
 
-LEGAL
+# LEGAL
 This project was originally forked from https://github.com/tekkies/cvdrone. We have included the license in that readme. 
 
 	  This is free software; you can redistribute it and/or
