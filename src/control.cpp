@@ -57,19 +57,26 @@ void Control::fly() {
   Detect ESC key press and
 */
 bool Control::getKey(int wait) {
-  //Escape key
   key = cv::waitKey(wait);
-  if (key == 0x1b) { return false; }
+  if (key == 0x1b) { return false; } //Escape key
   return true;
 }
 
 /*
 */
 void Control::changeSpeed() {
-  if ((key >= '0') && (key <= '9')) //number keys
-  {
+  if ((key >= '0') && (key <= '9')) { //number keys
     speed = (key-'0')*0.1;
   }
+  
+  //Alternate controls for wii remote
+  if (key == '+') {
+    speed = speed + 0.1;
+  }
+  if (key == '-') {
+    speed = speed - 0.1;
+  }
+
 }
 
 /*
@@ -86,25 +93,46 @@ void Control::detectFlyingMode() {
 
   if (key == 'b') {
     flyingMode = Manual;
+  }
+  else if (key == 'n') {
+    flyingMode = ObjectFollow;
+  }
+  else if (key == 'm') {
+    flyingMode = LineFollow;
+  }
+ 
+  if (key == 'v') {
+    if (flyingMode == Manual) {
+      flyingMode = ObjectFollow;
+    }
+    else if (flyingMode == ObjectFollow) {
+      flyingMode = LineFollow;
+    }
+    else if (flyingMode == LineFollow) {
+      flyingMode = Manual;
+    }
+  }
+
+  if (flyingMode == Manual) {
     ardrone.setCamera(0);
     printf("Manual flying mode is enabled\n");
     printf("Press n for object following and m for line following\n");
     printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
   }
-  else if (key == 'n') {
-    flyingMode = ObjectFollow;
+  else if (flyingMode == ObjectFollow) {
     ardrone.setCamera(0);
     printf("Object Following flying mode is enabled\n");
     printf("Press b for manual and m for line following\n");
     printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
   }
-  else if (key == 'm') {
-    flyingMode = LineFollow;
+  else if (flyingMode == LineFollow) {
     ardrone.setCamera(1);
     printf("Line Following flying mode is enabled\n");
     printf("Press b for manual and n for object following\n");
     printf("No control for line following yet exists\n\n");
   }
+
+  
 }
 
 /*
