@@ -70,7 +70,7 @@ void Control::changeSpeed() {
   }
   
   //Alternate controls for wii remote
-  if (key == '+') {
+  if (key == 'u') {
     speed = speed + 0.1;
   }
   if (key == '-') {
