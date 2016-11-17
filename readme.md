@@ -24,10 +24,10 @@ The code runs on Ubuntu 16.4.01 LTS, which can be loaded and run using VMware Fu
   4. Additional modification of the dependency libraries may be required.  
 
 # EXECUTION  
-Run ./test.a form the build/linux folder  
+Run ./test.a from the build/linux folder.  
 
 # CONTROL  
-  Keyboard input is used to control this project.  
+  Keyboard input is used for control. Wii Remote input can be co-opted as keyboard input using the cwiid library. For control to work, the image window must be selected (this is the default). 
   
 ### Default
   Takeoff/Land: Spacebar  
