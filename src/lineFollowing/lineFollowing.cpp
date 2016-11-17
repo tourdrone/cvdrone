@@ -134,6 +134,17 @@ void LineFollowing::fly() {
       }
       if (-100 >= calculated_distance_from_horizontal && calculated_distance_from_horizontal >= 100) {
         //todo move up or down the line
+
+        if (calculated_distance_from_horizontal > 0) {
+//          we are above the line
+//          so we need to move backwards
+//          I think
+//          todo check this
+          control_ptr->velocities.vx = -1;
+
+        } else {
+          control_ptr->velocities.vx = 1;
+        }
       }
     }
   } else {
