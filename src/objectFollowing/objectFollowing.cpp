@@ -209,7 +209,7 @@ void ObjectFollowing::fly() {
   }
    */
 
-  controlMovements->vx = k * (goalArea - rect_area);
+  controlMovements->vx = (goalArea - rect_area)/((double)goalArea);
 
   if(controlMovements->vx > 1) {
     controlMovements->vx = 1;
