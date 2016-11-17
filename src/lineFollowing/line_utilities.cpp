@@ -6,6 +6,8 @@
 #include "line_utilities.h"
 
 
+void draw_line(Mat &image, Vec2f line, Scalar color);
+
 cv::Vec2f flip_line(cv::Vec2f line) {
   line[0] -= deg2rad(180);
   line[1] *= -1;
@@ -54,13 +56,17 @@ bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y)
   }
 }
 
-void draw_lines(Mat &image, const vector<Vec2f> &lines) {
+void draw_lines(Mat &image, const vector<Vec2f> lines, Scalar color) {
   for (size_t i = 0; i < lines.size(); i++) {
-    float theta = lines[i][0], rho = lines[i][1];
-    // float rho = lines[i][0], theta = lines[i][1];Point pt1;
-    vector<Point> p = to_points(theta, rho);
-    line(image, p[0], p[1], Scalar(255 * (i == 0), 255 * (i == 1), 255 * (i == 2)), 3, CV_AA);
+
+    draw_line(image, lines[i], color);
   }
+}
+
+void draw_line(Mat &image, Vec2f line, Scalar color) {
+  float theta = line[0], rho = line[1];
+  vector<Point> p = to_points(theta, rho);
+  cv::line(image, p[0], p[1], color, 3, CV_AA);
 }
 
 vector<Point> to_points(float theta, float rho) {

@@ -39,7 +39,7 @@ void LineFollowing::detect_lines(Mat &original_frame) {
     found_lines = tmp;
   }
 
-  draw_lines(original_frame, found_lines);
+  draw_lines(original_frame, found_lines, Scalar(255, 255 , 255));
 
 }
 
@@ -62,6 +62,27 @@ void LineFollowing::close() {
 void LineFollowing::fly() {
   // cout << "line following\n";
   detect_lines(control_ptr->image);
+  line_options categorization;
+  int tolerance = 10;
+  for (int i = 0; i < found_lines.size(); ++i) {
+    float angle = abs(found_lines[i][0]);
+
+    if (angle > deg2rad(0 - tolerance) && angle < deg2rad(0 + tolerance) && categorization.vertical == Vec2f()) {
+      categorization.vertical = found_lines[i];
+    }
+    if (angle > deg2rad(90 - tolerance) && angle < deg2rad(90 + tolerance) && categorization.horizontal == Vec2f()) {
+      categorization.horizontal = found_lines[i];
+    }
+    if (angle > deg2rad(45 - tolerance) && angle < deg2rad(45 + tolerance) && categorization.sloped == Vec2f()) {
+      categorization.sloped = found_lines[i];
+      if (found_lines[i][0] < 0) {
+        categorization.d = direction::right;
+      } else if (found_lines[i][0] > 0) {
+        categorization.d = direction::left;
+      }
+    }
+
+  }
 
 
   control_ptr->velocities.vx = 0;
@@ -74,6 +95,8 @@ void LineFollowing::fly() {
     // printf("Found nothing\n");
     return;
   }
+
+//  printf("%5.1f\n", rad2deg(found_lines[0][0]));
   double calculated_distance = distance_from_center(found_lines[0][1], found_lines[0][0], control_ptr->image.cols,
                                                     control_ptr->image.rows);
 
@@ -83,6 +106,7 @@ void LineFollowing::fly() {
   Point pt1 = cvPoint(origin_x, origin_y);
   Point pt2 = cvPoint(origin_x + cvRound(calculated_distance), origin_y);
   line(control_ptr->image, pt1, pt2, Scalar(255, 255, 255), 3, CV_AA);
+
 
   if (found_lines.size() > 1) {
     // I need to turn
@@ -96,6 +120,11 @@ void LineFollowing::fly() {
          cvPoint(origin_x + point[0] - 10, origin_y + point[1]), Scalar(255, 255, 255), 3, CV_AA);
     line(control_ptr->image, cvPoint(origin_x + point[0], origin_y + point[1] + 10),
          cvPoint(origin_x + point[0], origin_y + point[1] - 10), Scalar(255, 255, 255), 3, CV_AA);
+
+    if (found_lines.size() < 3) {
+      //at an intersection
+    }
+
     if (found_lines.size() >= 3) {
       for (int j = 0; j < (int) found_lines.size(); j++) {
         printf("(%5.1f, %5.0f) ", rad2deg(found_lines[j][0]) + 180, found_lines[j][1]);
@@ -103,15 +132,12 @@ void LineFollowing::fly() {
       printf("\n");
     }
     return;
-  }
-
-  else {
+  } else {
     // I need to snap myself to the line
     if (found_lines[0][0] >= deg2rad(5)) {
       control_ptr->velocities.vr = -.2;
       // printf("Turning Right\n");
-    }
-    else if (found_lines[0][0] <= deg2rad(-1 * 5)) {
+    } else if (found_lines[0][0] <= deg2rad(-1 * 5)) {
       control_ptr->velocities.vr = .2;
       // printf("Turning Left\n");
     } else {

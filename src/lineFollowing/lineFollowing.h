@@ -8,7 +8,7 @@
 #include "../structures.h"
 
 using namespace cv;
-using namespace std;
+//using namespace std;
 
 class Control;
 
@@ -36,5 +36,25 @@ private:
   cv::Point find_intersection(cv::Vec2f a, cv::Vec2f b);
 };
 
+
+enum direction {
+  left, right, indeterminate
+};
+
+class line_options {
+
+
+public:
+  Vec2f horizontal, sloped;
+  Vec2f vertical;
+  direction d;
+
+  line_options() {
+    horizontal = Vec2f();
+    vertical = Vec2f();
+    sloped = Vec2f();
+    d = indeterminate;
+  }
+};
 
 #endif
