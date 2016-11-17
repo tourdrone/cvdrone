@@ -173,7 +173,8 @@ void ObjectFollowing::fly() {
   cv::circle(*image, cv::Point(prediction(0, 0), prediction(0, 1)), radius, green, 2);
 
   // Calculate object heading fraction
-  float heading = -(((*image).cols/2) - prediction(0, 0))/((*image).cols/2);
+  float rHeading = -(((*image).cols/2) - prediction(0, 0))/((*image).cols/2);
+  float zHeading = -(((*image).rows/2) - prediction(0, 1))/((*image).rows/2);
 
   // Sample the object color
   if(learnMode) {
@@ -188,11 +189,9 @@ void ObjectFollowing::fly() {
     setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
   }
 
-  displayObjectFollowingInfo(image, heading, hsvSample[0], hsvSample[1], hsvSample[2]);
+  displayObjectFollowingInfo(image, rHeading, zHeading, hsvSample[0], hsvSample[1], hsvSample[2]);
 
   rect_area = rect.width * rect.height;
-
-
 
   /*
   //Execute drone movement
@@ -210,8 +209,7 @@ void ObjectFollowing::fly() {
   }
    */
 
-
-  controlMovements->vx = k*(goalArea-rect_area);
+  controlMovements->vx = k * (goalArea - rect_area);
 
   if(controlMovements->vx > 1) {
     controlMovements->vx = 1;
@@ -220,25 +218,25 @@ void ObjectFollowing::fly() {
     controlMovements->vx = -1;
   }
 
-  if( control_ptr->altitude < 1.2 )
+  /*if( control_ptr->altitude < 1.2 )
   {
     controlMovements->vz = 1.0;
-  } 
-  else if (control_ptr->altitude > 1.3 ) {
-    controlMovements->vz = -1.0;
   } 
   else {
     controlMovements->vz = 0.0;
   }
+  */
 
-
-  controlMovements->vy = 0;
   time_t current_time = time(0);
   double elapsed_time = difftime(current_time, control_ptr->takeoff_time);
   if (elapsed_time < 5){
+    controlMovements->vx = 0;
+    controlMovements->vy = 0;
+    controlMovements->vz = 0;
     controlMovements->vr = 0;
   } else {
-    controlMovements->vr = -(heading * 0.5);
+    controlMovements->vz = -(zHeading * 0.2);
+    controlMovements->vr = -(rHeading * 0.5);
   } 
 
   return;
@@ -259,14 +257,16 @@ void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) 
 
 /*
  */
-void ObjectFollowing::displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value) {
-  char headingDisplay[80]; //print buffer for heading
+void ObjectFollowing::displayObjectFollowingInfo(cv::Mat *image, double rHeading, double zHeading, int hue, int saturation, int value) {
+  char rHeadingDisplay[80]; //print buffer for rHeading
+  char zHeadingDisplay[80]; //print buffer for zHeading
   char hsvSampleDisplay[80]; //print buffer for learning HSV values
   char moveStatusDisplay[80]; //print buffer for stop/go status
 
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
-  sprintf(headingDisplay, "heading = %+3.2f", heading); 
+  sprintf(rHeadingDisplay, "rHeading = %+3.2f", rHeading); 
+  sprintf(zHeadingDisplay, "zHeading = %+3.2f", zHeading); 
   sprintf(hsvSampleDisplay, "hsvSample = %3d, %3d, %3d", hue, saturation, value);
   if (moveStatus) {
     sprintf(moveStatusDisplay, "move status = GO");
@@ -275,8 +275,9 @@ void ObjectFollowing::displayObjectFollowingInfo(cv::Mat *image, double heading,
     sprintf(moveStatusDisplay, "move status = STOP");
   }
 
-  putText(*image, headingDisplay, cvPoint(30,120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-  putText(*image, hsvSampleDisplay, cvPoint(30,140), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
-  putText(*image, moveStatusDisplay, cvPoint(30,160), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(*image, rHeadingDisplay, cvPoint(30, 120), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(*image, zHeadingDisplay, cvPoint(30, 140), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(*image, hsvSampleDisplay, cvPoint(30, 160), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
+  putText(*image, moveStatusDisplay, cvPoint(30, 180), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
 }

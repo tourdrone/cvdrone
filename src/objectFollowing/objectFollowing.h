@@ -18,7 +18,7 @@ class ObjectFollowing {
 
     void fly();
     void close();
-    void displayObjectFollowingInfo(cv::Mat *image, double heading, int hue, int saturation, int value);
+    void displayObjectFollowingInfo(cv::Mat *image, double rHeading, double zHeading, int hue, int saturation, int value);
 
   private:
     Control *control_ptr;
@@ -31,8 +31,8 @@ class ObjectFollowing {
     int rect_area = 0;
     bool learnMode = false;
     bool moveStatus = false;
-	int goalArea = 22500;
-	double k = 0.000054054;
+    int goalArea = 15000;
+    double k = 0.000054054;
 };
 
 /*
