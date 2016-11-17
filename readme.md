@@ -29,31 +29,31 @@ Run ./test.a form the build/linux folder
 # CONTROL  
   Keyboard input is used to control this project.  
   
-  ## Default  
-    Takeoff/Land: Spacebar  
-    Set Speed: 0 to 9  
-    Increase Speed: +  
-    Decrease Speed: -  
-    Switch Modes: v  
-    Select Manual Mode: b  
-    Select Object Following Mode: n  
-    Select Line Following Mode: m  
+### Default
+  Takeoff/Land: Spacebar  
+  Set Speed: 0 to 9  
+  Increase Speed: +  
+  Decrease Speed: -  
+  Switch Modes: v  
+  Select Manual Mode: b  
+  Select Object Following Mode: n  
+  Select Line Following Mode: m  
   
-  ## Manual  
-    Up: q  
-    Down: a  
-    Forwards: t  
-    Backwards: g  
-    Left: f  
-    Right: h  
-    Rotate Left: r  
-    Rotate Right: y  
+### Manual  
+  Up: q  
+  Down: a  
+  Forwards: t  
+  Backwards: g  
+  Left: f  
+  Right: h  
+  Rotate Left: r  
+  Rotate Right: y  
   
-  ## Object Following  
-    Learn Object Color: l  
+### Object Following  
+  Learn Object Color: l  
   
-  ## Line Following  
-    Learn Line Color: l  
+### Line Following  
+  Learn Line Color: l  
 
 # LEGAL  
 This project was originally forked from https://github.com/tekkies/cvdrone. We have included the license in that readme. 
