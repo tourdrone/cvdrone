@@ -93,46 +93,49 @@ void Control::detectFlyingMode() {
 
   if (key == 'b') {
     flyingMode = Manual;
-  }
-  else if (key == 'n') {
-    flyingMode = ObjectFollow;
-  }
-  else if (key == 'm') {
-    flyingMode = LineFollow;
-  }
- 
-  if (key == 'v') {
-    if (flyingMode == Manual) {
-      flyingMode = ObjectFollow;
-    }
-    else if (flyingMode == ObjectFollow) {
-      flyingMode = LineFollow;
-    }
-    else if (flyingMode == LineFollow) {
-      flyingMode = Manual;
-    }
-  }
-
-  if (flyingMode == Manual) {
     ardrone.setCamera(0);
     printf("Manual flying mode is enabled\n");
     printf("Press n for object following and m for line following\n");
     printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
   }
-  else if (flyingMode == ObjectFollow) {
+  else if (key == 'n') {
+    flyingMode = ObjectFollow;
     ardrone.setCamera(0);
     printf("Object Following flying mode is enabled\n");
     printf("Press b for manual and m for line following\n");
     printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
   }
-  else if (flyingMode == LineFollow) {
+  else if (key == 'm') {
+    flyingMode = LineFollow;
     ardrone.setCamera(1);
     printf("Line Following flying mode is enabled\n");
     printf("Press b for manual and n for object following\n");
     printf("No control for line following yet exists\n\n");
   }
-
-  
+ 
+  if (key == 'v') {
+    if (flyingMode == Manual) {
+      flyingMode = ObjectFollow;
+      ardrone.setCamera(0);
+      printf("Object Following flying mode is enabled\n");
+      printf("Press b for manual and m for line following\n");
+      printf("While in object following mode, use l to toggle learning a specific color. Press space to take off after learning a color.\n\n");
+    }
+    else if (flyingMode == ObjectFollow) {
+      flyingMode = LineFollow;
+      ardrone.setCamera(1);
+      printf("Line Following flying mode is enabled\n");
+      printf("Press b for manual and n for object following\n");
+      printf("No control for line following yet exists\n\n");
+    }
+    else if (flyingMode == LineFollow) {
+      flyingMode = Manual;
+      ardrone.setCamera(0);
+      printf("Manual flying mode is enabled\n");
+      printf("Press n for object following and m for line following\n");
+      printf("While in manual mode, use q and a for up and down, t and g for forward and backward, and f and h for left and right. Press space to take off.\n\n");
+    }
+  }
 }
 
 /*
@@ -181,10 +184,10 @@ void Control::overlayControl() {
     putText(image, vzDisplay, cvPoint(30,160), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
     putText(image, vrDisplay, cvPoint(30,180), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
   }
-  else if (ObjectFollow) {
+  else if (flyingMode == ObjectFollow) {
     sprintf(modeDisplay, "Object Following Mode");
   }
-  else if (LineFollow) {
+  else if (flyingMode == LineFollow) {
     sprintf(modeDisplay, "Line Following Mode");
   }
 
