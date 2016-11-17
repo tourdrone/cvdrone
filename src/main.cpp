@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
 
   // Main loop
   while (1) {
-    //Detect user key input and end game if excape is pressed
-	if (!control->getKey(wait)) break;
+    //Detect user key input and end loop if ESC is pressed
+    if (!control->getKey(wait)) break;
 
     control->detectFlyingMode(); //b, n, m to change mode
     control->changeSpeed(); //0-9 to change speed
