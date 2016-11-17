@@ -1,35 +1,65 @@
-What is this code?
-
-Runs on Ubuntu 16.4.01 LTS (XENIA XEVIOR OR SOMETHING)
+INTRODUCTION
+This project implements three modes of control used to navigate indoors. These modes can be used to carry out a tour of a building using on floor line navigation, colored object following, and manual control. More about this project can be found on our website at https://tourdrone.github.io. Demos of the project working, as well as some of our attempts along the way, can be found at https://www.youtube.com/channel/UCb4gyYxqb0HRZoYWGTBV6GA. 
+    
+INSTALLATION
+The code runs on Ubuntu 16.4.01 LTS, which can be loaded and run using VMware Fusion. Additionally, this project runs on a Raspberry Pi 3.0, again using Ubuntu 16.4.01 LTS. It is intended as a Linux install.
 
 Linux install instructions:
-  clone stuff
-  get those sudo apts in the make file
-  make from the linux file
+  1. Clone the repository
+  2. Sudo apt-get install these dependencies
+  	ffmpeg: 
+	  FFmpeg 2.2.3 <LGPL v2.1 license> http://www.ffmpeg.org/
+	libopencv-dev: 
+	  OpenCV 3.0.0 Alpha <BSD license> http://opencv.org/
+  3. Run the makefile in build/linux
   
-Here is our website:
+Mac install instructions
+  1. Clone the repository
+  2. Sudo apt-get install both the 
+  	ffmpeg: FFmpeg 2.2.3 <LGPL v2.1 license> http://www.ffmpeg.org/ and
+	libopencv-dev: OpenCV 3.0.0 Alpha <BSD license> http://opencv.org/ libraries
+  3. Run the makefile in build/linux
+  4. Additional modification of the dependency libraries may be required.
 
-Here are our demo videos:
 
-//==============================================================================================================
+EXECUTION
+Run ./test.a form the build/linux folder
 
-[![AR.Drone follows a ball](demo.gif)](http://youtu.be/gla5a1qSEDc)
 
-[http://tekkies.co.uk/ar-drone-follows-a-ball/](http://tekkies.co.uk/ar-drone-follows-a-ball/ "Story")
+CONTROL
+  Keyboard input is used to control this project.
+  
+  Default:
+    Takeoff/Land: Spacebar
+    Set Speed: 0 to 9
+    Increase Speed: +
+    Decrease Speed: -
+    Switch Modes: v
+    Select Manual Mode: b
+    Select Object Following Mode: n
+    Select Line Following Mode: m
+  
+  Manual:
+    Up: q
+    Down: a
+    Forwards: t
+    Backwards: g
+    Left: f
+    Right: h
+    Rotate Left: r
+    Rotate Right: y
+  
+  Object Following:
+    Learn Object Color: l
+  
+  Line Following:
+    Learn Line Color: l
 
-	-----------------------------------------------------------------
-	 CV Drone (= OpenCV + AR.Drone)
 
-	 Copyright (C) 2014 Andy Joiner
-	 https://github.com/tekkies/cvdrone
+LEGAL
+This project was originally forked from https://github.com/tekkies/cvdrone. We have included the license in that readme. 
 
-	 Based on CV Drone
-	 Copyright (C) 2014 puku0x
-	 https://github.com/puku0x/cvdrone
-	-----------------------------------------------------------------
-
-	INTRODUCTION
-	  CV Drone is free software; you can redistribute it and/or
+	  This is free software; you can redistribute it and/or
 	  modify it under the terms of EITHER:
 	   (1) The GNU Lesser General Public License as published by the Free
 		   Software Foundation; either version 2.1 of the License, or (at
@@ -43,56 +73,3 @@ Here are our demo videos:
 	  but WITHOUT ANY WARRANTY; without even the implied warranty of
 	  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the files
 	  cvdrone-license-LGPL.txt and cvdrone-license-BSD.txt for more details.
-
-	HOW TO INSTALL
-	  Please unzip "cvdrone-master.zip" into an arbitrary directory.
-
-	HOW TO UNINSTALL
-	  Please delete the cvdrone folder.
-
-	BEFORE YOU BUILD
-	  You should install Visual Studio before you build CV Drone.
-	  CV Drone supports VC++2008/2010/2012/2013.
-	  To download VS, please see http://www.microsoft.com/visualstudio/eng/downloads .
-
-	HOW TO USE
-	  1. Open \build\vs20xx\test.sln
-	  2. Press F7 to build.
-	  3. Press F5 (or Ctrl+F5) to run.
-	  4. You can play around with OpenCV. Sample codes are in "src\samples".
-
-	FOR AR.DRONE 1.0 USERS
-	  Please update your AR.Drone's firmware to 1.11.5.
-
-	FOR AR.DRONE 2.0 USERS
-	  Please update your AR.Drone's firmware to 2.4.8.
-
-	FOR VS2010 USERS
-	  You can not build CV Drone by VS2010 after you installed VS2012.
-	  To build VS2010, 
-		1) You should install "Visual Studio 2010 SP1".  [Recommended]
-		or,
-		2) You should uninstall ".Net Framework 4.5" and re-install "4.0".
-
-	LIBRARY DEPENDENCIES
-	  CV Drone uses following libraries.
-	  - OpenCV 3.0.0 Alpha <BSD license>
-		http://opencv.org/
-	  - FFmpeg 2.2.3 <LGPL v2.1 license>
-		http://www.ffmpeg.org/
-	  - stdint.h/inttypes.h for Microsoft Visual Studio r26
-		https://code.google.com/p/msinttypes/
-	  - POSIX Threads for Win32 2.9.1 <LGPL v2.1 license>
-		http://www.sourceware.org/pthreads-win32/
-
-	  Marker-based AR sample uses following libraries adding to the above.
-	  - GLUT for Win32 3.7.6
-		http://user.xmission.com/~nate/glut.html
-	  - MarkerDetector
-		https://github.com/MasteringOpenCV/code/tree/master/Chapter2_iPhoneAR/Example_MarkerBasedAR/Example_MarkerBasedAR
-
-	  License files for each library can be found in the 'licenses' folder.
-	 
-
-	Thank you.
-//==============================================================================================================
