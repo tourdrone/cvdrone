@@ -1,10 +1,10 @@
-# INTRODUCTION
+#INTRODUCTION
 This project implements three modes of control used to navigate indoors. These modes can be used to carry out a tour of a building using on floor line navigation, colored object following, and manual control. More about this project can be found on our website at https://tourdrone.github.io. Demos of the project working, as well as some of our attempts along the way, can be found at https://www.youtube.com/channel/UCb4gyYxqb0HRZoYWGTBV6GA. 
     
-# INSTALLATION
+#INSTALLATION
 The code runs on Ubuntu 16.4.01 LTS, which can be loaded and run using VMware Fusion. Additionally, this project runs on a Raspberry Pi 3.0, again using Ubuntu 16.4.01 LTS. It is intended as a Linux install.
 
-Linux install instructions:
+###Linux install instructions:
   1. Clone the repository
   2. Sudo apt-get install these dependencies
   	ffmpeg: 
@@ -13,7 +13,7 @@ Linux install instructions:
 	  OpenCV 3.0.0 Alpha <BSD license> http://opencv.org/
   3. Run the makefile in build/linux
   
-Mac install instructions
+###Mac install instructions
   1. Clone the repository
   2. Sudo apt-get install both the 
   	ffmpeg: FFmpeg 2.2.3 <LGPL v2.1 license> http://www.ffmpeg.org/ and
@@ -22,14 +22,15 @@ Mac install instructions
   4. Additional modification of the dependency libraries may be required.
 
 
-# EXECUTION
+#EXECUTION
 Run ./test.a form the build/linux folder
 
 
-# CONTROL
+#CONTROL
   Keyboard input is used to control this project.
   
-  Default:
+  ###Default
+  
     Takeoff/Land: Spacebar
     Set Speed: 0 to 9
     Increase Speed: +
@@ -39,7 +40,8 @@ Run ./test.a form the build/linux folder
     Select Object Following Mode: n
     Select Line Following Mode: m
   
-  Manual:
+  ###Manual
+  
     Up: q
     Down: a
     Forwards: t
@@ -49,10 +51,12 @@ Run ./test.a form the build/linux folder
     Rotate Left: r
     Rotate Right: y
   
-  Object Following:
+  ###Object Following
+  
     Learn Object Color: l
   
-  Line Following:
+  ###Line Following
+  
     Learn Line Color: l
 
 
