@@ -26,6 +26,8 @@ bool parametricIntersect(float r1, float t1, float r2, float t2, int &x, int &y)
 
 void draw_lines(Mat &image, const vector<Vec2f> lines, Scalar color);
 
+void draw_line(Mat &image, Vec2f line, Scalar color);
+
 vector<Point> to_points(float theta, float rho);
 
 Vec2f normalize_point(Vec2f point);
