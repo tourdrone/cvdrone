@@ -6,7 +6,6 @@
 #include "line_utilities.h"
 
 
-void draw_line(Mat &image, Vec2f line, Scalar color);
 
 cv::Vec2f flip_line(cv::Vec2f line) {
   line[0] -= deg2rad(180);
