@@ -37,6 +37,7 @@ OBJS          = ../../src/ardrone/ardrone.o \
                 ../../src/lineFollowing/lineFollowing.o \
                 ../../src/lineFollowing/line_utilities.o \
                 ../../src/lineFollowing/line_simplification.o \
+		../../src/audio/audio.o \
                 ../../src/control.o \
                 ../../src/main.o
 PROGRAM       = test.a

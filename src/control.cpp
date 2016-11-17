@@ -5,6 +5,7 @@
 #include "lineFollowing/lineFollowing.h"
 #include "objectFollowing/objectFollowing.h"
 #include "manual/manual.h"
+#include "audio/audio.h"
 
 /*
 */
@@ -244,6 +245,7 @@ void Control::close() {
 
   //close connections with drone
   ardrone.close();
+  kill_audio();
  
   return;
 }
