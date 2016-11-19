@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
   double time_counter = 0;
   clock_t this_time = clock();
   clock_t last_time = this_time;
-
+  long long executions = 0;
   // Main loop
   while (1) {
 
@@ -41,11 +41,17 @@ int main(int argc, char *argv[]) {
     this_time = clock();
     time_counter += (double) (this_time - last_time);
     last_time = this_time;
+    executions++;
 
-    if (time_counter < (double) (1 * CLOCKS_PER_SEC)) { //AKA not enough time has passed
+    double time_delay = 1.0 / 25;
+    if (time_counter < (time_delay * CLOCKS_PER_SEC)) { //AKA not enough time has passed
       continue;
     }
-    time_counter -= (double) (1 * CLOCKS_PER_SEC);
+    time_counter -= time_delay * CLOCKS_PER_SEC;
+
+    printf("I hit %lli times\n", executions);
+    executions = 0;
+//    exit(0);
 
 
     //Detect user key input and end loop if ESC is pressed
