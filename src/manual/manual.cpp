@@ -30,8 +30,8 @@ void ManualFlying::fly() {
 
   if (key == 't') { control_ptr->velocities.vx =  1.0; } //t key
   if (key == 'g') { control_ptr->velocities.vx = -1.0; } //g key
-  if (key == 'f') { control_ptr->velocities.vy =  1.0; } //f key
-  if (key == 'h') { control_ptr->velocities.vy = -1.0; } //h key
+  if (key == 'f') { control_ptr->velocities.vy =  1.0; } //f key left
+  if (key == 'h') { control_ptr->velocities.vy = -1.0; } //h key right
   if (key == 'q') { control_ptr->velocities.vz =  1.0; } //q key
   if (key == 'a') { control_ptr->velocities.vz = -1.0; } //a key
   if (key == 'r') { control_ptr->velocities.vr =  1.0; } //r key
