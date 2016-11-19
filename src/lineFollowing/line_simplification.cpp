@@ -43,9 +43,9 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
 
       lines[i] = normalize_point(lines[i]);
 //      printf("normalized (%5.1f, %5.1f) to ", rad2deg(lines[i][0]), lines[i][1]);
-      bool flipped = false;
+//      bool flipped = false;
       if (lines[i][0] >= deg2rad(90)) {
-        flipped = true;
+//        flipped = true;
         lines[i] = flip_line(lines[i]);
       }
 //      printf("oriented (%5.1f, %5.1f) ", rad2deg(lines[i][0]), lines[i][1]);
