@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     }
     time_counter -= time_delay * CLOCKS_PER_SEC;
 
-    printf("I hit %lli times\n", executions);
+//    printf("I hit %lli times\n", executions);
     executions = 0;
 //    exit(0);
 
