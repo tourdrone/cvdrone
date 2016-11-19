@@ -24,7 +24,12 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   Scalar lower(minH, minS, minV);
   Scalar upper(maxH, maxS, maxV);
   inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
+
+  imshow("line_window", mask);
+
   Canny(mask, mask, 50, 200, 3);
+
+
 
   vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
@@ -48,14 +53,14 @@ LineFollowing::LineFollowing(Control *control) {
 
   control_ptr = control;
 
-  minH = 50;
-  minS = 20;
-  minV = 150;
-  maxH = 125;
-  maxS = 100;
-  maxV = 255;
+  maxH = 166;
+  minH = 66;
+  maxS = 143;
+  minS = 43;
+  maxV = 254;
+  minV = 154;
 
-  kp = .01;
+  kp = .008;
   kd = 0.0;
   ki = 0.0;
 
@@ -128,8 +133,10 @@ void LineFollowing::fly() {
 
     // Rotate to make line vertical
     if (categorization.vertical[0] >= deg2rad(5)) {
+//      printf("Angle is %5.1f\n", rad2deg(categorization.vertical[0]));
       control_ptr->velocities.vr = -.2;
     } else if (categorization.vertical[0] <= deg2rad(-1 * 5)) {
+//      printf("Angle is %5.1f\n", rad2deg(categorization.vertical[0]));
       control_ptr->velocities.vr = .2;
     } else {
 
