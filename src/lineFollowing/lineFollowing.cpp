@@ -1,6 +1,6 @@
 /*
 
-*/
+ */
 
 #include "lineFollowing.h"
 #include "line_utilities.h"
@@ -35,9 +35,9 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   vector<Vec2f> tmp = condense_lines(lines, true);
 
   sort(tmp.begin(), tmp.end(),
-       [](const Vec2f &a, const Vec2f &b) {
-         return a[0] < b[0];
-       });
+      [](const Vec2f &a, const Vec2f &b) {
+      return a[0] < b[0];
+      });
   if (tmp.size() > 0) {
     found_lines = tmp;
   }
@@ -81,17 +81,19 @@ void LineFollowing::fly() {
 
   if (found_lines.size() < 1) return;
 
-  if (found_lines.size() == 1) {
-    categorization.vertical = found_lines[0];
+  // If there is no corner
+  if (found_lines.size() < 3) {
+
+
+    // Find "intersection_point" that drone should go towardsif (found_lines.size() == 1) {
+    // intersection_point is point where single line intersects a  horizontal line across the vertical middle of the camera feedcategorization.vertical = found_lines[0];
     calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
                                                              control_ptr->image.cols, control_ptr->image.rows);
     calculated_distance_from_horizontal = 0;
     intersection_point = cvPoint(center_x + cvRound(calculated_distance_from_vertical), center_y);
-
-    if (true) {
+if (true) {
 //      printf("Width of %7.1f with (%5.1f, %5.1f)\n", calculated_distance_from_vertical, categorization.vertical[0],categorization.vertical[1]);
-    }
-  } else if (found_lines.size() == 2) {
+    }  } else if (found_lines.size() == 2) {// intersection_point is the intersection of the two lines
     //TODO maybe this is a very bad assumption to make, that [0] is the vertical line
     categorization.vertical = found_lines[1];
     categorization.horizontal = found_lines[0];
@@ -101,21 +103,20 @@ void LineFollowing::fly() {
                                                                categorization.horizontal[0],
                                                                control_ptr->image.cols, control_ptr->image.rows);
 
-    intersection_point = find_intersection(categorization.vertical, categorization.horizontal);
+      intersection_point = find_intersection(categorization.vertical, categorization.horizontal);
 
-  }
-  if (found_lines.size() < 3) {
-    //For 1 or 2 lines
+    }
 
-    line(control_ptr->image, center_point, intersection_point, color_white, 3, CV_AA); // draw the line to the center
+    // Draw line to intersection_point
+    line(control_ptr->image, center_point, intersection_point, color_white, 3, CV_AA);
 
-    //draw a cross at the intersection
+    // Draw a cross at the intersection
     line(control_ptr->image, cvPoint(0 + intersection_point.x + 10, 0 + intersection_point.y),
-         cvPoint(0 + intersection_point.x - 10, 0 + intersection_point.y), color_white, 3, CV_AA);
+        cvPoint(0 + intersection_point.x - 10, 0 + intersection_point.y), color_white, 3, CV_AA);
     line(control_ptr->image, cvPoint(0 + intersection_point.x, 0 + intersection_point.y + 10),
-         cvPoint(0 + intersection_point.x, 0 + intersection_point.y - 10), color_white, 3, CV_AA);
+        cvPoint(0 + intersection_point.x, 0 + intersection_point.y - 10), color_white, 3, CV_AA);
 
-    // I need to snap myself to the line
+    // Rotate to make line vertical
     if (categorization.vertical[0] >= deg2rad(5)) {
       control_ptr->velocities.vr = -.2;
       // printf("Turning Right\n");
@@ -126,13 +127,13 @@ void LineFollowing::fly() {
       // printf("Checking Distance\n");
       // printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset,
 
+      // Move vertically
       // (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
       int vertical_tolerance = 50;
-      int horizontal_tolerance = 100;
-      if (-1 * vertical_tolerance >= calculated_distance_from_vertical &&
-          calculated_distance_from_vertical >= vertical_tolerance) {
+      int horizontal_tolerance =100;
+      if (-1 * vertical_tolerance >= calculated_distance_from_vertical || calculated_distance_from_vertical >= vertical_tolerance) {
         if (calculated_distance_from_vertical < 0) {
-          //we are to the right of the line
+          //we are to the right of the intersection_point
           //we need to move left
           control_ptr->velocities.vy = 1;
           // printf("Move left\n");
@@ -142,15 +143,14 @@ void LineFollowing::fly() {
           // printf("Move right\n");
         }
       }
-      if (-1 * horizontal_tolerance >= calculated_distance_from_horizontal &&
-          calculated_distance_from_horizontal >= horizontal_tolerance) {
+// Move horizontally      if (-1 * horizontal_tolerance >= calculated_distance_from_horizontal || calculated_distance_from_horizontal >= horizontal_tolerance) {
         //todo move up or down the line
 
         if (calculated_distance_from_horizontal > 0) {
-//          we are above the line
-//          so we need to move backwards
-//          I think
-//          todo check this
+          //          we are above the intersection_point
+          //          so we need to move backwards
+          //          I think
+          //          todo check this
           control_ptr->velocities.vx = -1;
 
         } else {
@@ -158,7 +158,9 @@ void LineFollowing::fly() {
         }
       }
     }
-  } else {
+  } else if ( found_lines.size == 3 ){
+
+    // Categorize lines
     for (int i = 0; i < found_lines.size(); ++i) {
       float angle = abs(found_lines[i][0]);
 
@@ -178,10 +180,9 @@ void LineFollowing::fly() {
       }
 
     }
-  }
-
-  if (found_lines.size() > 3) {
+  } else {
     //print out the points of all 4+ lines
+    printf("Found more than 3 lines: ");
     for (int j = 0; j < (int) found_lines.size(); j++) {
       printf("(%5.1f, %5.0f) ", rad2deg(found_lines[j][0]) + 180, found_lines[j][1]);
     }
