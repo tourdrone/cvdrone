@@ -28,10 +28,6 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
 
-  // printf("Adding in %d lines\n", (int) lines.size());
-
-
-
   vector<Vec2f> tmp = condense_lines(lines, true);
 
   sort(tmp.begin(), tmp.end(),
@@ -85,8 +81,9 @@ void LineFollowing::fly() {
   if (found_lines.size() < 3) {
 
     if (found_lines.size() == 1) {
-      // Find "intersection_point" that drone should go towardsif (found_lines.size() == 1) {
-      // intersection_point is point where single line intersects a  horizontal line across the vertical middle of the camera feedcategorization.vertical = found_lines[0];
+      // Find "intersection_point" that drone should go towards
+      // intersection_point is point where single line intersects a  horizontal line across the vertical middle of the camera feed
+      categorization.vertical = found_lines[0];
       calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
                                                                control_ptr->image.cols, control_ptr->image.rows);
       calculated_distance_from_horizontal = 0;
@@ -118,16 +115,12 @@ void LineFollowing::fly() {
     // Rotate to make line vertical
     if (categorization.vertical[0] >= deg2rad(5)) {
       control_ptr->velocities.vr = -.2;
-      // printf("Turning Right\n");
     } else if (categorization.vertical[0] <= deg2rad(-1 * 5)) {
       control_ptr->velocities.vr = .2;
-      // printf("Turning Left\n");
     } else {
-      // printf("Checking Distance\n");
-      // printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset,
+
 
       // Move vertically
-      // (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
       int vertical_tolerance = 50;
       int horizontal_tolerance = 100;
       if (-1 * vertical_tolerance >= calculated_distance_from_vertical ||
@@ -136,25 +129,26 @@ void LineFollowing::fly() {
           //we are to the right of the intersection_point
           //we need to move left
           control_ptr->velocities.vy = 1;
-          // printf("Move left\n");
         } else {
           //we need to move right
           control_ptr->velocities.vy = -1;
-          // printf("Move right\n");
         }
       }
-// Move horizontally      if (-1 * horizontal_tolerance >= calculated_distance_from_horizontal || calculated_distance_from_horizontal >= horizontal_tolerance) {
-      //todo move up or down the line
+// Move horizontally
+      if (-1 * horizontal_tolerance >= calculated_distance_from_horizontal ||
+          calculated_distance_from_horizontal >= horizontal_tolerance) {
+        //todo move up or down the line
 
-      if (calculated_distance_from_horizontal > 0) {
-        //          we are above the intersection_point
-        //          so we need to move backwards
-        //          I think
-        //          todo check this
-        control_ptr->velocities.vx = -1;
+        if (calculated_distance_from_horizontal > 0) {
+          //          we are above the intersection_point
+          //          so we need to move backwards
+          //          I think
+          //          todo check this
+          control_ptr->velocities.vx = -1;
 
-      } else {
-        control_ptr->velocities.vx = 1;
+        } else {
+          control_ptr->velocities.vx = 1;
+        }
       }
     }
 
