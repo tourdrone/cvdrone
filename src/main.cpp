@@ -17,21 +17,37 @@
 
 using namespace std;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   Control *control;
   int wait = 33;
 
   try {
     //Initialize main control variables and flight modes
     control = new Control();
-  }catch (const char* msg){
+  } catch (const char *msg) {
     cout << msg << endl;
     return -1;
   }
 
+  // Setting up for constant time
+  double time_counter = 0;
+  clock_t this_time = clock();
+  clock_t last_time = this_time;
+
   // Main loop
   while (1) {
+
+    //Time stuff
+    this_time = clock();
+    time_counter += (double) (this_time - last_time);
+    last_time = this_time;
+
+    if (time_counter < (double) (1 * CLOCKS_PER_SEC)) { //AKA not enough time has passed
+      continue;
+    }
+    time_counter -= (double) (1 * CLOCKS_PER_SEC);
+
+
     //Detect user key input and end loop if ESC is pressed
     if (!control->getKey(wait)) break;
 
@@ -46,10 +62,10 @@ int main(int argc, char *argv[])
     control->fly();
 
     //Display image overlay values
-    control->overlayControl(); 
+    control->overlayControl();
 
     //Send move command to the drone
-    control->move(); 
+    control->move();
   }
 
   //Close flying modes and drone connection
