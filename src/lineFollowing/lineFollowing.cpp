@@ -30,7 +30,10 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
   // printf("Adding in %d lines\n", (int) lines.size());
 
+
+
   vector<Vec2f> tmp = condense_lines(lines, true);
+
   sort(tmp.begin(), tmp.end(),
        [](const Vec2f &a, const Vec2f &b) {
          return a[0] < b[0];
@@ -84,10 +87,15 @@ void LineFollowing::fly() {
                                                              control_ptr->image.cols, control_ptr->image.rows);
     calculated_distance_from_horizontal = 0;
     intersection_point = cvPoint(center_x + cvRound(calculated_distance_from_vertical), center_y);
+
+    if (true) {
+      printf("Width of %7.1f with (%5.1f, %5.1f)\n", calculated_distance_from_vertical, categorization.vertical[0],
+             categorization.vertical[1]);
+    }
   } else if (found_lines.size() == 2) {
     //TODO maybe this is a very bad assumption to make, that [0] is the vertical line
-    categorization.vertical = found_lines[0];
-    categorization.horizontal = found_lines[1];
+    categorization.vertical = found_lines[1];
+    categorization.horizontal = found_lines[0];
     calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
                                                              control_ptr->image.cols, control_ptr->image.rows);
     calculated_distance_from_horizontal = distance_from_center(categorization.horizontal[1],
@@ -120,7 +128,10 @@ void LineFollowing::fly() {
       // printf("Offset is: %5.2f with a distance of %5.2f and width of %5.2f halved to %5.2f\n", offset,
 
       // (double) control_ptr->image.cols, (control_ptr->image.cols / 2.0));
-      if (-100 >= calculated_distance_from_vertical && calculated_distance_from_vertical >= 100) {
+      int vertical_tolerance = 50;
+      int horizontal_tolerance = 100;
+      if (-1 * vertical_tolerance >= calculated_distance_from_vertical &&
+          calculated_distance_from_vertical >= vertical_tolerance) {
         if (calculated_distance_from_vertical < 0) {
           //we are to the right of the line
           //we need to move left
@@ -132,7 +143,8 @@ void LineFollowing::fly() {
           // printf("Move right\n");
         }
       }
-      if (-100 >= calculated_distance_from_horizontal && calculated_distance_from_horizontal >= 100) {
+      if (-1 * horizontal_tolerance >= calculated_distance_from_horizontal &&
+          calculated_distance_from_horizontal >= horizontal_tolerance) {
         //todo move up or down the line
 
         if (calculated_distance_from_horizontal > 0) {
