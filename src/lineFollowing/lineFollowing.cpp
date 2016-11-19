@@ -60,15 +60,15 @@ LineFollowing::LineFollowing(Control *control) {
   maxV = 254;
   minV = 154;
 
-  kp = .008;
+  kp = .7;
+  ki = 1;
   kd = 0.0;
-  ki = 0.0;
 
   time = 0;
   myfile.open ("output.csv");
 
 
-  my_pid = new PID(1.0 / 25, 1, -1, kp, kd, ki);
+  my_pid = new PID(25, 1, -1, kp, kd, ki);
 
   return;
 }
