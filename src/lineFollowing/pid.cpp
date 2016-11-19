@@ -58,6 +58,7 @@ double PIDImpl::calculate(double setpoint, double pv) {
 
   // Calculate error
   double error = setpoint - pv;
+  printf("%f error ", error);
 
   // Proportional term
   double Pout = _Kp * error;
