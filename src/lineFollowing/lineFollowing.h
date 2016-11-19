@@ -6,9 +6,12 @@
 
 #include "../ardrone/ardrone.h"
 #include "../structures.h"
+#include "pid.h"
+#include <iostream>
+#include <fstream>
 
 using namespace cv;
-//using namespace std;
+using namespace std;
 
 class Control;
 
@@ -29,6 +32,10 @@ private:
 
   double minH, minS, minV, maxH, maxS, maxV;
   double width, height;
+  double kp, ki, kd;
+  int time;
+  ofstream myfile;
+  PID *my_pid;
   std::vector<cv::Vec2f> found_lines;
 
   double distance_from_center(float rho, float theta, double width, double height);
