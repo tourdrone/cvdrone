@@ -123,7 +123,7 @@ void LineFollowing::fly() {
       // Move vertically
       int vertical_tolerance = 50;
       int horizontal_tolerance = 100;
-      if (-1 * vertical_tolerance >= calculated_distance_from_vertical ||
+      if (calculated_distance_from_vertical <= -1 * vertical_tolerance ||
           calculated_distance_from_vertical >= vertical_tolerance) {
         if (calculated_distance_from_vertical < 0) {
           //we are to the right of the intersection_point
@@ -134,8 +134,8 @@ void LineFollowing::fly() {
           control_ptr->velocities.vy = -1;
         }
       }
-// Move horizontally
-      if (-1 * horizontal_tolerance >= calculated_distance_from_horizontal ||
+      // Move horizontally
+      if (calculated_distance_from_horizontal <= -1 * horizontal_tolerance ||
           calculated_distance_from_horizontal >= horizontal_tolerance) {
         //todo move up or down the line
 
