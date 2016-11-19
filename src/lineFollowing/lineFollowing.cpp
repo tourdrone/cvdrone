@@ -7,6 +7,7 @@
 #include "../control.h"
 #include "line_simplification.h"
 
+
 using namespace std;
 using namespace cv;
 
@@ -44,13 +45,26 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
 LineFollowing::LineFollowing(Control *control) {
   namedWindow("line_window", CV_WINDOW_NORMAL);
+
   control_ptr = control;
+
   minH = 50;
   minS = 20;
   minV = 150;
   maxH = 125;
   maxS = 100;
   maxV = 255;
+
+  kp = .01;
+  kd = 0.0;
+  ki = 0.0;
+
+  time = 0;
+  myfile.open ("output.csv");
+
+
+  my_pid = new PID(1.0 / 25, 1, -1, kp, kd, ki);
+
   return;
 }
 
@@ -120,7 +134,14 @@ void LineFollowing::fly() {
     } else {
 
 
-      // Move vertically
+      double vel_to_set = 1 * my_pid->calculate(0, calculated_distance_from_vertical);
+      control_ptr->velocities.vy = vel_to_set;
+      myfile << time++ << ", " << calculated_distance_from_vertical << endl;
+      printf("%f\n", vel_to_set);
+
+//      return;
+
+      /*// Move vertically
       int vertical_tolerance = 50;
       int horizontal_tolerance = 100;
       if (calculated_distance_from_vertical <= -1 * vertical_tolerance ||
@@ -149,7 +170,7 @@ void LineFollowing::fly() {
         } else {
           control_ptr->velocities.vx = 1;
         }
-      }
+      }*/
     }
 
   } else if (found_lines.size() == 3) {
