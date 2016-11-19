@@ -89,8 +89,7 @@ void LineFollowing::fly() {
     intersection_point = cvPoint(center_x + cvRound(calculated_distance_from_vertical), center_y);
 
     if (true) {
-      printf("Width of %7.1f with (%5.1f, %5.1f)\n", calculated_distance_from_vertical, categorization.vertical[0],
-             categorization.vertical[1]);
+//      printf("Width of %7.1f with (%5.1f, %5.1f)\n", calculated_distance_from_vertical, categorization.vertical[0],categorization.vertical[1]);
     }
   } else if (found_lines.size() == 2) {
     //TODO maybe this is a very bad assumption to make, that [0] is the vertical line

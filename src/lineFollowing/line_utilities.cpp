@@ -80,6 +80,9 @@ vector<Point> to_points(float theta, float rho) {
 }
 
 Vec2f normalize_point(Vec2f point) {
+  if (point[0] < 0) {
+    printf("Hey, I was useful! (%5.1f)\n", rad2deg(point[0]));
+  }
   point[0] -= deg2rad(360);
   while (point[0] < 0) {
     point[0] += deg2rad(360);
