@@ -40,7 +40,8 @@ OBJS          = ../../src/ardrone/ardrone.o \
                 ../../src/lineFollowing/pid.o \
 		        ../../src/audio/audio.o \
                 ../../src/control.o \
-                ../../src/main.o
+                ../../src/main.o \
+				../../src/lineFollowing/pid.o
 PROGRAM       = test.a
 
 debug: $(PROGRAM)
