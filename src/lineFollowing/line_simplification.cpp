@@ -36,13 +36,7 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
 
   if (keep_going) {
     for (int i = 0; i < (int) lines.size(); i++) {
-      //put in order of theta, rho
-      swap(lines[i][0], lines[i][1]);
 
-//      printf("Took line from (%5.1f, %5.1f) to ", rad2deg(lines[i][0]), lines[i][1]);
-
-      lines[i] = normalize_point(lines[i]);
-//      printf("normalized (%5.1f, %5.1f) to ", rad2deg(lines[i][0]), lines[i][1]);
 //      bool flipped = false;
       if (lines[i][0] >= deg2rad(90)) {
 //        flipped = true;

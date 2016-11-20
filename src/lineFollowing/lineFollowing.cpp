@@ -33,6 +33,10 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
 
+  for(int i = 0; i < (int)lines.size(); i++){
+    //put in order of theta, rho
+    swap(lines[i][0], lines[i][1]);
+  }
   vector<Vec2f> tmp = condense_lines(lines, true);
 
   sort(tmp.begin(), tmp.end(),
