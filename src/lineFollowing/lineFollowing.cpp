@@ -30,7 +30,6 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   Canny(mask, mask, 50, 200, 3);
 
 
-
   vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
 
@@ -60,12 +59,12 @@ LineFollowing::LineFollowing(Control *control) {
   maxV = 254;
   minV = 154;
 
-  kp = .7;
-  ki = 1;
+  kp = .001;
+  ki = 0;
   kd = 0.0;
 
   time = 0;
-  myfile.open ("output.csv");
+  myfile.open("output.csv");
 
 
   my_pid = new PID(25, 1, -1, kp, kd, ki);
@@ -138,47 +137,47 @@ void LineFollowing::fly() {
     } else if (categorization.vertical[0] <= deg2rad(-1 * 5)) {
 //      printf("Angle is %5.1f\n", rad2deg(categorization.vertical[0]));
       control_ptr->velocities.vr = .2;
-    } else {
+    }
 
 
-      double vel_to_set = 1 * my_pid->calculate(0, calculated_distance_from_vertical);
-      control_ptr->velocities.vy = vel_to_set;
-      myfile << time++ << ", " << calculated_distance_from_vertical << endl;
-      printf("%f\n", vel_to_set);
+    double vel_to_set = 1 * my_pid->calculate(0, calculated_distance_from_vertical);
+    control_ptr->velocities.vy = vel_to_set;
+    myfile << time++ << ", " << calculated_distance_from_vertical << ", " << vel_to_set << endl;
+    printf("%f\n", vel_to_set);
 
 //      return;
 
-      /*// Move vertically
-      int vertical_tolerance = 50;
-      int horizontal_tolerance = 100;
-      if (calculated_distance_from_vertical <= -1 * vertical_tolerance ||
-          calculated_distance_from_vertical >= vertical_tolerance) {
-        if (calculated_distance_from_vertical < 0) {
-          //we are to the right of the intersection_point
-          //we need to move left
-          control_ptr->velocities.vy = 1;
-        } else {
-          //we need to move right
-          control_ptr->velocities.vy = -1;
-        }
+    /*// Move vertically
+    int vertical_tolerance = 50;
+    int horizontal_tolerance = 100;
+    if (calculated_distance_from_vertical <= -1 * vertical_tolerance ||
+        calculated_distance_from_vertical >= vertical_tolerance) {
+      if (calculated_distance_from_vertical < 0) {
+        //we are to the right of the intersection_point
+        //we need to move left
+        control_ptr->velocities.vy = 1;
+      } else {
+        //we need to move right
+        control_ptr->velocities.vy = -1;
       }
-      // Move horizontally
-      if (calculated_distance_from_horizontal <= -1 * horizontal_tolerance ||
-          calculated_distance_from_horizontal >= horizontal_tolerance) {
-        //todo move up or down the line
-
-        if (calculated_distance_from_horizontal > 0) {
-          //          we are above the intersection_point
-          //          so we need to move backwards
-          //          I think
-          //          todo check this
-          control_ptr->velocities.vx = -1;
-
-        } else {
-          control_ptr->velocities.vx = 1;
-        }
-      }*/
     }
+    // Move horizontally
+    if (calculated_distance_from_horizontal <= -1 * horizontal_tolerance ||
+        calculated_distance_from_horizontal >= horizontal_tolerance) {
+      //todo move up or down the line
+
+      if (calculated_distance_from_horizontal > 0) {
+        //          we are above the intersection_point
+        //          so we need to move backwards
+        //          I think
+        //          todo check this
+        control_ptr->velocities.vx = -1;
+
+      } else {
+        control_ptr->velocities.vx = 1;
+      }
+    }*/
+
 
   } else if (found_lines.size() == 3) {
 
