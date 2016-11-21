@@ -90,6 +90,9 @@ void LineFollowing::fly() {
   Point intersection_point;
   double calculated_distance_from_vertical = 0, calculated_distance_from_horizontal = 0;
 
+
+  int vert = -1, hor = -1, corn = -1;
+
   control_ptr->velocities.vx = 0;
   control_ptr->velocities.vy = 0;
   control_ptr->velocities.vz = 0;
@@ -106,32 +109,31 @@ void LineFollowing::fly() {
     if (found_lines.size() == 1) {
       // Find "intersection_point" that drone should go towards
       // intersection_point is point where single line intersects a  horizontal line across the vertical middle of the camera feed
-      categorization.vertical = found_lines[0];
-      categorization.horizontal = Vec2f();
-      calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
-                                                               control_ptr->image.cols, control_ptr->image.rows);
+      vert = 0;
+      calculated_distance_from_vertical = distance_from_center(found_lines[vert][1], found_lines[vert][0],
+          control_ptr->image.cols, control_ptr->image.rows);
       calculated_distance_from_horizontal = 0;
       intersection_point = cvPoint(center_x + cvRound(calculated_distance_from_vertical), center_y);
 
     } else if (found_lines.size() == 2) {// intersection_point is the intersection of the two lines
 
       if (abs(found_lines[0][0]) < abs(found_lines[1][0])) {
-        categorization.vertical = found_lines[0];
-        categorization.horizontal = found_lines[1];
+        vert = 0;
+        hor = 1;
       } else {
-        categorization.vertical = found_lines[1];
-        categorization.horizontal = found_lines[0];
+        vert = 1;
+        hor = 0;
       }
-      printf("(%6.1f, %6.1f) (%6.1f, %6.1f)\n", rad2deg(categorization.vertical[0]), categorization.vertical[1],
-             rad2deg(categorization.horizontal[0]), categorization.horizontal[1]);
+      printf("(%6.1f, %6.1f) (%6.1f, %6.1f)\n", rad2deg(found_lines[vert][0]), found_lines[vert][1],
+             rad2deg(found_lines[hor][0]), found_lines[hor][1]);
 
-      calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
-                                                               control_ptr->image.cols, control_ptr->image.rows);
-      calculated_distance_from_horizontal = distance_from_center(categorization.horizontal[1],
-                                                                 categorization.horizontal[0],
-                                                                 control_ptr->image.cols, control_ptr->image.rows);
+      calculated_distance_from_vertical = distance_from_center(found_lines[vert][1], found_lines[vert][0],
+          control_ptr->image.cols, control_ptr->image.rows);
+      calculated_distance_from_horizontal = distance_from_center(found_lines[hor][1],
+          found_lines[hor][0],
+          control_ptr->image.cols, control_ptr->image.rows);
 
-      intersection_point = find_intersection(categorization.vertical, categorization.horizontal);
+      intersection_point = find_intersection(found_lines[vert], found_lines[hor]);
 
     }
 
@@ -145,11 +147,11 @@ void LineFollowing::fly() {
          cvPoint(0 + intersection_point.x, 0 + intersection_point.y - 10), color_white, 3, CV_AA);
 
     // Rotate to make line vertical
-    if (categorization.vertical[0] >= deg2rad(5)) {
-//      printf("Angle is %5.1f\n", rad2deg(categorization.vertical[0]));
+    if (found_lines[vert][0] >= deg2rad(5)) {
+      //      printf("Angle is %5.1f\n", rad2deg(found_lines[vert][0]));
       control_ptr->velocities.vr = -.1;
-    } else if (categorization.vertical[0] <= deg2rad(-1 * 5)) {
-//      printf("Angle is %5.1f\n", rad2deg(categorization.vertical[0]));
+    } else if (found_lines[vert][0] <= deg2rad(-1 * 5)) {
+      //      printf("Angle is %5.1f\n", rad2deg(found_lines[vert][0]));
       control_ptr->velocities.vr = .1;
     }
 
@@ -195,19 +197,85 @@ void LineFollowing::fly() {
 
 
   } else if (found_lines.size() == 3) {
-
     // Categorize lines
+    /*
+       double diff01, diff02, diff12;
+
+       diff01 = abs( found_lines[0][0] - found_lines[1][0] );
+       diff01 = diff01 > deg2rad(95) ? diff01-90 : diff01;
+       diff02 = abs( found_lines[0][0] - found_lines[2][0] );
+       diff02 = diff02 > deg2rad(95) ? diff02-90 : diff02;
+       diff12 = abs( found_lines[1][0] - found_lines[2][0] );
+       diff12 = diff12 > deg2rad(95) ? diff12-90 : diff12;
+
+       if (diff01 > diff02){
+       if(diff01 > diff12){
+    //diff01 is greatest
+    corn = 2;
+    if ( abs(found_lines[0][0]) < abs(found_lines[1][0])){
+    // line 0 is closest to 0 deg
+    vert = 0;
+    hor = 1;
+    } else {
+    // line 1 is clostest to 0 deg
+    vert = 1;
+    hor = 0;
+    }
+    } else {
+    // diff12 is greatest
+    corn = 0;
+    if ( abs(found_lines[1][0]) < abs(found_lines[2][0])){
+    //	line 1 is closest to 0 deg;
+    vert = 1;
+    hor = 2;
+    } else {
+    // line 2 is closest to 0 deg;
+    vert = 2;
+    hor = 1;
+    }
+
+    }
+    } else {
+    if(diff02 > diff12){
+    //diff02 is greatest
+    corn = 1;
+    if ( abs(found_lines[0][0]) < abs(found_lines[2][0])){
+    //	line 0 is closest to 0 deg;
+    vert = 0;
+    hor = 2;
+    } else {
+    // line 2 is closest to 0 deg;
+    vert = 2;
+    hor = 0;
+    }
+    } else {
+    // diff12 is greatest
+    corn = 0;
+    if ( abs(found_lines[1][0]) < abs(found_lines[2][0])){
+    //	line 1 is closest to 0 deg;
+    vert = 1;
+    hor = 2;
+    } else {
+    // line 2 is closest to 0 deg;
+    vert = 2;
+    hor = 1;
+    }
+    }
+
+
+    }
+     */
     for (int i = 0; i < found_lines.size(); ++i) {
       float angle = abs(found_lines[i][0]);
 
       if (angle > deg2rad(0 - tolerance) && angle < deg2rad(0 + tolerance) && categorization.vertical == Vec2f()) {
-        categorization.vertical = found_lines[i];
+        vert = i;
       }
       if (angle > deg2rad(90 - tolerance) && angle < deg2rad(90 + tolerance) && categorization.horizontal == Vec2f()) {
-        categorization.horizontal = found_lines[i];
+        hor = i;
       }
       if (angle > deg2rad(45 - tolerance) && angle < deg2rad(45 + tolerance) && categorization.sloped == Vec2f()) {
-        categorization.sloped = found_lines[i];
+        corn = i;
         if (found_lines[i][0] < 0) {
           categorization.d = direction::right;
         } else if (found_lines[i][0] > 0) {
@@ -216,6 +284,9 @@ void LineFollowing::fly() {
       }
 
     }
+
+    printf("blue/vert: (%.2f, %.2f)  green/hor: (%.2f, %.2f) red/corn: (%.2f, %.2f)\n", rad2deg(found_lines[vert][0]), found_lines[vert][1], rad2deg( found_lines[hor][0]),found_lines[hor][1], rad2deg(found_lines[corn][0]), found_lines[corn][1]);
+    
   } else {
     //print out the points of all 4+ lines
     printf("Found more than 3 lines: ");
@@ -226,14 +297,14 @@ void LineFollowing::fly() {
   }
 
   //Draw all the lines
-  if (categorization.horizontal != Vec2f()) {
-    draw_line(control_ptr->image, categorization.horizontal, color_green);
+  if (vert != -1) {
+    draw_line(control_ptr->image, found_lines[vert], color_blue);
   }
-  if (categorization.vertical != Vec2f()) {
-    draw_line(control_ptr->image, categorization.vertical, color_blue);
+  if (hor != -1) {
+    draw_line(control_ptr->image, found_lines[hor], color_green);
   }
-  if (categorization.sloped != Vec2f()) {
-    draw_line(control_ptr->image, categorization.sloped, color_red);
+  if (corn != -1) {
+    draw_line(control_ptr->image, found_lines[corn], color_red);
   }
 
   return;
