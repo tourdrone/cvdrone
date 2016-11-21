@@ -28,8 +28,8 @@ void ManualFlying::fly() {
   control_ptr->velocities.vz = 0;
   control_ptr->velocities.vr = 0;
 
-  if (key == 't') { control_ptr->velocities.vx =  1.0; } //t key
-  if (key == 'g') { control_ptr->velocities.vx = -1.0; } //g key
+  if (key == 't') { control_ptr->velocities.vx =  1.0; } //t key forwards
+  if (key == 'g') { control_ptr->velocities.vx = -1.0; } //g key backwards
   if (key == 'f') { control_ptr->velocities.vy =  1.0; } //f key left
   if (key == 'h') { control_ptr->velocities.vy = -1.0; } //h key right
   if (key == 'q') { control_ptr->velocities.vz =  1.0; } //q key
