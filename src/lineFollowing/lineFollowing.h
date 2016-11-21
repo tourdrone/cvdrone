@@ -35,7 +35,7 @@ private:
   double kp, ki, kd;
   int time;
   ofstream myfile;
-  PID *my_pid;
+  PID *vertical_pid, *horizontal_pid;
   std::vector<cv::Vec2f> found_lines;
 
   double distance_from_center(float rho, float theta, double width, double height);

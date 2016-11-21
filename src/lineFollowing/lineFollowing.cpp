@@ -59,15 +59,16 @@ LineFollowing::LineFollowing(Control *control) {
   maxV = 254;
   minV = 154;
 
-  kp = .001;
-  ki = 0;
+  kp = .0018;
+  ki = .0;
   kd = 0.0;
 
   time = 0;
-  myfile.open("output.csv");
+  myfile.open("csv/output.csv");
 
 
-  my_pid = new PID(25, 1, -1, kp, kd, ki);
+  vertical_pid = new PID(1.0 / 25, 1, -1, kp, kd, ki);
+  horizontal_pid = new PID(1.0 / 25, 1, -1, kp, kd, ki);
 
   return;
 }
@@ -108,7 +109,7 @@ void LineFollowing::fly() {
       intersection_point = cvPoint(center_x + cvRound(calculated_distance_from_vertical), center_y);
 
     } else if (found_lines.size() == 2) {// intersection_point is the intersection of the two lines
-      //TODO maybe this is a very bad assumption to make, that [0] is the vertical line
+      //TODO maybe this is a very bad assumption to make, that [1] is the vertical line
       categorization.vertical = found_lines[1];
       categorization.horizontal = found_lines[0];
       calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
@@ -133,17 +134,18 @@ void LineFollowing::fly() {
     // Rotate to make line vertical
     if (categorization.vertical[0] >= deg2rad(5)) {
 //      printf("Angle is %5.1f\n", rad2deg(categorization.vertical[0]));
-      control_ptr->velocities.vr = -.2;
+      control_ptr->velocities.vr = -.1;
     } else if (categorization.vertical[0] <= deg2rad(-1 * 5)) {
 //      printf("Angle is %5.1f\n", rad2deg(categorization.vertical[0]));
-      control_ptr->velocities.vr = .2;
+      control_ptr->velocities.vr = .1;
     }
 
 
-    double vel_to_set = 1 * my_pid->calculate(0, calculated_distance_from_vertical);
-    control_ptr->velocities.vy = vel_to_set;
-    myfile << time++ << ", " << calculated_distance_from_vertical << ", " << vel_to_set << endl;
-    printf("%f\n", vel_to_set);
+    control_ptr->velocities.vy = 1 * vertical_pid->calculate(0, calculated_distance_from_vertical);
+    control_ptr->velocities.vx = 1 * horizontal_pid->calculate(0, calculated_distance_from_horizontal);
+
+    myfile << time++ << ", " << calculated_distance_from_horizontal << ", " << control_ptr->velocities.vx << endl;
+    printf("%f\n", control_ptr->velocities.vx);
 
 //      return;
 
