@@ -149,6 +149,7 @@ void ObjectFollowing::fly() {
 
   // Object detected
   if (contour_index >= 0) {
+
     // Moments
     cv::Moments moments = cv::moments(contours[contour_index], true);
     double marker_y = (int)(moments.m01 / moments.m00);
@@ -163,6 +164,42 @@ void ObjectFollowing::fly() {
     // Show result
     rect = cv::boundingRect(contours[contour_index]);
     cv::rectangle(*image, rect, cv::Scalar(0, 255, 0));
+
+    // Calculate average hsv for the object within the coutour
+    int avgHue = 0;
+    int avgSaturation = 0;
+    int avgValue = 0;
+    int numPoints = 0;
+
+    //for x in rectangle
+    for (x = rect.point.x; x < rect.point.x + rect.width; x++) {
+      //for y in rectangle 
+      for (y = rect.point.y; y < rect.point.y + rect.wdith; y++) {
+        // TODO: If this is to slow, use rectangle average or do every second, third, etc point in rectangle for loop
+        if (inCoutour(x, y, countours[contour_index])) {
+          numPoints++;
+          hsvPoint = hsv.at<cv::Vec3b>(cvPoint(x, y));
+          avgHue += hsvPoint[0];
+          avgSaturation += hsvPoint[1];
+          avgValue += hsvPoint[2];
+        }
+      }
+    }
+
+    avgHue = ((double)avgHue)/numPoints;
+    avgSaturation = ((double)avgSaturation)/numPoints;
+    avgValue = ((double)avgValue)/numPoints;
+
+    hsvSample[0] = avgHue;
+    hsvSample[1] = avgSaturation;
+    hsvSample[2] = avgValue;
+
+    minH = avgHue - tolerance;
+    maxH = avgHue + tolerance;
+    minS = avgSaturation - tolerance;
+    maxS = avgSaturation + tolerance;
+    minV = avgValue - tolerance;
+    maxV = avgValue + tolerance;
   }
 
   // Prediction
@@ -176,6 +213,17 @@ void ObjectFollowing::fly() {
   float rHeading = -(((*image).cols/2) - prediction(0, 0))/((*image).cols/2);
   float zHeading = -(((*image).rows/2) - prediction(0, 1))/((*image).rows/2);
 
+  if (abs(rHeading) <= 0.8 && abs(zHeading) <= 0.8) {
+    time_t lastSearchTime = time(0);
+  }
+
+  time_t currentTime = time(0);
+  double elapsedTime = difftime(currentTime, lastSearchTime);
+  if (elapsedTime >= 3) {
+    ardrone.landing();
+    fprintf(flight_log, "LAND\n");
+  }
+
   // Sample the object color
   if(learnMode) {
     // Show targeting crosshairs
@@ -186,8 +234,8 @@ void ObjectFollowing::fly() {
 
     hsvSample = hsv.at<cv::Vec3b>(cvPoint((*image).cols/2, (*image).rows/2));
 
-    setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
   }
+  setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
 
   displayObjectFollowingInfo(image, rHeading, zHeading, hsvSample[0], hsvSample[1], hsvSample[2]);
 
@@ -280,4 +328,15 @@ void ObjectFollowing::displayObjectFollowingInfo(cv::Mat *image, double rHeading
   putText(*image, hsvSampleDisplay, cvPoint(30, 160), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
   putText(*image, moveStatusDisplay, cvPoint(30, 180), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, green, 1, CV_AA);
 
+}
+
+/*
+*/
+boolean inContour(int x, int y, Contour c){
+  Point p = new Point(x,y);
+  MatOfPoint2f m = new MatOfPoint2f(c.pointMat.toArray());
+    
+  double r = Imgproc.pointPolygonTest(m,p, false);
+  
+  return r == 1;
 }
