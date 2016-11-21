@@ -103,15 +103,24 @@ void LineFollowing::fly() {
       // Find "intersection_point" that drone should go towards
       // intersection_point is point where single line intersects a  horizontal line across the vertical middle of the camera feed
       categorization.vertical = found_lines[0];
+      categorization.horizontal = Vec2f();
       calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
                                                                control_ptr->image.cols, control_ptr->image.rows);
       calculated_distance_from_horizontal = 0;
       intersection_point = cvPoint(center_x + cvRound(calculated_distance_from_vertical), center_y);
 
     } else if (found_lines.size() == 2) {// intersection_point is the intersection of the two lines
-      //TODO maybe this is a very bad assumption to make, that [1] is the vertical line
-      categorization.vertical = found_lines[1];
-      categorization.horizontal = found_lines[0];
+
+      if (abs(found_lines[0][0]) < abs(found_lines[1][0])) {
+        categorization.vertical = found_lines[0];
+        categorization.horizontal = found_lines[1];
+      } else {
+        categorization.vertical = found_lines[1];
+        categorization.horizontal = found_lines[0];
+      }
+      printf("(%6.1f, %6.1f) (%6.1f, %6.1f)\n", rad2deg(categorization.vertical[0]), categorization.vertical[1],
+             rad2deg(categorization.horizontal[0]), categorization.horizontal[1]);
+
       calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
                                                                control_ptr->image.cols, control_ptr->image.rows);
       calculated_distance_from_horizontal = distance_from_center(categorization.horizontal[1],
@@ -145,7 +154,7 @@ void LineFollowing::fly() {
     control_ptr->velocities.vx = 1 * horizontal_pid->calculate(0, calculated_distance_from_horizontal);
 
     myfile << time++ << ", " << calculated_distance_from_horizontal << ", " << control_ptr->velocities.vx << endl;
-    printf("%f\n", control_ptr->velocities.vx);
+//    printf("%f\n", control_ptr->velocities.vx);
 
 //      return;
 
