@@ -172,13 +172,15 @@ void ObjectFollowing::fly() {
     int numPoints = 0;
 
     //for x in rectangle
-    for (x = rect.point.x; x < rect.point.x + rect.width; x++) {
+    for (int x = rect.x; x < rect.x + rect.width; x++) {
       //for y in rectangle 
-      for (y = rect.point.y; y < rect.point.y + rect.wdith; y++) {
+      for (int y = rect.y; y < rect.y + rect.height; y++) {
         // TODO: If this is to slow, use rectangle average or do every second, third, etc point in rectangle for loop
-        if (inCoutour(x, y, countours[contour_index])) {
+        //if (inContour(x, y, contours[contour_index])) {
+          cv::Point pt(x,y);
+          if (rect.contains(pt)) {
           numPoints++;
-          hsvPoint = hsv.at<cv::Vec3b>(cvPoint(x, y));
+          cv::Vec3b hsvPoint = hsv.at<cv::Vec3b>(cvPoint(x, y));
           avgHue += hsvPoint[0];
           avgSaturation += hsvPoint[1];
           avgValue += hsvPoint[2];
@@ -213,15 +215,16 @@ void ObjectFollowing::fly() {
   float rHeading = -(((*image).cols/2) - prediction(0, 0))/((*image).cols/2);
   float zHeading = -(((*image).rows/2) - prediction(0, 1))/((*image).rows/2);
 
+  //Emergency landing
+  time_t lastSearchTime = 0;
   if (abs(rHeading) <= 0.8 && abs(zHeading) <= 0.8) {
-    time_t lastSearchTime = time(0);
+    lastSearchTime = time(0);
   }
 
   time_t currentTime = time(0);
   double elapsedTime = difftime(currentTime, lastSearchTime);
   if (elapsedTime >= 3) {
-    ardrone.landing();
-    fprintf(flight_log, "LAND\n");
+    control_ptr->ardrone.landing();
   }
 
   // Sample the object color
@@ -331,12 +334,12 @@ void ObjectFollowing::displayObjectFollowingInfo(cv::Mat *image, double rHeading
 }
 
 /*
-*/
-boolean inContour(int x, int y, Contour c){
-  Point p = new Point(x,y);
-  MatOfPoint2f m = new MatOfPoint2f(c.pointMat.toArray());
+bool inContour(int x, int y, Contour c){
+  cv::Point p = new cv::Point(x,y);
+  cv::MatOfPoint2f m = new cv::MatOfPoint2f(c.pointMat.toArray());
     
-  double r = Imgproc.pointPolygonTest(m,p, false);
+  double r = cv::Imgproc.pointPolygonTest(m,p, false);
   
   return r == 1;
 }
+*/
