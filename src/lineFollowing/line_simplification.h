@@ -8,7 +8,7 @@
 using namespace std;
 static const int degree_tolerance = 10;
 
-static const int distance_tolerance = 15;
+static const int distance_tolerance = 25;
 
 void compress_lines(vector<cv::Vec2f> &condensed, const vector<cv::Vec2f> &tmp_list);
 
