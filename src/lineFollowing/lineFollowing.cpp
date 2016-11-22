@@ -118,8 +118,8 @@ void LineFollowing::fly() {
         categorization.vertical = found_lines[1];
         categorization.horizontal = found_lines[0];
       }
-      printf("(%6.1f, %6.1f) (%6.1f, %6.1f)\n", rad2deg(categorization.vertical[0]), categorization.vertical[1],
-             rad2deg(categorization.horizontal[0]), categorization.horizontal[1]);
+      /*printf("(%6.1f, %6.1f) (%6.1f, %6.1f)\n", rad2deg(categorization.vertical[0]), categorization.vertical[1],
+             rad2deg(categorization.horizontal[0]), categorization.horizontal[1]);*/
 
       calculated_distance_from_vertical = distance_from_center(categorization.vertical[1], categorization.vertical[0],
                                                                control_ptr->image.cols, control_ptr->image.rows);
@@ -150,11 +150,12 @@ void LineFollowing::fly() {
     }
 
 
-    control_ptr->velocities.vy = 1 * vertical_pid->calculate(0, calculated_distance_from_vertical);
-    control_ptr->velocities.vx = 1 * horizontal_pid->calculate(0, calculated_distance_from_horizontal);
+    control_ptr->velocities.vy = .3 * vertical_pid->calculate(0, calculated_distance_from_vertical);
+    control_ptr->velocities.vx = -.3 * horizontal_pid->calculate(0, calculated_distance_from_horizontal);
 
     myfile << time++ << ", " << calculated_distance_from_horizontal << ", " << control_ptr->velocities.vx << endl;
-//    printf("%f\n", control_ptr->velocities.vx);
+    printf("x%f ", control_ptr->velocities.vx);
+    printf("y%f\n", control_ptr->velocities.vy);
 
 //      return;
 
@@ -212,14 +213,16 @@ void LineFollowing::fly() {
       }
 
     }
-  } else {
-    //print out the points of all 4+ lines
-    printf("Found more than 3 lines: ");
+  }
+  //print out the points of all 4+ lines
+  if (found_lines.size() > 2) {
+    printf("Found more than 2 lines: ");
     for (int j = 0; j < (int) found_lines.size(); j++) {
-      printf("(%5.1f, %5.0f) ", rad2deg(found_lines[j][0]) + 180, found_lines[j][1]);
+      printf("(%5.1f, %5.0f) ", rad2deg(found_lines[j][0]), found_lines[j][1]);
     }
     printf("\n");
   }
+
 
   //Draw all the lines
   if (categorization.horizontal != Vec2f()) {
