@@ -33,6 +33,7 @@ class ObjectFollowing {
     bool moveStatus = false;
     int goalArea = 30000;
     double k = 0.000054054;
+    time_t lastSearchTime;
 };
 
 /*

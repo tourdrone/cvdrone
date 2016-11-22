@@ -95,8 +95,12 @@ void ObjectFollowing::fly() {
   ControlMovements *controlMovements = &(control_ptr->velocities);
   cv::Mat *image = &(control_ptr->image);
 
-  int tolerance = 50;
   cv::Vec3b hsvSample;
+  int tolerance = 50;
+  int avgHue;
+  int avgSaturation;
+  int avgValue;
+  int numPoints;
   cv::Scalar green = CV_RGB(0,255,0); //putText color value
 
   //switch between learning and non-learning mode
@@ -146,7 +150,6 @@ void ObjectFollowing::fly() {
     }
   }
 
-
   // Object detected
   if (contour_index >= 0) {
 
@@ -166,10 +169,10 @@ void ObjectFollowing::fly() {
     cv::rectangle(*image, rect, cv::Scalar(0, 255, 0));
 
     // Calculate average hsv for the object within the coutour
-    int avgHue = 0;
-    int avgSaturation = 0;
-    int avgValue = 0;
-    int numPoints = 0;
+    //avgHue = hsvSample[0];
+    //avgSaturation = hsvSample[1];
+    //avgValue = hsvSample[2];
+    numPoints = 1;
 
     //for x in rectangle
     for (int x = rect.x; x < rect.x + rect.width; x++) {
@@ -177,10 +180,10 @@ void ObjectFollowing::fly() {
       for (int y = rect.y; y < rect.y + rect.height; y++) {
         // TODO: If this is to slow, use rectangle average or do every second, third, etc point in rectangle for loop
         //if (inContour(x, y, contours[contour_index])) {
-          cv::Point pt(x,y);
-          if (rect.contains(pt)) {
-          numPoints++;
+        cv::Point pt(x,y);
+        if (rect.contains(pt)) {
           cv::Vec3b hsvPoint = hsv.at<cv::Vec3b>(cvPoint(x, y));
+          numPoints++;
           avgHue += hsvPoint[0];
           avgSaturation += hsvPoint[1];
           avgValue += hsvPoint[2];
@@ -191,17 +194,6 @@ void ObjectFollowing::fly() {
     avgHue = ((double)avgHue)/numPoints;
     avgSaturation = ((double)avgSaturation)/numPoints;
     avgValue = ((double)avgValue)/numPoints;
-
-    hsvSample[0] = avgHue;
-    hsvSample[1] = avgSaturation;
-    hsvSample[2] = avgValue;
-
-    minH = avgHue - tolerance;
-    maxH = avgHue + tolerance;
-    minS = avgSaturation - tolerance;
-    maxS = avgSaturation + tolerance;
-    minV = avgValue - tolerance;
-    maxV = avgValue + tolerance;
   }
 
   // Prediction
@@ -215,17 +207,32 @@ void ObjectFollowing::fly() {
   float rHeading = -(((*image).cols/2) - prediction(0, 0))/((*image).cols/2);
   float zHeading = -(((*image).rows/2) - prediction(0, 1))/((*image).rows/2);
 
+/*
+  if (abs(rHeading) <= 0.6 && abs(zHeading) <= 0.6) {
+    hsvSample[0] = avgHue;
+    hsvSample[1] = avgSaturation;
+    hsvSample[2] = avgValue;
+
+    minH = avgHue - tolerance;
+    maxH = avgHue + tolerance;
+    minS = avgSaturation - tolerance;
+    maxS = avgSaturation + tolerance;
+    minV = avgValue - tolerance;
+    maxV = avgValue + tolerance;
+  }
+ */
+
   //Emergency landing
-  time_t lastSearchTime = 0;
-  if (abs(rHeading) <= 0.8 && abs(zHeading) <= 0.8) {
+  if (abs(rHeading) <= 0.95 && abs(zHeading) <= 0.95) {
     lastSearchTime = time(0);
   }
-
-  time_t currentTime = time(0);
+  time_t currentTime = time(0); 
   double elapsedTime = difftime(currentTime, lastSearchTime);
-  if (elapsedTime >= 3) {
+  printf("CALEB- elapsedTime: %f\n", elapsedTime);
+  if (elapsedTime >= 4) {
     control_ptr->ardrone.landing();
   }
+
 
   // Sample the object color
   if(learnMode) {
@@ -236,30 +243,14 @@ void ObjectFollowing::fly() {
     cv::line(*image, cvPoint((*image).cols/2 + 2, (*image).rows/2), cvPoint((*image).cols, (*image).rows/2), green); //right horizontal crosshair
 
     hsvSample = hsv.at<cv::Vec3b>(cvPoint((*image).cols/2, (*image).rows/2));
-
+    setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
   }
-  setHSVTrackBarPositions(hsvSample[0], hsvSample[1], hsvSample[2], tolerance);
 
   displayObjectFollowingInfo(image, rHeading, zHeading, hsvSample[0], hsvSample[1], hsvSample[2]);
 
   rect_area = rect.width * rect.height;
 
-  /*
-  //Execute drone movement
-  if (rect_area > 25000) {
-  controlMovements->vx = -1.0;
-  moveStatus = false;
-  }
-  else if (rect_area <= 25000 && rect_area >= 20000) {
-  controlMovements->vx = 0;
-  moveStatus = false;
-  }
-  else {
-  controlMovements->vx = 1.0;
-  moveStatus = true;
-  }
-   */
-
+  // Set forward/backward movement
   controlMovements->vx = (goalArea - rect_area)/((double)goalArea);
 
   if(controlMovements->vx > 1) {
@@ -269,15 +260,6 @@ void ObjectFollowing::fly() {
     controlMovements->vx = -1;
   }
 
-  /*if( control_ptr->altitude < 1.2 )
-  {
-    controlMovements->vz = 1.0;
-  } 
-  else {
-    controlMovements->vz = 0.0;
-  }
-  */
-
   time_t current_time = time(0);
   double elapsed_time = difftime(current_time, control_ptr->takeoff_time);
   if (elapsed_time < 5){
@@ -286,8 +268,12 @@ void ObjectFollowing::fly() {
     controlMovements->vz = 0;
     controlMovements->vr = 0;
   } else {
+    printf("elapsed time: %f\n", elapsed_time);
     controlMovements->vz = -(zHeading * 0.2);
     controlMovements->vr = -(rHeading * 0.5);
+    if (controlMovements->vx < 0.5 && controlMovements->vx > 0) {
+      controlMovements->vx = pow(controlMovements->vx, 2);
+    }
   } 
 
   return;
@@ -295,8 +281,8 @@ void ObjectFollowing::fly() {
 
 //Auto set Hue, Saturation, and Value tracking bars
 void setHSVTrackBarPositions(int hue, int saturation, int value, int tolerance) {
-  cv::setTrackbarPos("Hue max", "binalized", hue + tolerance);
-  cv::setTrackbarPos("Hue min", "binalized", hue - tolerance);
+  cv::setTrackbarPos("Hue max", "binalized", hue + (tolerance - 40));
+  cv::setTrackbarPos("Hue min", "binalized", hue - (tolerance - 40));
 
   cv::setTrackbarPos("Saturation max", "binalized", saturation + tolerance);
   cv::setTrackbarPos("Saturation min", "binalized", saturation - tolerance);
