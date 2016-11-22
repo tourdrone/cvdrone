@@ -42,7 +42,6 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
   if (keep_going) {
     for (int i = 0; i < (int) lines.size(); i++) {
       //put in order of theta, rho
-      swap(lines[i][0], lines[i][1]);
 
       if (debug) {
         printf("Took line from (%5.1f, %5.1f) to ", rad2deg(lines[i][0]), lines[i][1]);
