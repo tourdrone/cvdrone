@@ -11,8 +11,8 @@
 #define color_blue cv::Scalar(255,0,0)
 #define color_green cv::Scalar(0,255,0)
 #define color_red cv::Scalar(0,0,255)
-#define color_white cv::Scalar(0,0,0)
-#define color_black cv::Scalar(255,255,255)
+#define color_black cv::Scalar(0,0,0)
+#define color_white cv::Scalar(255,255,255)
 
 using namespace std;
 
