@@ -8,12 +8,10 @@
 using namespace std;
 static const int degree_tolerance = 10;
 
-static const int distance_tolerance = 15;
+static const int distance_tolerance = 25;
 
 void compress_lines(vector<cv::Vec2f> &condensed, const vector<cv::Vec2f> &tmp_list);
 
 vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going);
-
-#include "../ardrone/ardrone.h"
 
 #endif //CVDRONE_LINE_SIMPLIFICATION_H
