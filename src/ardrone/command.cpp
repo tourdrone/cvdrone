@@ -232,7 +232,7 @@ void ARDrone::move3D(double vx, double vy, double vz, double vr)
     // AR.Drone is flying
     //if (!onGround()) {
         // Command velocities
-        float v[4] = {-vy, -vx, vz, -vr};
+        float v[4] = {(float) -vy, (float) -vx, (float) vz, (float) -vr};
         int mode = (fabs(v[0]) > 0.0 || fabs(v[1]) > 0.0 || fabs(v[2]) > 0.0 || fabs(v[3]) > 0.0);
 
         // Nomarization (-1.0 to +1.0)
