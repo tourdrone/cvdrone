@@ -12,6 +12,6 @@ static const int distance_tolerance = 25;
 
 void compress_lines(vector<cv::Vec2f> &condensed, const vector<cv::Vec2f> &tmp_list);
 
-vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going);
+vector<Vec2f> condense_lines(vector<Vec2f> lines);
 
 #endif //CVDRONE_LINE_SIMPLIFICATION_H
