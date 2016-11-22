@@ -36,10 +36,11 @@ OBJS          = ../../src/ardrone/ardrone.o \
                 ../../src/manual/manual.o \
                 ../../src/lineFollowing/lineFollowing.o \
                 ../../src/lineFollowing/line_utilities.o \
-                ../../src/lineFollowing/line_simplification.o \
-		../../src/audio/audio.o \
-                ../../src/control.o \
-                ../../src/main.o
+				../../src/lineFollowing/line_simplification.o \
+				../../src/lineFollowing/pid.o \
+				../../src/audio/audio.o \
+				../../src/control.o \
+                ../../src/main.o 
 PROGRAM       = test.a
 
 debug: $(PROGRAM)
