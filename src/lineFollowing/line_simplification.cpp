@@ -24,8 +24,8 @@ void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list) {
   condensed.push_back(new_point);
 }
 
-vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
-  bool debug = false;
+vector<Vec2f> condense_lines(vector<Vec2f> lines) {
+  bool debug = 1;
   vector<Vec2f> condensed;
   vector<Vec2f> tmp_list;
   double diff;
@@ -33,41 +33,7 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
 
   if (debug) {
     printf("\n================== Before Anything ===================\n");
-    for (int i = 0; i < lines.size(); ++i) {
-      printf("(%5.1f, %5.1f) ", rad2deg(lines[i][keep_going ? 1 : 0]), lines[i][keep_going ? 0 : 1]);
-    }
-    printf("\n");
-  }
-
-  if (keep_going) {
-    for (int i = 0; i < (int) lines.size(); i++) {
-      //put in order of theta, rho
-
-      if (debug) {
-        printf("Took line from (%5.1f, %5.1f) to ", rad2deg(lines[i][0]), lines[i][1]);
-
-        //      lines[i] = normalize_point(lines[i]);
-        printf("normalized (%5.1f, %5.1f) to ", rad2deg(lines[i][0]), lines[i][1]);
-        flipped = false;
-      }
-      if (lines[i][0] >= deg2rad(90)) {
-        if (debug) {
-          flipped = true;
-        }
-        lines[i] = flip_line(lines[i]);
-      }
-      if (debug) {
-        printf("oriented (%5.1f, %5.1f) ", rad2deg(lines[i][0]), lines[i][1]);
-        if (flipped) { printf("And I flipped"); }
-        printf("\n");
-      }
-    }
-    // return lines;
-  }
-
-  if (debug) {
-    printf("\n================== Before Sorting ===================\n");
-    for (int i = 0; i < lines.size(); ++i) {
+    for (int i = 0; i < (int) lines.size(); ++i) {
       printf("(%5.1f, %5.1f) ", rad2deg(lines[i][0]), lines[i][1]);
     }
     printf("\n");
@@ -80,8 +46,8 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
        });
 
   if (debug) {
-    printf("\n================== After Pre-Processing ===================\n");
-    for (int i = 0; i < lines.size(); ++i) {
+    printf("\n================== After Sorting ===================\n");
+    for (int i = 0; i < (int) lines.size(); ++i) {
       printf("(%5.1f, %5.1f) ", rad2deg(lines[i][0]), lines[i][1]);
     }
     printf("\n");
@@ -96,9 +62,7 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
       continue;
     } else {
       diff = abs(to_manipulate[0] - tmp_list.front()[0]);
-      if (diff > deg2rad(180)) {
-        diff = deg2rad(360) - diff;
-      }
+
       if (diff < deg2rad(degree_tolerance)) {
         //The angles are similar
         if (abs(to_manipulate[1] - tmp_list.front()[1]) < distance_tolerance) {
@@ -127,15 +91,70 @@ vector<Vec2f> condense_lines(vector<Vec2f> lines, bool keep_going) {
   if (!tmp_list.empty()) {
     compress_lines(condensed, tmp_list);
   }
-  if (condensed.size() >= 2) {
-    condensed.back() = flip_line(condensed.back());
 
-    if (keep_going) {
-      if (debug) {
-        printf("Second loop\n");
-      }
-      condensed = condense_lines(condensed, false);
+  if (debug) {
+    printf("=================== Before End Lines Comparison =================\n");
+    for (int j = 0; j < (int) condensed.size(); j++) {
+      printf(" (%.2f, %.2f)", rad2deg(condensed[j][0]), condensed[j][1]);
+    }
+    printf("\n");
+  }
+
+  if (condensed.size() >= 2) {
+    Vec2f *front = &condensed.front();
+    Vec2f *back = &condensed.back();
+    if ( (abs( ((*front)[0] - 0) - ((*back)[0] - CV_PI) ) < deg2rad(degree_tolerance)) && // thetas are close enough
+            (( abs((*front)[1]) - abs((*back)[1]) ) < distance_tolerance) ) { // rhos are close enough
+      // lines should be combined
+      *back = flip_line(*back);
+      (*front)[0] = ( (*front)[0] + (*back)[0] ) / 2.0F; // average thetas
+      (*front)[1] = ( (*front)[1] + (*back)[1] ) / 2.0F; // average rhos
+      condensed.pop_back(); // delete back line that was combined
     }
   }
+
+
+  if(debug) {
+    printf("=================== Lines Before Normalization =================\n");
+    for (int j = 0; j < (int) condensed.size(); j++) {
+      printf(" (%.2f, %.2f)", rad2deg(condensed[j][0]), condensed[j][1]);
+    }
+    printf("\n");
+  }
+
+
+
+  for (int i = 0; i < (int) condensed.size(); i++) {
+    //put in order of theta, rho
+
+    if (debug) {
+      printf("Took line from (%5.1f, %5.1f) to ", rad2deg(condensed[i][0]), condensed[i][1]);
+      flipped = false;
+    }
+
+    if (condensed[i][0] >= deg2rad(90)) {
+      if (debug) {
+        flipped = true;
+      }
+      condensed[i] = flip_line(condensed[i]);
+    }
+
+    if (debug) {
+      printf("oriented (%5.1f, %5.1f) ", rad2deg(condensed[i][0]), condensed[i][1]);
+      if (flipped) { printf("And I flipped"); }
+      printf("\n");
+    }
+
+  }
+
+
+  if(debug) {
+    printf("=================== Final Lines =================\n");
+    for (int j = 0; j < (int) condensed.size(); j++) {
+      printf(" (%.2f, %.2f)", rad2deg(condensed[j][0]), condensed[j][1]);
+    }
+    printf("\n");
+  }
+
   return condensed;
 }
