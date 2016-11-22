@@ -13,5 +13,5 @@ test.a
 obj
 
 flight_log.txt
-*cmake*
+
 /Makefile
