@@ -222,17 +222,6 @@ void ObjectFollowing::fly() {
   }
  */
 
-  //Emergency landing
-  if (abs(rHeading) <= 0.95 && abs(zHeading) <= 0.95) {
-    lastSearchTime = time(0);
-  }
-  time_t currentTime = time(0); 
-  double elapsedTime = difftime(currentTime, lastSearchTime);
-  printf("CALEB- elapsedTime: %f\n", elapsedTime);
-  if (elapsedTime >= 4) {
-    control_ptr->ardrone.landing();
-  }
-
 
   // Sample the object color
   if(learnMode) {
@@ -259,6 +248,23 @@ void ObjectFollowing::fly() {
   else if (controlMovements->vx < -1){
     controlMovements->vx = -1;
   }
+
+  //Emergency landing
+  if (abs(rHeading) <= 0.95 && abs(zHeading) <= 0.95) {
+    lastSearchTime = time(0);
+  }
+  else {
+    controlMovements->vx = 0;
+    controlMovements->vy = 0;
+    controlMovements->vz = 0;
+  }
+  time_t currentTime = time(0); 
+  double elapsedTime = difftime(currentTime, lastSearchTime);
+  printf("CALEB- elapsedTime: %f\n", elapsedTime);
+  if (elapsedTime >= 4) {
+    control_ptr->ardrone.landing();
+  }
+
 
   time_t current_time = time(0);
   double elapsed_time = difftime(current_time, control_ptr->takeoff_time);
