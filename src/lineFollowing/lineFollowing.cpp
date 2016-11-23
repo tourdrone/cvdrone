@@ -37,12 +37,13 @@ void LineFollowing::detect_lines(Mat &original_frame) {
     //put in order of theta, rho
     swap(lines[i][0], lines[i][1]);
   }
-  vector<Vec2f> tmp = condense_lines(lines, true);
+  vector<Vec2f> tmp = condense_lines(lines);
 
   sort(tmp.begin(), tmp.end(),
        [](const Vec2f &a, const Vec2f &b) {
          return a[0] < b[0];
        });
+
   if (tmp.size() > 0) {
     found_lines = tmp;
   }
@@ -266,7 +267,7 @@ void LineFollowing::fly() {
 
     }
      */
-    for (int i = 0; i < found_lines.size(); ++i) {
+    for (int i = 0; i < (int) found_lines.size(); ++i) {
       float angle = abs(found_lines[i][0]);
 
       if (angle > deg2rad(0 - tolerance) && angle < deg2rad(0 + tolerance) && categorization.vertical == Vec2f()) {
