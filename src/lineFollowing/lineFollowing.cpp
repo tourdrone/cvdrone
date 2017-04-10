@@ -25,15 +25,17 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   Scalar upper(maxH, maxS, maxV);
   inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
 
-  imshow("line_window", mask);
+//  imshow("line_window", mask);
 
   Canny(mask, mask, 50, 200, 3);
+
+//  imshow("canny_window", mask);
 
 
   vector<Vec2f> lines;
   HoughLines(mask, lines, 1, CV_PI / 180, 100, 0, 0);
 
-  for(int i = 0; i < (int)lines.size(); i++){
+  for (int i = 0; i < (int) lines.size(); i++) {
     //put in order of theta, rho
     swap(lines[i][0], lines[i][1]);
   }
@@ -64,9 +66,9 @@ LineFollowing::LineFollowing(Control *control) {
   maxV = 254;
   minV = 154;
 
-  kp = .0018;
-  ki = .0;
-  kd = 0.0;
+  kp = .0003;
+  ki = .000;
+  kd = 0;
 
   time = 0;
   myfile.open("csv/output.csv");
@@ -93,6 +95,7 @@ void LineFollowing::fly() {
 
 
   int vert = -1, hor = -1, corn = -1;
+  double scale = .001;
 
   control_ptr->velocities.vx = 0;
   control_ptr->velocities.vy = 0;
@@ -112,7 +115,7 @@ void LineFollowing::fly() {
       // intersection_point is point where single line intersects a  horizontal line across the vertical middle of the camera feed
       vert = 0;
       calculated_distance_from_vertical = distance_from_center(found_lines[vert][1], found_lines[vert][0],
-          control_ptr->image.cols, control_ptr->image.rows);
+                                                               control_ptr->image.cols, control_ptr->image.rows);
       calculated_distance_from_horizontal = 0;
       intersection_point = cvPoint(center_x + cvRound(calculated_distance_from_vertical), center_y);
 
@@ -129,10 +132,10 @@ void LineFollowing::fly() {
              rad2deg(found_lines[hor][0]), found_lines[hor][1]);*/
 
       calculated_distance_from_vertical = distance_from_center(found_lines[vert][1], found_lines[vert][0],
-          control_ptr->image.cols, control_ptr->image.rows);
+                                                               control_ptr->image.cols, control_ptr->image.rows);
       calculated_distance_from_horizontal = distance_from_center(found_lines[hor][1],
-          found_lines[hor][0],
-          control_ptr->image.cols, control_ptr->image.rows);
+                                                                 found_lines[hor][0],
+                                                                 control_ptr->image.cols, control_ptr->image.rows);
 
       intersection_point = find_intersection(found_lines[vert], found_lines[hor]);
 
@@ -156,11 +159,26 @@ void LineFollowing::fly() {
       control_ptr->velocities.vr = .1;
     }
 
+    if (calculated_distance_from_vertical != 0) {
+      control_ptr->velocities.vy = -calculated_distance_from_vertical * scale;
+    }
+    if (calculated_distance_from_horizontal != 0) {
+      control_ptr->velocities.vx = calculated_distance_from_horizontal * scale;
+    }
 
-    control_ptr->velocities.vy = .3 * vertical_pid->calculate(0, calculated_distance_from_vertical);
-    control_ptr->velocities.vx = -.3 * horizontal_pid->calculate(0, calculated_distance_from_horizontal);
+//    if (calculated_distance_from_vertical < -tolerance) {
+//      control_ptr->velocities.vy = .1;
+//      printf("pos vy\n");
+//    } else if (calculated_distance_from_vertical > tolerance) {
+//      control_ptr->velocities.vy = -.1;
+//      printf("neg vy\n");
+//    }
 
-    myfile << time++ << ", " << calculated_distance_from_horizontal << ", " << control_ptr->velocities.vx << endl;
+//
+//    control_ptr->velocities.vy = .3 * vertical_pid->calculate(0, calculated_distance_from_vertical);
+//    control_ptr->velocities.vx = -.3 * horizontal_pid->calculate(0, calculated_distance_from_horizontal);
+
+    myfile << time++ << ", " << calculated_distance_from_vertical << ", " << control_ptr->velocities.vy << endl;
     printf("x%f ", control_ptr->velocities.vx);
     printf("y%f\n", control_ptr->velocities.vy);
 
@@ -287,7 +305,9 @@ void LineFollowing::fly() {
 
     }
 
-    printf("blue/vert: (%.2f, %.2f)  green/hor: (%.2f, %.2f) red/corn: (%.2f, %.2f)\n", rad2deg(found_lines[vert][0]), found_lines[vert][1], rad2deg( found_lines[hor][0]),found_lines[hor][1], rad2deg(found_lines[corn][0]), found_lines[corn][1]);
+    printf("blue/vert: (%.2f, %.2f)  green/hor: (%.2f, %.2f) red/corn: (%.2f, %.2f)\n", rad2deg(found_lines[vert][0]),
+           found_lines[vert][1], rad2deg(found_lines[hor][0]), found_lines[hor][1], rad2deg(found_lines[corn][0]),
+           found_lines[corn][1]);
 
   } else {
     //print out the points of all 4+ lines

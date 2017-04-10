@@ -25,7 +25,7 @@ void compress_lines(vector<Vec2f> &condensed, const vector<Vec2f> &tmp_list) {
 }
 
 vector<Vec2f> condense_lines(vector<Vec2f> lines) {
-  bool debug = 1;
+  bool debug = 0;
   vector<Vec2f> condensed;
   vector<Vec2f> tmp_list;
   double diff;
