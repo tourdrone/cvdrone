@@ -260,7 +260,7 @@ void ObjectFollowing::fly() {
   }
   time_t currentTime = time(0); 
   double elapsedTime = difftime(currentTime, lastSearchTime);
-  printf("CALEB- elapsedTime: %f\n", elapsedTime);
+//  printf("CALEB- elapsedTime: %f\n", elapsedTime);
   if (elapsedTime >= 4) {
     control_ptr->ardrone.landing();
   }
@@ -274,7 +274,7 @@ void ObjectFollowing::fly() {
     controlMovements->vz = 0;
     controlMovements->vr = 0;
   } else {
-    printf("elapsed time: %f\n", elapsed_time);
+//    printf("elapsed time: %f\n", elapsed_time);
     controlMovements->vz = -(zHeading * 0.2);
     controlMovements->vr = -(rHeading * 0.5);
     if (controlMovements->vx < 0.5 && controlMovements->vx > 0) {
