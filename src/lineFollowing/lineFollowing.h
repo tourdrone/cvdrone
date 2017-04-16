@@ -15,20 +15,21 @@ using namespace std;
 
 class Control;
 
-/*
-*/
+
 class LineFollowing {
 public:
+  LineFollowing();
+
   LineFollowing(Control *control);
 
   void close();
 
   void fly();
 
+  void detect_lines(cv::Mat &original_frame);
+
 private:
   Control *control_ptr;
-
-  void detect_lines(cv::Mat &original_frame);
 
   double minH, minS, minV, maxH, maxS, maxV;
   double width, height;
@@ -37,6 +38,7 @@ private:
   ofstream myfile;
   PID *vertical_pid, *horizontal_pid;
   std::vector<cv::Vec2f> found_lines;
+  int pause;
 
   double distance_from_center(float rho, float theta, double width, double height);
 

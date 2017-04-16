@@ -25,11 +25,11 @@ void LineFollowing::detect_lines(Mat &original_frame) {
   Scalar upper(maxH, maxS, maxV);
   inRange(hsv, lower, upper, mask); // Create a mask of only the desired color
 
-//  imshow("line_window", mask);
+  imshow("line_window", mask);
 
   Canny(mask, mask, 50, 200, 3);
 
-//  imshow("canny_window", mask);
+  imshow("canny_window", mask);
 
 
   vector<Vec2f> lines;
@@ -54,6 +54,33 @@ void LineFollowing::detect_lines(Mat &original_frame) {
 
 }
 
+LineFollowing::LineFollowing() {
+  namedWindow("line_window", CV_WINDOW_NORMAL);
+
+  control_ptr = NULL;
+
+  maxH = 166;
+  minH = 66;
+  maxS = 143;
+  minS = 43;
+  maxV = 254;
+  minV = 154;
+
+  kp = .0003;
+  ki = .000;
+  kd = 0;
+  pause = 10;
+
+  time = 0;
+  myfile.open("csv/output.csv");
+
+
+  vertical_pid = new PID(1.0 / 25, 1, -1, kp, kd, ki);
+  horizontal_pid = new PID(1.0 / 25, 1, -1, kp, kd, ki);
+
+  return;
+}
+
 LineFollowing::LineFollowing(Control *control) {
   namedWindow("line_window", CV_WINDOW_NORMAL);
 
@@ -69,6 +96,7 @@ LineFollowing::LineFollowing(Control *control) {
   kp = .0003;
   ki = .000;
   kd = 0;
+  pause = 10;
 
   time = 0;
   myfile.open("csv/output.csv");
@@ -95,7 +123,8 @@ void LineFollowing::fly() {
 
 
   int vert = -1, hor = -1, corn = -1;
-  double scale = .001;
+  double y_scale = .001;
+  double x_scale = .0001;
 
   control_ptr->velocities.vx = 0;
   control_ptr->velocities.vy = 0;
@@ -107,10 +136,16 @@ void LineFollowing::fly() {
 
   if (found_lines.size() < 1) return;
 
+  if (found_lines.size() < 2) {
+    pause = 10;
+  } else if (found_lines.size() >= 2) {
+    pause--;
+  }
+
   // If there is no corner
   if (found_lines.size() < 3) {
 
-    if (found_lines.size() == 1) {
+    if (found_lines.size() == 1 || pause > 0) {
       // Find "intersection_point" that drone should go towards
       // intersection_point is point where single line intersects a  horizontal line across the vertical middle of the camera feed
       vert = 0;
@@ -160,10 +195,10 @@ void LineFollowing::fly() {
     }
 
     if (calculated_distance_from_vertical != 0) {
-      control_ptr->velocities.vy = -calculated_distance_from_vertical * scale;
+      control_ptr->velocities.vy = -calculated_distance_from_vertical * y_scale;
     }
     if (calculated_distance_from_horizontal != 0) {
-      control_ptr->velocities.vx = calculated_distance_from_horizontal * scale;
+      control_ptr->velocities.vx = calculated_distance_from_horizontal * x_scale;
     }
 
 //    if (calculated_distance_from_vertical < -tolerance) {
