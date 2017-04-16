@@ -14,48 +14,65 @@ using namespace std;
  */
 
 class ManualFlying;
+
 class LineFollowing;
+
 class ObjectFollowing;
 
+class Record;
+
 class Control {
-  public:
-    const string flightLog = "flight_log.txt";
+public:
+  const string flightLog = "flight_log.txt";
 
-    //AR.Drone class
-    ARDrone ardrone;
+  //AR.Drone class
+  ARDrone ardrone;
 
-    friend class ManualFlying;
-    friend class ObjectFollowing;
-    friend class LineFollowing;
+  friend class ManualFlying;
 
-    FILE *flight_log;
+  friend class Record;
 
-    Control();
-    void close();
-    void fly();
-    bool getKey(int wait);
-    void detectFlyingMode();
-    void changeSpeed();
-    void detectTakeoff();
-    void getImage();
-    void move();
+  friend class ObjectFollowing;
 
-    void overlayControl();
+  friend class LineFollowing;
 
-  private:
+  FILE *flight_log;
 
-    cv::Mat image;
-    cv::Scalar green; //overlay putText color value
-    FlyingMode flyingMode = Manual;
-    ControlMovements velocities;
-    time_t takeoff_time;
-    double speed = 0.0;
-    char key;
-    int batteryPercentage;
-    double altitude = 0.0;
-    bool flying;
+  Control();
 
-    ManualFlying *manualFlying;
-    ObjectFollowing *objectFollowing;
-    LineFollowing *lineFollowing;
+  void close();
+
+  void fly();
+
+  bool getKey(int wait);
+
+  void detectFlyingMode();
+
+  void changeSpeed();
+
+  void detectTakeoff();
+
+  void getImage();
+
+  void move();
+
+  void overlayControl();
+
+private:
+
+  cv::Mat image;
+  cv::Scalar green; //overlay putText color value
+  FlyingMode flyingMode = Manual;
+  ControlMovements velocities;
+  time_t takeoff_time;
+  double speed = 0.0;
+  char key;
+  int batteryPercentage;
+  double altitude = 0.0;
+  bool flying;
+
+  ManualFlying *manualFlying;
+  ObjectFollowing *objectFollowing;
+  LineFollowing *lineFollowing;
+  Record *record;
 };

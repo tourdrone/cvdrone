@@ -16,7 +16,8 @@ struct ControlMovements {
 enum FlyingMode {
   Manual,
   ObjectFollow,
-  LineFollow
+  LineFollow,
+  Recording
 };
 
 #endif
