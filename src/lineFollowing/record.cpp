@@ -18,7 +18,7 @@ Record::Record(Control *control) {
 //                             cv::Size(input_cap.get(CV_CAP_PROP_FRAME_WIDTH),
 //                                      input_cap.get(CV_CAP_PROP_FRAME_HEIGHT)));
 //  printf("before thing\n");
-  v = cv::VideoWriter("caleb_file.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25,
+  v = cv::VideoWriter("new_testing_file.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25,
                       Size(640, 360), true);
 //  printf("writing %dx%d\n", control_ptr->image.cols, control_ptr->image.rows);
 //  printf("after thing\n");
