@@ -5,7 +5,7 @@
 using namespace cv;
 using namespace std;
 
-<<<<<<< HEAD
+
 int main(int argc, char **argv) {
   string filename;
   if (argc < 2) {
@@ -13,10 +13,6 @@ int main(int argc, char **argv) {
   } else {
     filename = argv[1];
   }
-=======
-int main() {
-  string filename = "test1.avi";
->>>>>>> 71dc6bfdf4ba6488abdee2302d77d2b03788423e
   VideoCapture capture(filename);
   Mat frame;
   if (!capture.isOpened()) {
