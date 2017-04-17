@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   } else {
     filename = argv[1];
   }
-  fprintf(stderr, "Opened %s\n", filename);
+  fprintf(stderr, "Opened %s\n", filename.c_str());
   VideoCapture capture(filename);
   Mat frame;
   if (!capture.isOpened()) {
