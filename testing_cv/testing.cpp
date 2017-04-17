@@ -9,10 +9,12 @@ using namespace std;
 int main(int argc, char **argv) {
   string filename;
   if (argc < 2) {
+    fprintf(stderr, "Using default filename\n");
     filename = "test1.avi";
   } else {
     filename = argv[1];
   }
+  fprintf(stderr, "Opened %s\n", filename);
   VideoCapture capture(filename);
   Mat frame;
   if (!capture.isOpened()) {
