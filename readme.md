@@ -5,11 +5,10 @@ This project implements three modes of control used to navigate indoors. These m
 The code runs on Ubuntu 16.4.01 LTS, which can be loaded and run using VMware Fusion. Additionally, this project runs on a Raspberry Pi 3.0, again using Ubuntu 16.4.01 LTS. It is intended as a Linux install.
 
 ```bash
+git clone --depth 1 https://github.com/tourdrone/cvdrone.git
 cd cvdrone
-mkdir build
-cd build
-cmake ..
-make
+cmake .
+make [testing | drone]
 ```  
 
 # EXECUTION  
