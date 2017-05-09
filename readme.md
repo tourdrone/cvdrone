@@ -4,24 +4,9 @@ This project implements three modes of control used to navigate indoors. These m
 # INSTALLATION  
 The code runs on Ubuntu 16.4.01 LTS, which can be loaded and run using VMware Fusion. Additionally, this project runs on a Raspberry Pi 3.0, again using Ubuntu 16.4.01 LTS. It is intended as a Linux install.
 
-### Linux install instructions  
-  1. Clone the repository  
-  2. Sudo apt-get install these dependencies  
-  	ffmpeg:  
-	  FFmpeg 2.2.3 (LGPL v2.1 license) http://www.ffmpeg.org/  
-	libopencv-dev:  
-	  OpenCV 3.0.0 Alpha (BSD license) http://opencv.org/  
-  3. Run the makefile in build/linux  
-  
-### Mac install instructions  
-  1. Clone the repository  
-  2. Sudo apt-get install both the  
-  	ffmpeg:  
-	  FFmpeg 2.2.3 (LGPL v2.1 license) http://www.ffmpeg.org/  
-	libopencv-dev:  
-	  OpenCV 3.0.0 Alpha (BSD license) http://opencv.org/  
-  3. Run the makefile in build/linux  
-  4. Additional modification of the dependency libraries may be required.  
+```bash
+cd cvdrone
+```  
 
 # EXECUTION  
 Run ./test.a from the build/linux folder.  
