@@ -15,3 +15,4 @@ obj
 flight_log.txt
 
 /Makefile
+/bin

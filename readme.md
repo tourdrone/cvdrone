@@ -1,7 +1,11 @@
-# INTRODUCTION  
+# Introduction  
 This project implements three modes of control used to navigate indoors. These modes can be used to carry out a tour of a building using on floor line navigation, colored object following, and manual control. More about this project can be found on our website at https://tourdrone.github.io. Demos of the project working, as well as some of our attempts along the way, can be found at https://www.youtube.com/channel/UCb4gyYxqb0HRZoYWGTBV6GA. 
+
+# Requirements
+* FFMPEG
+* OpenCV
     
-# INSTALLATION  
+# Installation  
 The code runs on Ubuntu 16.4.01 LTS, which can be loaded and run using VMware Fusion. Additionally, this project runs on a Raspberry Pi 3.0, again using Ubuntu 16.4.01 LTS. It is intended as a Linux install.
 
 ```bash
@@ -11,10 +15,10 @@ cmake .
 make [testing | drone]
 ```  
 
-# EXECUTION  
-Run ./test.a from the build/linux folder.  
+# Execution  
+Run the drone executable from the bin folder.  
 
-# CONTROL  
+# Control  
   Keyboard input is used for control. Wii Remote input can be co-opted as keyboard input using the cwiid library. For control to work, the image window must be selected (this is the default). 
   
 ### Default
@@ -43,7 +47,7 @@ Run ./test.a from the build/linux folder.
 ### Line Following  
   Learn Line Color: l  
 
-# LEGAL  
+# Legal  
 This project was originally forked from https://github.com/tekkies/cvdrone. We have included the license in that readme. 
 	  
 This is free software; you can redistribute it and/or modify it under the terms of EITHER:  
