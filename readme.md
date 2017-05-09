@@ -6,6 +6,10 @@ The code runs on Ubuntu 16.4.01 LTS, which can be loaded and run using VMware Fu
 
 ```bash
 cd cvdrone
+mkdir build
+cd build
+cmake ..
+make
 ```  
 
 # EXECUTION  
